@@ -1,0 +1,5 @@
+rootDir: /home/testrunner/
+targetDir: /home/testrunner/tests
+execCommand:
+  - npm
+  - test

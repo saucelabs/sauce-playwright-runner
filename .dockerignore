@@ -1,0 +1,4 @@
+/tests/**/*.js
+./*.js
+./*.json
+!package.json
