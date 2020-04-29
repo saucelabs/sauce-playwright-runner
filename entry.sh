@@ -233,9 +233,6 @@ echo "${DISP_N}" > DISP_N
 
 env > env
 
-# port forward devtools interface
-socat tcp-listen:9222,reuseaddr,fork tcp:localhost:9223
-
 if [ "${DEBUG}" == "bash" ]; then
   run-supervisord.sh &
   cd /var/log/cont
