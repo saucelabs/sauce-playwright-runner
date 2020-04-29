@@ -44,12 +44,12 @@ else
   warn "We don't have sudo"
 fi
 
-if [ ${CURRENT_GID} -ne 1000 ]; then
-  if [ "${WE_HAVE_SUDO_ACCESS}" == "true" ]; then
-    sudo groupadd --gid ${CURRENT_GID} selgroup
-    sudo gpasswd -a $(whoami) selgroup
-  fi
-fi
+# if [ ${CURRENT_GID} -ne 1000 ]; then
+#   if [ "${WE_HAVE_SUDO_ACCESS}" == "true" ]; then
+#     sudo groupadd --gid ${CURRENT_GID} selgroup
+#     sudo gpasswd -a $(whoami) selgroup
+#   fi
+# fi
 
 # Workaround that might help to get dbus working in docker
 #  http://stackoverflow.com/a/38355729/511069

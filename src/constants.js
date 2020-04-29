@@ -20,6 +20,5 @@ exports.LOG_FILES = [
 exports.CHROME_ARGS = [
     '--start-fullscreen',
     '--remote-debugging-port=9223',
-    '--remote-debugging-address=0.0.0.0',
     '--disable-dev-shm-usage'
 ]
