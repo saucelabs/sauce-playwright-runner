@@ -27,9 +27,9 @@ module.exports = class TestrunnerReporter {
                 key: process.env.SAUCE_ACCESS_KEY,
                 logLevel: 'silent',
                 capabilities: {
-                    browserName: 'Chrome',
+                    browserName: 'Firefox',
                     platformName: 'MacOS 10.15',
-                    browserVersion: '81',
+                    browserVersion: '77',
                     // platformName: '*',
                     // browserVersion: '*',
                     'sauce:options': {
