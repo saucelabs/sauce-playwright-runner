@@ -29,7 +29,7 @@ module.exports = class TestrunnerReporter {
                 capabilities: {
                     browserName: 'Firefox',
                     platformName: 'MacOS 10.15',
-                    browserVersion: '77',
+                    browserVersion: '75',
                     // platformName: '*',
                     // browserVersion: '*',
                     'sauce:options': {

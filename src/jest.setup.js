@@ -2,17 +2,21 @@ const path = require('path')
 
 const got = require('got')
 const { firefox } = require('playwright')
-const debug = require('debug')
 
 const { CHROME_DEFAULT_PATH, JEST_TIMEOUT } = require('./constants')
 const { logHelper } = require('./utils')
-debug.log = logHelper
 
 jest.setTimeout(process.env.JEST_TIMEOUT || JEST_TIMEOUT)
 
+global.logs = []
+
 beforeAll(async () => {
     global.browser = await firefox.launch({
-        headless: !Boolean(process.env.DISPLAY)
+        headless: !Boolean(process.env.DISPLAY),
+        logger: {
+            isEnabled: () => true,
+            log: logHelper
+        }
     }).catch((err) => {
         console.error(`Couldn't start Playwright: ${err.message}`)
     })
