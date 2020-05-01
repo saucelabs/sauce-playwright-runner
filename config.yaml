@@ -1,5 +1,5 @@
-rootDir: /home/testrunner/
-targetDir: /home/testrunner/tests
+rootDir: /home/seluser/
+targetDir: /home/seluser/tests
 execCommand:
   - npm
   - test

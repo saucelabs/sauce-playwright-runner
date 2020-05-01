@@ -57,12 +57,15 @@ fi
 #  - still unclear if this helps: `-v /var/run/dbus:/var/run/dbus`
 #  - this works generates errors: DBUS_SESSION_BUS_ADDRESS="/dev/null"
 #  - this gives less erros: DBUS_SESSION_BUS_ADDRESS="unix:abstract=/dev/null"
+DBUS_SERVICE_LOG="${LOGS_DIR}/dbus_service.log"
+DBUS_SERVICE_STATUS_LOG="${LOGS_DIR}/dbus_service_status.log"
+
 rm -f /var/lib/dbus/machine-id
 mkdir -p /var/run/dbus
-service dbus restart >dbus_service.log
+service dbus restart > $DBUS_SERVICE_LOG
 
 # Test dbus works
-service dbus status >dbus_service_status.log
+service dbus status > $DBUS_SERVICE_STATUS_LOG
 export $(dbus-launch)
 export NSS_USE_SHARED_DB=ENABLED
 # echo "-- INFO: DBUS_SESSION_BUS_ADDRESS=${DBUS_SESSION_BUS_ADDRESS}"
@@ -151,10 +154,14 @@ if [ "${VIDEO_FILE_NAME}" = "" ]; then
   [ "${MULTINODE}" = "true" ] && export VIDEO_FILE_NAME="${VIDEO_FILE_NAME}_chrome_or_firefox_${SELENIUM_MULTINODE_PORT}"
 fi
 export VIDEO_PATH="${VIDEOS_DIR}/${VIDEO_FILE_NAME}.${VIDEO_FILE_EXTENSION}"
-echo "${VIDEO_LOG_FILE}" > VIDEO_LOG_FILE
-echo "${VIDEO_PIDFILE}" > VIDEO_PIDFILE
-echo "${VIDEO_FILE_NAME}" > VIDEO_FILE_NAME
-echo "${VIDEO_PATH}" > VIDEO_PATH
+
+# no permissions to modify these log files in CI
+if [ "${CI}" != "true" ]; then
+    echo "${VIDEO_LOG_FILE}" > VIDEO_LOG_FILE
+    echo "${VIDEO_PIDFILE}" > VIDEO_PIDFILE
+    echo "${VIDEO_FILE_NAME}" > VIDEO_FILE_NAME
+    echo "${VIDEO_PATH}" > VIDEO_PATH
+fi
 
 if [ "${SUPERVISOR_HTTP_PORT}" = "0" ]; then
   export SUPERVISOR_HTTP_PORT=$(get_unused_port_from_range ${RANDOM_PORT_FROM} ${RANDOM_PORT_TO})
@@ -187,57 +194,39 @@ if [ "${SHM_TRY_MOUNT_UNMOUNT}" = "true" ] && [ "${WE_HAVE_SUDO_ACCESS}" == "tru
     tmpfs /dev/shm || true
 fi
 
-#-------------------------------------------
-# Keep updated environment vars inside files
-#-------------------------------------------
-# So can be consulted later on with:
-#  docker exec grid cat HUB_PORT #=> 24444
-#  docker exec grid cat DISPLAY  #=> :41
-#  docker exec selenium_chrome_1 cat FF_PORT #=> 44023
-echo "${SUPERVISOR_HTTP_PORT}" > SUPERVISOR_HTTP_PORT
-echo "${FIREFOX_DEST_BIN}" > FIREFOX_DEST_BIN
-echo "${LOGS_DIR}" > LOGS_DIR
-echo "${FIREFOX_VERSION}" > FIREFOX_VERSION
-echo "${CHROME_VERSION}" > CHROME_VERSION
-echo "${CHROME}" > CHROME
-echo "${CHROME_FLAVOR}" > CHROME_FLAVOR
-echo "${FIREFOX}" > FIREFOX
-echo "${WAIT_TIMEOUT}" > WAIT_TIMEOUT
-echo "${CHROME_PATH}" > CHROME_PATH
-echo "${MAX_SESSIONS}" > MAX_SESSIONS
-echo "${XMANAGER}" > XMANAGER
-echo "${DOCKER_HOST_IP}" > DOCKER_HOST_IP
-echo "${CONTAINER_IP}" > CONTAINER_IP
-echo "${WE_HAVE_SUDO_ACCESS}" > WE_HAVE_SUDO_ACCESS
-
 # Open a new file descriptor that redirects to stdout:
 exec 3>&1
 
-# Try 2 times first
-start-xvfb.sh || start-xvfb.sh || echo "Couldn't start xvfb"
-export DISPLAY="$(cat DISPLAY)"
-export DISP_N="$(cat DISP_N)"
+# no permissions to modify these log files in CI
+if [ "${CI}" != "true" ]; then
+    # Try 2 times first
+    start-xvfb.sh || start-xvfb.sh || echo "Couldn't start xvfb"
+    export DISPLAY="$(cat DISPLAY)"
+    export DISP_N="$(cat DISP_N)"
 
-# For 1 more time for Xvfb or retry
-if ! timeout --foreground ${WAIT_TIMEOUT} wait-xvfb.sh >/var/log/cont/wait-xvfb.1.log 2>&1 3>&1; then
-  start-xvfb.sh || start-xvfb.sh
-  export DISPLAY="$(cat DISPLAY)"
-  export DISP_N="$(cat DISP_N)"
+    # For 1 more time for Xvfb or retry
+    if ! timeout --foreground ${WAIT_TIMEOUT} wait-xvfb.sh >/var/log/cont/wait-xvfb.1.log 2>&1 3>&1; then
+    start-xvfb.sh || start-xvfb.sh
+    export DISPLAY="$(cat DISPLAY)"
+    export DISP_N="$(cat DISP_N)"
+    fi
+
+    timeout --foreground ${WAIT_TIMEOUT} wait-xvfb.sh >/var/log/cont/wait-xvfb.2.log 2>&1 3>&1 || \
+    die "Failed while waiting for Xvfb to start. We cannot continue!"
+
+    echo "${DISPLAY}" > DISPLAY
+    echo "${DISP_N}" > DISP_N
+
+    env > env
 fi
-
-timeout --foreground ${WAIT_TIMEOUT} wait-xvfb.sh >/var/log/cont/wait-xvfb.2.log 2>&1 3>&1 || \
-  die "Failed while waiting for Xvfb to start. We cannot continue!"
-
-echo "${DISPLAY}" > DISPLAY
-echo "${DISP_N}" > DISP_N
-
-env > env
 
 if [ "${DEBUG}" == "bash" ]; then
   run-supervisord.sh &
   cd /var/log/cont
   exec bash
-else
+fi
+
+if [ "${CI}" != "true" ]; then
   exec run-supervisord.sh
 fi
 
