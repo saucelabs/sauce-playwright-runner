@@ -13,5 +13,9 @@ module.exports = {
     reporters: [
         `default`,
         `${ROOT}/src/reporter.js`
+    ],
+    testMatch: [
+        '/home/seluser/tests/**/*.[jt]s?(x)',
+        '/home/seluser/tests/**/?(*.)+(spec|test).[jt]s?(x)'
     ]
 };
