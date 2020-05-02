@@ -1,21 +1,21 @@
 const path = require('path')
 
-const ROOT = path.resolve(__dirname, '..')
+const { HOME_DIR } = require('../src/constants')
 
 module.exports = {
-    rootDir: ROOT,
+    rootDir: HOME_DIR,
     testEnvironment: 'node',
     testRunner: 'jest-circus/runner',
     setupFilesAfterEnv: [
-        `${ROOT}/src/jest.setup.js`,
-        `${ROOT}/src/jest.teardown.js`
+        `${HOME_DIR}/src/jest.setup.js`,
+        `${HOME_DIR}/src/jest.teardown.js`
     ],
     reporters: [
         `default`,
-        `${ROOT}/src/reporter.js`
+        `${HOME_DIR}/src/reporter.js`
     ],
     testMatch: [
-        '/home/seluser/tests/**/*.[jt]s?(x)',
-        '/home/seluser/tests/**/?(*.)+(spec|test).[jt]s?(x)'
+        '**/seluser/tests/?(*.)+(spec|test).[jt]s?(x)',
+        '**/seluser/tests/**/?(*.)+(spec|test).[jt]s?(x)'
     ]
 };

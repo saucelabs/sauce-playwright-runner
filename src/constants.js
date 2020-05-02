@@ -1,3 +1,4 @@
+exports.HOME_DIR = '/home/seluser'
 exports.CHROME_DEFAULT_PATH = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 exports.JEST_TIMEOUT = 60 * 1000 // 1min
 
@@ -13,6 +14,6 @@ exports.LOG_FILES = [
     LOG_DIR + '/wait-xvfb-stdout.log',
     LOG_DIR + '/xvfb-tryouts-stderr.log',
     LOG_DIR + '/xvfb-tryouts-stdout.log',
-    '/home/seluser/videos/video.mp4',
-    '/home/seluser/docker.log'
+    exports.HOME_DIR + '/videos/video.mp4',
+    exports.HOME_DIR + '/docker.log'
 ]
