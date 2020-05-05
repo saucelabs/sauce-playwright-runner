@@ -81,7 +81,7 @@ module.exports = class TestrunnerReporter {
         if (skipSauce) {
             return;
         }
-        log.info("Updating job details to Sauce Labs")
+        log.info("Updating Sauce Labs job details")
         await Promise.all([
             api.uploadJobAssets(
                 sessionId,
