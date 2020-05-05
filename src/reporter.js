@@ -17,25 +17,25 @@ const api = new SauceLabs({
     region: 'us-west-1'
 })
 
+const skipSauce = !process.env.SAUCE_USERNAME || !process.env.SAUCE_ACCESS_KEY;
+
 module.exports = class TestrunnerReporter {
     constructor () {
+        if (skipSauce) {
+            console.warn("Skipping Sauce Labs integration. Please provide your Sauce Labs username & access key. https://github.com/saucelabs/saucectl#getting-started");
+            return
+        }
         log.info('Create job shell')
         this.sessionId = (async () => {
             const jobName = `DevX ${Math.random()}`
-            if (!process.env.SAUCE_USERNAME) {
-                throw new Error("Please provide your Sauce Labs username. https://github.com/saucelabs/saucectl#getting-started");
-            }
-            if (!process.env.SAUCE_ACCESS_KEY) {
-                throw new Error("Please provide your Sauce Labs access key. https://github.com/saucelabs/saucectl#getting-started");
-            }
             const session = await remote({
                 user: process.env.SAUCE_USERNAME,
                 key: process.env.SAUCE_ACCESS_KEY,
                 logLevel: 'silent',
                 capabilities: {
-                    browserName: 'Firefox',
-                    platformName: 'MacOS 10.15',
-                    browserVersion: '75',
+                    browserName: 'chrome',
+                    platformName: 'Windows 7',
+                    browserVersion: 'latest',
                     // platformName: '*',
                     // browserVersion: '*',
                     'sauce:options': {
@@ -77,6 +77,11 @@ module.exports = class TestrunnerReporter {
         const containterLogFiles = LOG_FILES.filter(
             (path) => fs.existsSync(path))
 
+        log.info('Finished testrun!')
+        if (skipSauce) {
+            return;
+        }
+        log.info("Updating job details to Sauce Labs")
         await Promise.all([
             api.uploadJobAssets(
                 sessionId,
@@ -93,8 +98,6 @@ module.exports = class TestrunnerReporter {
                 passed: hasPassed
             })
         ])
-
-        log.info('Finished testrun!')
-        console.log(`\nOpen job details page: https://app.saucelabs.com/tests/${sessionId}\n`)
+        log.info(`\nOpen job details page: https://app.saucelabs.com/tests/${sessionId}\n`)
     }
 }
