@@ -22,6 +22,12 @@ module.exports = class TestrunnerReporter {
         log.info('Create job shell')
         this.sessionId = (async () => {
             const jobName = `DevX ${Math.random()}`
+            if (!process.env.SAUCE_USERNAME) {
+                throw new Error("Please provide your Sauce Labs username. https://github.com/saucelabs/saucectl#getting-started");
+            }
+            if (!process.env.SAUCE_ACCESS_KEY) {
+                throw new Error("Please provide your Sauce Labs access key. https://github.com/saucelabs/saucectl#getting-started");
+            }
             const session = await remote({
                 user: process.env.SAUCE_USERNAME,
                 key: process.env.SAUCE_ACCESS_KEY,
