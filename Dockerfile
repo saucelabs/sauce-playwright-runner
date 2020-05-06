@@ -67,7 +67,6 @@ COPY package.json .
 RUN npm install
 
 COPY . .
-RUN sudo chown -R seluser:seluser /home/seluser
 
 #==================
 # ENTRYPOINT & CMD
