@@ -66,7 +66,7 @@ module.exports = class TestrunnerReporter {
                 process.env.SAUCE_USERNAME,
                 { limit: 1, full: true, name: jobName }
             )
-            return jobs && jobs[0].id
+            return jobs && jobs.length && jobs[0].id
         })()
     }
 
