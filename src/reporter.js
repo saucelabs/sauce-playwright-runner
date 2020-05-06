@@ -17,40 +17,56 @@ const api = new SauceLabs({
     region: 'us-west-1'
 })
 
-const skipSauce = !process.env.SAUCE_USERNAME || !process.env.SAUCE_ACCESS_KEY;
+const jobName = `DevX ${Math.random()}`
+let build = process.env.SAUCE_BUILD_NAME
+
+/**
+ * replace placeholders (e.g. $BUILD_ID) with environment values
+ */
+const buildMatches = (build || '').match(/\$[a-zA-Z0-9_-]+/g) || []
+for (const match of buildMatches) {
+    const replacement = process.env[match.slice(1)]
+    build = build.replace(match, replacement || '')
+}
 
 module.exports = class TestrunnerReporter {
     constructor () {
-        if (skipSauce) {
-            console.warn("Skipping Sauce Labs integration. Please provide your Sauce Labs username & access key. https://github.com/saucelabs/saucectl#getting-started");
-            return
-        }
         log.info('Create job shell')
         this.sessionId = (async () => {
-            const jobName = `DevX ${Math.random()}`
-            const session = await remote({
+            /**
+             * don't try to create a job if no credentials are set
+             */
+            if (!process.env.SAUCE_USERNAME || !process.env.SAUCE_ACCESS_KEY) {
+                return
+            }
+
+            /**
+             * create a job shell by trying to initialise a session with
+             * invalid capabilities
+             * ToDo(Christian): remove once own testrunner job API is available
+             */
+            await remote({
                 user: process.env.SAUCE_USERNAME,
                 key: process.env.SAUCE_ACCESS_KEY,
+                connectionRetryCount: 0,
                 logLevel: 'silent',
                 capabilities: {
-                    browserName: 'Firefox',
-                    platformName: 'MacOS 10.15',
-                    browserVersion: '75',
-                    // platformName: '*',
-                    // browserVersion: '*',
+                    browserName: 'Chrome',
+                    platformName: '*',
+                    browserVersion: '*',
                     'sauce:options': {
                         devX: true,
-                        name: jobName
+                        name: jobName,
+                        build
                     }
                 }
             }).catch((err) => err)
 
-            // const { jobs } = await api.listJobs(
-            //     process.env.SAUCE_USERNAME,
-            //     { limit: 1, full: true, name: jobName }
-            // )
-            await session.deleteSession()
-            return session.sessionId // jobs[0].id
+            const { jobs } = await api.listJobs(
+                process.env.SAUCE_USERNAME,
+                { limit: 1, full: true, name: jobName }
+            )
+            return jobs && jobs[0].id
         })()
     }
 
@@ -60,28 +76,25 @@ module.exports = class TestrunnerReporter {
     }
 
     async onRunComplete (test, { testResults, numFailedTests }) {
+        log.info('Finished testrun!')
+
         const filename = path.basename(testResults[0].testFilePath)
         const hasPassed = numFailedTests === 0
-
         const sessionId = await this.sessionId
 
         /**
-         * wait a bit to ensure we don't upload before the job has finished
+         * only upload assets if a session was initiated before
          */
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+        if (!sessionId) {
+            return
+        }
 
-        log.info('Stop video capturing')
         await exec('stop-video')
 
-        const logFilePath = path.join(process.cwd(), '/log.json')
+        const logFilePath = path.join(HOME_DIR, 'log.json')
         const containterLogFiles = LOG_FILES.filter(
             (path) => fs.existsSync(path))
 
-        log.info('Finished testrun!')
-        if (skipSauce) {
-            return;
-        }
-        log.info("Updating Sauce Labs job details")
         await Promise.all([
             api.uploadJobAssets(
                 sessionId,
@@ -98,6 +111,7 @@ module.exports = class TestrunnerReporter {
                 passed: hasPassed
             })
         ])
-        log.info(`\nOpen job details page: https://app.saucelabs.com/tests/${sessionId}\n`)
+
+        console.log(`\nOpen job details page: https://app.saucelabs.com/tests/${sessionId}\n`)
     }
 }
