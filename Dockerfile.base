@@ -54,15 +54,6 @@ ENV PATH="/home/seluser/bin:/home/seluser/.nvm/versions/node/v12.16.2/bin:${PATH
 
 WORKDIR /home/seluser
 
-RUN curl -L -o saucectl-internal_0.4.1_linux_64-bit.tar.gz \
-  -H 'Authorization: token 3b7322d6d66db64750809c1e2a0162a0e8b124c0' \
-  -H "Accept: application/octet-stream" \
-  https://api.github.com/repos/saucelabs/saucectl-internal/releases/assets/20466049 \
-  && tar -xvzf saucectl-internal_0.4.1_linux_64-bit.tar.gz \
-  && mkdir /home/seluser/bin/ \
-  && mv ./saucectl-internal /home/seluser/bin/saucectl \
-  && rm saucectl-internal_0.4.1_linux_64-bit.tar.gz
-
 COPY package.json .
 RUN npm install
 
