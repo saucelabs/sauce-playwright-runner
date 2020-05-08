@@ -61,7 +61,7 @@ RUN curl -L -o saucectl-internal_0.4.1_linux_64-bit.tar.gz \
   && tar -xvzf saucectl-internal_0.4.1_linux_64-bit.tar.gz \
   && mkdir /home/seluser/bin/ \
   && mv ./saucectl-internal /home/seluser/bin/saucectl \
-  && rm saucectl_0.3.14_Linux_x86_64.tar.gz
+  && rm saucectl-internal_0.4.1_linux_64-bit.tar.gz
 
 COPY package.json .
 RUN npm install
