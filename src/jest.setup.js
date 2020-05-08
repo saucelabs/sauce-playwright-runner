@@ -1,9 +1,9 @@
 const path = require('path')
 
 const got = require('got')
-const { firefox } = require('playwright')
+const playwright = require('playwright')
 
-const { CHROME_DEFAULT_PATH, JEST_TIMEOUT } = require('./constants')
+const { CHROME_DEFAULT_PATH, JEST_TIMEOUT, SUPPORTED_BROWSER, LAUNCH_ARGS } = require('./constants')
 const { logHelper } = require('./utils')
 
 jest.setTimeout(process.env.JEST_TIMEOUT || JEST_TIMEOUT)
@@ -11,15 +11,24 @@ jest.setTimeout(process.env.JEST_TIMEOUT || JEST_TIMEOUT)
 global.logs = []
 
 beforeAll(async () => {
-    global.browser = await firefox.launch({
+    const desiredBrowser = process.env.BROWSER_NAME || 'chromium'
+
+    if (!playwright[desiredBrowser]) {
+        throw new Error(`browser name "${desiredBrowser}" not supported, choose between ${SUPPORTED_BROWSER.join(', ')}`)
+    }
+
+    global.browser = await playwright[desiredBrowser].launch({
         headless: !Boolean(process.env.DISPLAY),
+        args: LAUNCH_ARGS[desiredBrowser],
         logger: {
             isEnabled: () => true,
             log: logHelper
         }
-    }).catch((err) => {
-        console.error(`Couldn't start Playwright: ${err.message}`)
-    })
+    }).catch((err) => { err })
+
+    if (global.browser.err) {
+        throw new Error(`Couldn't start Playwright: ${global.browser.err.message}`)
+    }
 
     // Create a new incognito browser context.
     global.context = await browser.newContext();
