@@ -9,8 +9,7 @@ build_base_flavor:
 		${NO_CACHE}
 
 build_saucectl_flavor:
-	cat Dockerfile.saucectl | sed "s/{{PLAYWRIGHT_VERSION}}/${PLAYWRIGHT_VERSION}/g" > /tmp/Dockerfile.saucectl
-	docker build -f /tmp/Dockerfile.saucectl \
+	docker build -f Dockerfile.saucectl \
 		--build-arg SAUCECTL_VERSION=${SAUCECTL_VERSION} \
 		--build-arg PLAYWRIGHT_VERSION=${PLAYWRIGHT_VERSION} \
 		-t ${DOCKER_REGISTRY}saucelabs/sauce-playwright:${PLAYWRIGHT_VERSION}-saucectl${SAUCECTL_VERSION} .\
