@@ -1,0 +1,16 @@
+ARG PLAYWRIGHT_VERSION
+FROM saucelabs/sauce-playwright:${PLAYWRIGHT_VERSION}
+
+ARG SAUCECTL_VERSION
+ENV SAUCECTL_BINARY=saucectl-internal_${SAUCECTL_VERSION}_linux_64-bit.tar.gz
+
+USER seluser
+
+RUN curl -L -o ${SAUCECTL_BINARY} \
+  -H 'Authorization: token 3b7322d6d66db64750809c1e2a0162a0e8b124c0' \
+  -H "Accept: application/octet-stream" \
+  https://api.github.com/repos/saucelabs/saucectl-internal/releases/assets/20466049 \
+  && tar -xvzf ${SAUCECTL_BINARY} \
+  && mkdir /home/seluser/bin/ \
+  && mv ./saucectl-internal /home/seluser/bin/saucectl \
+  && rm ${SAUCECTL_BINARY}

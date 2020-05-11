@@ -43,25 +43,17 @@ USER seluser
 #================
 # Install Node.JS
 #================
-RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash \
+ENV NODE_VERSION=12.16.2
+ENV NVM_VERSION=0.35.3
+RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/install.sh | bash \
   && export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")" \
   && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" \
-  && nvm install 12.16.2
+  && nvm install ${NODE_VERSION}
 
-ENV PATH="/home/seluser/bin:/home/seluser/.nvm/versions/node/v12.16.2/bin:${PATH}" \
-    CHROME_BINARY_PATH="/usr/bin/google-chrome-stable" \
+ENV PATH="/home/seluser/bin:/home/seluser/.nvm/versions/node/v${NODE_VERSION}/bin:${PATH}" \
     WDIO_LOG_PATH="/home/seluser/docker.log"
 
 WORKDIR /home/seluser
-
-RUN curl -L -o saucectl-internal_0.4.1_linux_64-bit.tar.gz \
-  -H 'Authorization: token 3b7322d6d66db64750809c1e2a0162a0e8b124c0' \
-  -H "Accept: application/octet-stream" \
-  https://api.github.com/repos/saucelabs/saucectl-internal/releases/assets/20466049 \
-  && tar -xvzf saucectl-internal_0.4.1_linux_64-bit.tar.gz \
-  && mkdir /home/seluser/bin/ \
-  && mv ./saucectl-internal /home/seluser/bin/saucectl \
-  && rm saucectl-internal_0.4.1_linux_64-bit.tar.gz
 
 COPY package.json .
 RUN npm install
