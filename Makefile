@@ -1,5 +1,5 @@
 PLAYWRIGHT_VERSION=1.0.0
-SAUCECTL_VERSION=0.6.1
+SAUCECTL_VERSION=0.6.2
 
 build_base_flavor:
 	docker build -f Dockerfile.base \
