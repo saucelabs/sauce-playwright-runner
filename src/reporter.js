@@ -98,10 +98,12 @@ module.exports = class TestrunnerReporter {
         await Promise.all([
             api.uploadJobAssets(
                 sessionId,
-                [
-                    logFilePath,
-                    ...containterLogFiles
-                ]
+                {
+                    files: [
+                        logFilePath,
+                        ...containterLogFiles
+                    ]
+                }
             ).then(
                 () => log.info('upload successful'),
                 (e) => log.error('upload failed:', e.stack)
