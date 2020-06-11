@@ -17,3 +17,10 @@ exports.LOG_FILES = [
     exports.HOME_DIR + '/videos/video.mp4',
     exports.HOME_DIR + '/docker.log'
 ]
+
+exports.SUPPORTED_BROWSER = ['chromium', 'firefox', 'webkit']
+exports.LAUNCH_ARGS = {
+    chromium: ['--no-sandbox'],
+    webkit: [],
+    firefox: []
+}
