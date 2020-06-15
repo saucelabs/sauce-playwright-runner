@@ -5,7 +5,7 @@ USER root
 RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
 
 #===============================
-# 2. Install WebKit dependencies
+# Install WebKit dependencies
 #===============================
 RUN sudo apt-get update -y
 RUN sudo apt-get install -y \
@@ -25,14 +25,18 @@ RUN sudo apt-get install -y \
     libgles2 \
     libvpx5
 
-# 3. Install Chromium dependencies
+#=================================
+# Install Chromium dependencies
+#=================================
 
 RUN apt-get install -y \
     libnss3 \
     libxss1 \
     libasound2
 
-# 4. Install Firefox dependencies
+#================================
+# Install Firefox dependencies
+#================================
 
 RUN apt-get install -y \
     libdbus-glib-1-2 \
