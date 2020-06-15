@@ -4,9 +4,9 @@ USER root
 
 RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
 
-#===============================
+#=============================
 # Install WebKit dependencies
-#===============================
+#=============================
 RUN sudo apt-get update -y
 RUN sudo apt-get install -y \
     libwoff1 \
@@ -25,18 +25,18 @@ RUN sudo apt-get install -y \
     libgles2 \
     libvpx5
 
-#=================================
+#===============================
 # Install Chromium dependencies
-#=================================
+#===============================
 
 RUN apt-get install -y \
     libnss3 \
     libxss1 \
     libasound2
 
-#================================
+#==============================
 # Install Firefox dependencies
-#================================
+#==============================
 
 RUN apt-get install -y \
     libdbus-glib-1-2 \
@@ -44,9 +44,9 @@ RUN apt-get install -y \
 
 USER seluser
 
-#================
+#=================
 # Install Node.JS
-#================
+#=================
 ENV NODE_VERSION=12.16.2
 ENV NVM_VERSION=0.35.3
 RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/install.sh | bash \
@@ -61,6 +61,19 @@ WORKDIR /home/seluser
 
 COPY package.json .
 RUN npm install
+
+#==================
+# Install saucectl
+#==================
+ARG SAUCECTL_VERSION="0.6.2"
+ENV SAUCECTL_BINARY=saucectl_${SAUCECTL_VERSION}_linux_64-bit.tar.gz
+RUN curl -L -o ${SAUCECTL_BINARY} \
+  -H "Accept: application/octet-stream" \
+  https://github.com/saucelabs/saucectl/releases/download/v${SAUCECTL_VERSION}/${SAUCECTL_BINARY} \
+  && tar -xvzf ${SAUCECTL_BINARY} \
+  && mkdir /home/seluser/bin/ \
+  && mv ./saucectl /home/seluser/bin/saucectl \
+  && rm ${SAUCECTL_BINARY}
 
 COPY . .
 RUN sudo chown -R seluser /home/seluser
