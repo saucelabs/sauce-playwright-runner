@@ -1,0 +1,24 @@
+name: Docker Release
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v*
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      -
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: saucelabs/stt-playwright-jest-node
+          tag_with_ref: true
+          cache_froms: saucelabs/stt-playwright-jest-node:latest
