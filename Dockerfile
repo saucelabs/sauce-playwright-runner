@@ -65,7 +65,7 @@ RUN npm install
 #==================
 # Install saucectl
 #==================
-ARG SAUCECTL_VERSION=0.6.2
+ARG SAUCECTL_VERSION=0.7.0
 ENV SAUCECTL_BINARY=saucectl_${SAUCECTL_VERSION}_linux_64-bit.tar.gz
 RUN curl -L -o ${SAUCECTL_BINARY} \
   -H "Accept: application/octet-stream" \
