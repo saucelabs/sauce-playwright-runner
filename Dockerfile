@@ -75,8 +75,7 @@ RUN curl -L -o ${SAUCECTL_BINARY} \
   && mv ./saucectl /home/seluser/bin/saucectl \
   && rm ${SAUCECTL_BINARY}
 
-COPY . .
-RUN sudo chown -R seluser /home/seluser
+COPY --chown=seluser:seluser . .
 
 #==================
 # ENTRYPOINT & CMD
