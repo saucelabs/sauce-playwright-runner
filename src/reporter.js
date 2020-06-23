@@ -11,10 +11,12 @@ const { LOG_FILES, HOME_DIR } = require('./constants')
 
 const log = logger('reporter')
 
+const region = process.env.SAUCE_REGION || 'us-west-1'
+
 const api = new SauceLabs({
     user: process.env.SAUCE_USERNAME,
     key: process.env.SAUCE_ACCESS_KEY,
-    region: 'us-west-1'
+    region: region
 })
 
 const jobName = `DevX ${Math.random()}`
@@ -48,6 +50,7 @@ module.exports = class TestrunnerReporter {
             await remote({
                 user: process.env.SAUCE_USERNAME,
                 key: process.env.SAUCE_ACCESS_KEY,
+                region: region,
                 connectionRetryCount: 0,
                 logLevel: 'silent',
                 capabilities: {
@@ -114,6 +117,16 @@ module.exports = class TestrunnerReporter {
             })
         ])
 
-        console.log(`\nOpen job details page: https://app.saucelabs.com/tests/${sessionId}\n`)
+        let domain
+
+        switch (region) {
+            case "us-west-1":
+                domain = "saucelabs.com"
+                break
+            default:
+                domain = `${region}.saucelabs.com`
+        }
+
+        console.log(`\nOpen job details page: https://app.${domain}/tests/${sessionId}\n`)
     }
 }
