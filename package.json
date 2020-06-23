@@ -1,7 +1,7 @@
 {
   "name": "sauce-playwright-runner",
   "version": "0.0.0",
-  "description": "Sauce Labs WDIO Test Runner",
+  "description": "Sauce Labs Playwright Test Runner",
   "main": "index.js",
   "scripts": {
     "build": "docker build -t saucelabs/${npm_package_name}:latest --cache-from saucelabs/${npm_package_name}:latest .",
@@ -11,14 +11,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/christian-bromann/sauce-wdio-runner.git"
+    "url": "https://github.com/saucelabs/sauce-playwright-runner.git"
   },
-  "author": "Christian Bromann",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/christian-bromann/sauce-wdio-runner/issues"
+    "url": "https://github.com/saucelabs/testrunner-toolkit/issues"
   },
-  "homepage": "https://github.com/christian-bromann/sauce-wdio-runner#readme",
+  "homepage": "https://github.com/saucelabs/testrunner-toolkit",
   "dependencies": {
     "@wdio/logger": "^5.16.10",
     "find-process": "^1.4.3",
