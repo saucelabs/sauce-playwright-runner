@@ -3,10 +3,12 @@ const path = require('path')
 const got = require('got')
 const playwright = require('playwright')
 
-const { CHROME_DEFAULT_PATH, JEST_TIMEOUT, SUPPORTED_BROWSER, LAUNCH_ARGS } = require('./constants')
+const { CHROME_DEFAULT_PATH, DEFAULT_JEST_TIMEOUT, SUPPORTED_BROWSER, LAUNCH_ARGS } = require('./constants')
 const { logHelper } = require('./utils')
 
-jest.setTimeout(process.env.JEST_TIMEOUT || JEST_TIMEOUT)
+const testTimeout = (parseInt(process.env.TEST_TIMEOUT) || DEFAULT_JEST_TIMEOUT)
+process.stdout.write(`Setting test timeout to ${testTimeout}sec\n\n`);
+jest.setTimeout(testTimeout * 1000)
 
 global.logs = []
 
