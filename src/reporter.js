@@ -42,6 +42,11 @@ module.exports = class TestrunnerReporter {
                 return
             }
 
+            let tags = process.env.SAUCE_TAGS
+            if (tags) {
+                tags = tags.split(",")
+            }
+
             /**
              * create a job shell by trying to initialise a session with
              * invalid capabilities
@@ -60,6 +65,7 @@ module.exports = class TestrunnerReporter {
                     'sauce:options': {
                         devX: true,
                         name: jobName,
+                        tags: tags,
                         build
                     }
                 }
