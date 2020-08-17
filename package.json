@@ -8,7 +8,7 @@
     "docker:push": "docker push saucelabs/${npm_package_name}:latest",
     "start": "docker run --env SAUCE_USERNAME --env SAUCE_ACCESS_KEY -d saucelabs/${npm_package_name}:latest",
     "transpile": "node ./transpile-typescript",
-    "test": "DISPLAY=\"$(cat DISPLAY)\" DEBUG=\"playwright:*\" jest --config=./.config/jest.config.js --runInBand"
+    "test": "npm run transpile && DISPLAY=\"$(cat DISPLAY)\" DEBUG=\"playwright:*\" jest --config=./.config/jest.config.js --runInBand"
   },
   "repository": {
     "type": "git",
