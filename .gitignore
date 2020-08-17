@@ -108,3 +108,4 @@ dist
 /*.js
 !jest.config.js
 /tests/**/*.js
+!transpile-typescript.js
