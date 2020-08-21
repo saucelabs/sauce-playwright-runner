@@ -26,8 +26,6 @@ beforeAll(async () => {
             isEnabled: () => true,
             log: logHelper
         }
-    }).catch((err) => {
-        console.error(`Couldn't start Playwright: ${err.message}`)
     })
 
     // Create a new incognito browser context.
