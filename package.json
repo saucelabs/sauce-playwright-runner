@@ -7,8 +7,7 @@
     "build": "docker build -t saucelabs/${npm_package_name}:latest --cache-from saucelabs/${npm_package_name}:latest .",
     "docker:push": "docker push saucelabs/${npm_package_name}:latest",
     "start": "docker run --env SAUCE_USERNAME --env SAUCE_ACCESS_KEY -d saucelabs/${npm_package_name}:latest",
-    "transpile": "node ./transpile-typescript",
-    "test": "npm run transpile && DISPLAY=\"$(cat DISPLAY)\" DEBUG=\"playwright:*\" jest --config=./.config/jest.config.js --runInBand"
+    "test": "DISPLAY=\"$(cat DISPLAY)\" DEBUG=\"playwright:*\" jest --config=./.config/jest.config.js --runInBand"
   },
   "repository": {
     "type": "git",
@@ -29,8 +28,6 @@
     "playwright": "^1.0.0",
     "saucelabs": "^4.4.0",
     "shelljs": "^0.8.3",
-    "webdriverio": "^5.21.0",
-    "typescript": "^3.9.7",
-    "glob": "^7.1.6"
+    "webdriverio": "^5.21.0"
   }
 }

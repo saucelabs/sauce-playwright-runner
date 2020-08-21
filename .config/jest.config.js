@@ -7,15 +7,15 @@ module.exports = {
     testEnvironment: 'node',
     testRunner: 'jest-circus/runner',
     setupFilesAfterEnv: [
-        path.join(HOME_DIR, 'src', 'jest.setup.js'),
-        path.join(HOME_DIR, 'src', 'jest.teardown.js'),
+        `${HOME_DIR}/src/jest.setup.js`,
+        `${HOME_DIR}/src/jest.teardown.js`
     ],
     reporters: [
         `default`,
-        path.join(HOME_DIR, 'src', 'reporter.js'),
+        `${HOME_DIR}/src/reporter.js`
     ],
     testMatch: [
-        path.join(HOME_DIR, 'tests', '?(*.)+(spec|test).js?(x)'),
-        path.join(HOME_DIR, 'tests', '**', '?(*.)+(spec|test).js?(x)'),
+        '**/seluser/tests/?(*.)+(spec|test).[jt]s?(x)',
+        '**/seluser/tests/**/?(*.)+(spec|test).[jt]s?(x)'
     ]
 };
