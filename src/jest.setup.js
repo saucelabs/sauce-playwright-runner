@@ -26,11 +26,9 @@ beforeAll(async () => {
             isEnabled: () => true,
             log: logHelper
         }
-    }).catch((err) => { err })
-
-    if (global.browser.err) {
-        throw new Error(`Couldn't start Playwright: ${global.browser.err.message}`)
-    }
+    }).catch((err) => {
+        console.error(`Couldn't start Playwright: ${err.message}`)
+    })
 
     // Create a new incognito browser context.
     global.context = await browser.newContext();
