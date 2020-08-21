@@ -60,6 +60,11 @@ WORKDIR /home/seluser
 COPY package.json .
 RUN npm install
 
+# Playwright caches the downloaded browser by default in ~/.cache/ms-playwright
+# However, running the container in CI may result in a different active user and therefore home folder.
+# That's why we let Playwright know where the location actually is.
+ENV PLAYWRIGHT_BROWSERS_PATH=/home/seluser/.cache/ms-playwright
+
 #==================
 # Install saucectl
 #==================
