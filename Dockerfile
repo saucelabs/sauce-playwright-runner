@@ -79,7 +79,8 @@ RUN curl -L -o ${SAUCECTL_BINARY} \
   && rm ${SAUCECTL_BINARY}
 
 COPY --chown=seluser:seluser . .
-
+RUN chmod 777 -R /home/seluser/
+USER seluser
 #==================
 # ENTRYPOINT & CMD
 #==================
