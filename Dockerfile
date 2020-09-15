@@ -60,7 +60,8 @@ ENV PATH="/home/seluser/bin:/home/seluser/.nvm/versions/node/v${NODE_VERSION}/bi
 WORKDIR /home/seluser
 
 COPY package.json .
-RUN npm install
+COPY package-lock.json .
+RUN npm ci
 
 # Playwright caches the downloaded browser by default in ~/.cache/ms-playwright
 # However, running the container in CI may result in a different active user and therefore home folder.
