@@ -105,6 +105,7 @@ RUN curl -L -o ${SAUCECTL_BINARY} \
   && rm ${SAUCECTL_BINARY}
 
 COPY --chown=seluser:seluser . .
+RUN mkdir tests/
 
 
 # Workaround for permissions in CI if run with a different user

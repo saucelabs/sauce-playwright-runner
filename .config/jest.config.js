@@ -2,18 +2,20 @@ const path = require('path')
 const fs = require('fs');
 const yaml = require('js-yaml');
 const {promisify} = require('util');
-const {HOME_DIR} = require('../src/constants')
+const {HOME_DIR} = require('../src/constants');
+let { exec } = require('child_process');
 
 // Promisify callback functions
 const fileExists = promisify(fs.exists)
 const readFile = promisify(fs.readFile)
+exec = promisify(exec);
 
 // the default test matching behavior for versions <= v0.1.5
 const DefaultRunCfg = {
     projectPath: `${HOME_DIR}`,
     match: [
-        `${HOME_DIR}/tests/?(*.)+(spec|test).[jt]s?(x)`,
-        `${HOME_DIR}/tests/**/?(*.)+(spec|test).[jt]s?(x)`
+        `${HOME_DIR}/tests/?(*.)+(spec|test).js?(x)`,
+        `${HOME_DIR}/tests/**/?(*.)+(spec|test).js?(x)`
     ]
 }
 
@@ -40,7 +42,8 @@ function resolveTestMatches(runCfg) {
 module.exports = async () => {
     const runCfgPath = path.join(HOME_DIR, 'run.yaml')
     const runCfg = await loadRunConfig(runCfgPath)
-    const testMatch = resolveTestMatches(runCfg)
+
+    const testMatch = resolveTestMatches(runCfg);
 
     return {
         rootDir: HOME_DIR,
@@ -54,6 +57,6 @@ module.exports = async () => {
             `default`,
             `${HOME_DIR}/src/reporter.js`
         ],
-        testMatch: testMatch,
+        testMatch,
     };
 };
