@@ -19,7 +19,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: saucelabs/stt-playwright-jest-node
           tag_with_ref: true
-          cache_froms: saucelabs/stt-playwright-jest-node:latest
+          #cache_froms: saucelabs/stt-playwright-jest-node:latest
           push: false
       
       # Checkout the latest saucectl
