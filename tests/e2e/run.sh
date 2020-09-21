@@ -3,4 +3,5 @@ for file in ./tests/e2e/*.yml
 do
     echo $file
     $SAUCE_CTL_BINARY run --config  $file
+    echo "STATUS CODE: $?"
 done
