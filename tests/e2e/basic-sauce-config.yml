@@ -11,8 +11,18 @@ files:
 suites:
   - name: "saucy test"
     match: ".*.(spec|test).js$"
+    capabilities:
+      browserName: chromium
+  - name: "saucy test"
+    match: ".*.(spec|test).js$"
+    capabilities:
+      browserName: webkit
+  - name: "saucy test"
+    match: ".*.(spec|test).js$"
+    capabilities:
+      browserName: firefox
 image:
-  base: saucelabs/stt-puppeteer-jest-node
+  base: saucelabs/stt-playwright-jest-node
   version: latest
 sauce:
   region: us-west-1

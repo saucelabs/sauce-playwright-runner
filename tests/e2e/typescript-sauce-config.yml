@@ -12,7 +12,7 @@ suites:
   - name: "saucy test"
     match: ".*.(spec|test).js$"
 image:
-  base: saucelabs/stt-puppeteer-jest-node
+  base: saucelabs/stt-playwright-jest-node
   version: latest
 sauce:
   region: us-west-1
