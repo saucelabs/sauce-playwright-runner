@@ -2,12 +2,16 @@ FROM saucelabs/testrunner-image:v0.1.0
 
 USER root
 
+# https://github.com/microsoft/playwright/blob/master/docs/docker/Dockerfile.bionic
+# ^ Microsoft's official playwright bionic docker container
+
 RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
 
 #=============================
 # Install WebKit dependencies
 #=============================
 RUN sudo apt-get update -y
+#RUN sudo apt-get install -y --no-install-recommends \
 RUN sudo apt-get install -y \
     libwoff1 \
     libopus0 \
@@ -23,7 +27,22 @@ RUN sudo apt-get install -y \
     libxslt1.1 \
     libevent-2.1-6 \
     libgles2 \
-    libvpx5
+    libvpx5 \
+    libxcomposite1 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libepoxy0 \
+    libgtk-3-0 \
+    libharfbuzz-icu0
+    
+# ==================================================================
+# Install gstreamer and plugins to support video playback in WebKit
+# ==================================================================
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgstreamer-gl1.0-0 \
+    libgstreamer-plugins-bad1.0-0 \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-libav
 
 #===============================
 # Install Chromium dependencies
@@ -41,6 +60,10 @@ RUN apt-get install -y \
 RUN apt-get install -y \
     libdbus-glib-1-2 \
     libxt6
+
+# (Optional) Install XVFB if there's a need to run browsers in headful mode
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    xvfb
 
 USER seluser
 
@@ -61,7 +84,7 @@ WORKDIR /home/seluser
 
 COPY package.json .
 COPY package-lock.json .
-RUN npm ci
+RUN npm ci --production
 
 # Playwright caches the downloaded browser by default in ~/.cache/ms-playwright
 # However, running the container in CI may result in a different active user and therefore home folder.
@@ -82,6 +105,7 @@ RUN curl -L -o ${SAUCECTL_BINARY} \
   && rm ${SAUCECTL_BINARY}
 
 COPY --chown=seluser:seluser . .
+
 
 # Workaround for permissions in CI if run with a different user
 RUN chmod 777 -R /home/seluser/
