@@ -9,15 +9,15 @@ metadata:
 files:
   - tests/fixtures/basic/
 suites:
-  - name: "saucy test"
+  - name: "basic chromium test"
     match: ".*.(spec|test).js$"
     capabilities:
       browserName: chromium
-  - name: "saucy test"
+  - name: "basic webkit test"
     match: ".*.(spec|test).js$"
     capabilities:
       browserName: webkit
-  - name: "saucy test"
+  - name: "basic firefox test"
     match: ".*.(spec|test).js$"
     capabilities:
       browserName: firefox

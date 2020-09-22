@@ -2,7 +2,7 @@ FROM saucelabs/testrunner-image:v0.1.0
 
 USER root
 
-# https://github.com/microsoft/playwright/blob/master/docs/docker/Dockerfile.bionic
+# For reference: https://github.com/microsoft/playwright/blob/master/docs/docker/Dockerfile.bionic
 # ^ Microsoft's official playwright bionic docker container
 
 RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
@@ -11,7 +11,6 @@ RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-ke
 # Install WebKit dependencies
 #=============================
 RUN sudo apt-get update -y
-#RUN sudo apt-get install -y --no-install-recommends \
 RUN sudo apt-get install -y \
     libwoff1 \
     libopus0 \
@@ -105,8 +104,6 @@ RUN curl -L -o ${SAUCECTL_BINARY} \
   && rm ${SAUCECTL_BINARY}
 
 COPY --chown=seluser:seluser . .
-RUN mkdir tests/
-
 
 # Workaround for permissions in CI if run with a different user
 RUN chmod 777 -R /home/seluser/
