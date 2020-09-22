@@ -1,0 +1,28 @@
+apiVersion: v1
+metadata:
+  name: Feature XYZ
+  tags:
+    - e2e
+    - release team
+    - other tag
+  build: Release $CI_COMMIT_SHORT_SHA
+files:
+  - tests/fixtures/basic/
+suites:
+  - name: "basic chromium test"
+    match: ".*.(spec|test).js$"
+    capabilities:
+      browserName: chromium
+  - name: "basic webkit test"
+    match: ".*.(spec|test).js$"
+    capabilities:
+      browserName: webkit
+  - name: "basic firefox test"
+    match: ".*.(spec|test).js$"
+    capabilities:
+      browserName: firefox
+image:
+  base: saucelabs/stt-playwright-jest-node
+  version: latest
+sauce:
+  region: us-west-1

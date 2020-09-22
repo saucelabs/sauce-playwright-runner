@@ -1,4 +1,4 @@
-name: Docker Build
+name: Docker Test
 
 on:
   pull_request:
@@ -6,12 +6,18 @@ on:
       - master
 
 jobs:
-  build:
+  build_and_test:
     runs-on: ubuntu-latest
     steps:
       -
         name: Checkout
         uses: actions/checkout@v2
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
       -
         uses: docker/build-push-action@v1
         with:
@@ -21,3 +27,23 @@ jobs:
           tag_with_ref: true
           cache_froms: saucelabs/stt-playwright-jest-node:latest
           push: false
+      
+      - run: make docker
+        name: Make Docker
+
+      # Checkout the latest saucectl
+      - uses: actions/checkout@v2
+        with:
+          repository: saucelabs/saucectl
+          path: saucectl
+
+      # Build saucectl
+      - run: pushd saucectl && make build && popd
+        name: Build Saucectl and run E2E tests
+
+      # Run e2e tests
+      - run: bash ./tests/e2e/run.sh
+        env:
+          SKIP_CI: true
+          SAUCE_CTL_BINARY: ./saucectl/saucectl
+        name: Build Saucectl and run E2E tests

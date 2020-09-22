@@ -1,4 +1,4 @@
-/tests/**/*.js
+/tests/
 ./*.js
 ./*.json
 !package.json
