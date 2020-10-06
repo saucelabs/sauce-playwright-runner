@@ -47,3 +47,33 @@ jobs:
           SKIP_CI: true
           SAUCE_CTL_BINARY: ./saucectl/saucectl
         name: Build Saucectl and run E2E tests
+      # TODO: Re-enable these when saucectl accepts relative paths
+      #- run: bash ./tests/e2e/run.sh
+        #env:
+          #SKIP_CI: true
+          #SAUCE_CTL_BINARY: ./saucectl/saucectl
+        #name: Build Saucectl and run E2E tests
+  build-ubuntu-bundle-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      - 
+        name: Bundle Directory
+        run: bash ./scripts/bundle.sh
+      - 
+        name: List bundle contents
+        run: ls -R bundle/
+  build-windows-bundle-and-test:
+    runs-on: windows-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      - 
+        name: Bundle Directory
+        run: bash ./scripts/bundle.sh
+      - 
+        name: List bundle contents
+        run: ls -R bundle/

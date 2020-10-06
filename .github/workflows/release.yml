@@ -1,12 +1,13 @@
+
+
 name: Docker Release
 
 on:
   push:
     tags:
       - 'v*.*.*'
-
-jobs:
-  release:
+jobs:  
+  release-docker:
     runs-on: ubuntu-latest
     steps:
       -
@@ -35,11 +36,10 @@ jobs:
           context: .
           file: ./Dockerfile
           tags: |
-            saucelabs/stt-playwright-jest-node:latest
-            saucelabs/stt-playwright-jest-node:${{ steps.prep.outputs.version }}
-
-  release-template-bundle:
-    runs-on: ubuntu-latest
+            saucelabs/stt-playwright-mocha-node:latest
+            saucelabs/stt-playwright-mocha-node:${{ steps.prep.outputs.version }}
+  release-windows-bundle:
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -48,43 +48,31 @@ jobs:
         with:
           node-version: 14.x
       - run: npm install
-      - name: Prepare
-        id: prep
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/}
-          echo ::set-output name=version::${VERSION}
-      - name: Update Release version
-        run: sed -i "s/##VERSION##/${{ steps.prep.outputs.version }}/g" .saucetpl/.sauce/config.yml
-      - name: Archive template
-        run: cd .saucetpl && tar -czf ../saucetpl.tar.gz .
-      - name: Check if release exists
-        id: check_release
-        run: echo ::set-output name=success::$(curl -s -o /dev/null -w "%{http_code}" https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ steps.prep.outputs.version }})
-      - name: Create Release
-        id: create_release
-        if: steps.check_release.outputs.success != '200'
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.prep.outputs.version }}
-          release_name: Release ${{ steps.prep.outputs.version }}
-          body: Release ${{ steps.prep.outputs.version }}
-          draft: false
       - name: Get release ID
         id: get_release_id
         run: |
           echo "::set-output name=release_id::$(node ./.github/workflows/helpers/print-release-id.js)"
         env:
           GH_REF: ${{ github.ref }}
-          GH_REPO: ${{ github.repository }}
-      - name: Upload Template Asset
-        id: upload-release-asset
+      - name: Print release id
+        run: echo ${{ steps.get_release_id.outputs.release_id }}
+      - name: Bundle Directory
+        run: bash ./scripts/bundle.sh
+      - name: List bundle contents
+        run: ls -R bundle/
+      - name: Archive bundle
+        uses: azure/powershell@v1
+        with:
+          inlineScript: |
+            Compress-Archive bundle/ sauce-playwright-win.zip
+          azPSVersion: '3.1.0'
+      - name: Upload Release Asset
+        id: upload-release-asset 
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.release_id }}/assets?name=saucetpl.tar.gz
-          asset_path: ./saucetpl.tar.gz
-          asset_name: saucetpl.tar.gz
-          asset_content_type: application/tar+gzip
+          upload_url: https://uploads.github.com/repos/saucelabs/sauce-playwright-runner/releases/${{ steps.get_release_id.outputs.release_id }}/assets?name=sauce-playwright-runner.zip
+          asset_path: ./sauce-playwright-win.zip
+          asset_name: sauce-playwright-win.zip
+          asset_content_type: application/zip

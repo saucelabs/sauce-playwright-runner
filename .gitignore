@@ -110,4 +110,11 @@ dist
 tests/fixtures/typescript/
 /.sauce/
 
-run.yaml
+# saucectl configuration folder
+.sauce
+
+results/
+
+tests/fixtures/playwright-tests/typescript-*/**/*.js
+
+bundle/
