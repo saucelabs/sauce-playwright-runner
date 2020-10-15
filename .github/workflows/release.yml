@@ -58,7 +58,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: https://uploads.github.com/repos/saucelabs/sauce-cypress-runner/releases/${{ steps.prep.outputs.version }}/assets?name=saucetpl.tar.gz
+          upload_url: https://uploads.github.com/repos/saucelabs/sauce-playwright-runner/releases/${{ steps.prep.outputs.version }}/assets?name=saucetpl.tar.gz
           asset_path: ./saucetpl.tar.gz
           asset_name: saucetpl.tar.gz
           asset_content_type: application/tar+gzip
