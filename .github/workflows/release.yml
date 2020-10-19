@@ -37,3 +37,38 @@ jobs:
           tags: |
             saucelabs/stt-playwright-jest-node:latest
             saucelabs/stt-playwright-jest-node:${{ steps.prep.outputs.version }}
+
+  release-template-bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Prepare
+        id: prep
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo ::set-output name=version::${VERSION}
+      - name: Update Release version
+        run: sed -i "s/##VERSION##/${{ steps.prep.outputs.version }}/g" .saucetpl/.sauce/config.yml
+      - name: Archive template
+        run: tar --strip-components=1 -czf saucetpl.tar.gz .saucetpl
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.prep.outputs.version }}
+          release_name: Release ${{ steps.prep.outputs.version }}
+          body: Release ${{ steps.prep.outputs.version }}
+          draft: false
+      - name: Upload Template Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: https://uploads.github.com/repos/saucelabs/sauce-playwright-runner/releases/${{ steps.create_release.outputs.id }}/assets?name=saucetpl.tar.gz
+          asset_path: ./saucetpl.tar.gz
+          asset_name: saucetpl.tar.gz
+          asset_content_type: application/tar+gzip
