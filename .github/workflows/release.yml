@@ -49,7 +49,7 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/}
           echo ::set-output name=version::${VERSION}
       - name: Update Release version
-        run: sed -i "s/##VERSION##/${{ steps.prep.outputs.version }}/g" .saucetpl/.sauce/config.yaml
+        run: sed -i "s/##VERSION##/${{ steps.prep.outputs.version }}/g" .saucetpl/.sauce/config.yml
       - name: Archive template
         run: tar --strip-components 1 -czf saucetpl.tar.gz .saucetpl
       - name: Create Release
