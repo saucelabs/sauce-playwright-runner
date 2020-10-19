@@ -51,7 +51,7 @@ jobs:
       - name: Update Release version
         run: sed -i "s/##VERSION##/${{ steps.prep.outputs.version }}/g" .saucetpl/.sauce/config.yml
       - name: Archive template
-        run: tar --strip-components=1 -czf saucetpl.tar.gz .saucetpl
+        run: cd .saucetpl && tar -czf ../saucetpl.tar.gz .
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
