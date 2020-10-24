@@ -1,0 +1,11 @@
+#!/usr/bin/env node
+
+const child_process = require('child_process');
+
+(async () => {
+    const child = child_process.spawn('script',
+        ['-q', '-f', '-e', '-c',
+        ['jest', '--no-colors', ...process.argv.slice(2)].join(" "),
+         'playwright.typescript'],
+         { stdio: 'inherit' });
+})();
