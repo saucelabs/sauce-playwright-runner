@@ -100,8 +100,6 @@ module.exports = class TestrunnerReporter {
 
         await exec('stop-video')
 
-        // Process script output to have a clean log
-        await exec(`< ${PLAYWRIGHT_SCRIPT} perl -pe 's/\\e([^\\[\\]]|\\[.*?[a-zA-Z]|\\].*?\\a)//g' | col -b > ${PLAYWRIGHT_LOG}`)
         const logFilePath = path.join(HOME_DIR, 'log.json')
         const containterLogFiles = LOG_FILES.filter(
             (path) => fs.existsSync(path))

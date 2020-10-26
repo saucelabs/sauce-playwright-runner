@@ -2,7 +2,6 @@ exports.HOME_DIR = '/home/seluser'
 exports.CHROME_DEFAULT_PATH = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 exports.DEFAULT_JEST_TIMEOUT = 60 // 1min
 
-exports.PLAYWRIGHT_SCRIPT = exports.HOME_DIR + '/playwright.typescript'
 exports.PLAYWRIGHT_LOG = exports.HOME_DIR + '/playwright.log'
 
 const LOG_DIR = '/var/log/cont'
