@@ -7,7 +7,7 @@ const SauceLabs = require('saucelabs').default
 const { remote } = require('webdriverio')
 
 const { exec } = require('./utils')
-const { LOG_FILES, HOME_DIR, PLAYWRIGHT_SCRIPT, PLAYWRIGHT_LOG } = require('./constants')
+const { LOG_FILES, HOME_DIR } = require('./constants')
 
 const log = logger('reporter')
 
