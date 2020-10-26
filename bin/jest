@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
+const { createWriteStream } = require('fs');
+const path = require('path');
 const child_process = require('child_process');
 
 (async () => {
-    const fd = fs.createWriteStream('./playwright.log');
+    const fd = createWriteStream(path.join(__dirname, '../playwright.log'));
     child = child_process.spawn('jest', ['--no-colors', ...process.argv.slice(2)]);
 
     child.stdout.pipe(process.stdout);
