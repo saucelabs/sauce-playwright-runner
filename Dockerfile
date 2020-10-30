@@ -10,8 +10,7 @@ RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-ke
 #=============================
 # Install WebKit dependencies
 #=============================
-RUN sudo apt-get update -y
-RUN sudo apt-get install -y \
+RUN sudo apt-get update && sudo apt-get install -y \
     libwoff1 \
     libopus0 \
     libwebp6 \
