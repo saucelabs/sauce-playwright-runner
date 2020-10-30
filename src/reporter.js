@@ -19,7 +19,8 @@ const api = new SauceLabs({
     region: region
 })
 
-const jobName = `DevX ${Math.random()}`
+// SAUCE_JOB_NAME is only available for saucectl >= 0.16, hence the fallback
+const jobName = process.env.SAUCE_JOB_NAME || `DevX Playwright Test Run - ${(new Date()).getTime()}`;
 let build = process.env.SAUCE_BUILD_NAME
 
 /**
@@ -87,7 +88,6 @@ module.exports = class TestrunnerReporter {
     async onRunComplete (test, { testResults, numFailedTests }) {
         log.info('Finished testrun!')
 
-        const filename = path.basename(testResults[0].testFilePath)
         const hasPassed = numFailedTests === 0
         const sessionId = await this.sessionId
 
@@ -101,6 +101,8 @@ module.exports = class TestrunnerReporter {
         await exec('stop-video')
 
         const logFilePath = path.join(HOME_DIR, 'log.json')
+        fs.writeFileSync(logFilePath, JSON.stringify(testResults, null, 4))
+
         const containterLogFiles = LOG_FILES.filter(
             (path) => fs.existsSync(path))
 
@@ -124,7 +126,7 @@ module.exports = class TestrunnerReporter {
                 (e) => log.error('upload failed:', e.stack)
             ),
             api.updateJob(process.env.SAUCE_USERNAME, sessionId, {
-                name: filename,
+                name: jobName,
                 passed: hasPassed
             })
         ])
