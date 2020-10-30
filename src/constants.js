@@ -15,7 +15,8 @@ exports.LOG_FILES = [
     LOG_DIR + '/xvfb-tryouts-stderr.log',
     LOG_DIR + '/xvfb-tryouts-stdout.log',
     exports.HOME_DIR + '/videos/video.mp4',
-    exports.HOME_DIR + '/docker.log'
+    exports.HOME_DIR + '/docker.log',
+    exports.HOME_DIR + '/console.log',
 ]
 
 exports.SUPPORTED_BROWSER = ['chromium', 'firefox', 'webkit']
