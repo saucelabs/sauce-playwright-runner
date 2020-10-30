@@ -20,6 +20,7 @@ exports.LOG_FILES = [
 ]
 
 exports.SUPPORTED_BROWSER = ['chromium', 'firefox', 'webkit']
+exports.DESIRED_BROWSER = process.env.BROWSER_NAME || 'chromium'
 exports.LAUNCH_ARGS = {
     chromium: ['--no-sandbox'],
     webkit: [],

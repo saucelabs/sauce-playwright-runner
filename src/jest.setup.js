@@ -3,7 +3,7 @@ const path = require('path')
 const got = require('got')
 const playwright = require('playwright')
 
-const { CHROME_DEFAULT_PATH, DEFAULT_JEST_TIMEOUT, SUPPORTED_BROWSER, LAUNCH_ARGS } = require('./constants')
+const { CHROME_DEFAULT_PATH, DEFAULT_JEST_TIMEOUT, SUPPORTED_BROWSER, DESIRED_BROWSER, LAUNCH_ARGS } = require('./constants')
 const { logHelper } = require('./utils')
 
 const testTimeout = (parseInt(process.env.TEST_TIMEOUT) || DEFAULT_JEST_TIMEOUT)
@@ -13,15 +13,13 @@ jest.setTimeout(testTimeout * 1000)
 global.logs = []
 
 beforeAll(async () => {
-    const desiredBrowser = process.env.BROWSER_NAME || 'chromium'
-
-    if (!playwright[desiredBrowser]) {
-        throw new Error(`browser name "${desiredBrowser}" not supported, choose between ${SUPPORTED_BROWSER.join(', ')}`)
+    if (!playwright[DESIRED_BROWSER]) {
+        throw new Error(`browser name "${DESIRED_BROWSER}" not supported, choose between ${SUPPORTED_BROWSER.join(', ')}`)
     }
 
-    global.browser = await playwright[desiredBrowser].launch({
+    global.browser = await playwright[DESIRED_BROWSER].launch({
         headless: !Boolean(process.env.DISPLAY),
-        args: LAUNCH_ARGS[desiredBrowser],
+        args: LAUNCH_ARGS[DESIRED_BROWSER],
         logger: {
             isEnabled: () => true,
             log: logHelper

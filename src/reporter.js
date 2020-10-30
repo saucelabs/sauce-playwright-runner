@@ -7,7 +7,7 @@ const SauceLabs = require('saucelabs').default
 const { remote } = require('webdriverio')
 
 const { exec } = require('./utils')
-const { LOG_FILES, HOME_DIR } = require('./constants')
+const { LOG_FILES, HOME_DIR, DESIRED_BROWSER } = require('./constants')
 
 const log = logger('reporter')
 
@@ -60,7 +60,7 @@ module.exports = class TestrunnerReporter {
                 connectionRetryCount: 0,
                 logLevel: 'silent',
                 capabilities: {
-                    browserName: 'Chrome',
+                    browserName: DESIRED_BROWSER,
                     platformName: '*',
                     browserVersion: '*',
                     'sauce:options': {
