@@ -8,7 +8,6 @@ const { remote } = require('webdriverio')
 
 const { exec } = require('./utils')
 const { LOG_FILES, HOME_DIR, DESIRED_BROWSER } = require('./constants')
-const { create } = require('domain')
 
 const log = logger('reporter')
 
@@ -51,40 +50,36 @@ const createJobShell = async (tags, api) => {
         'metadata': {},
         'tags': tags,
         'attributes': {
-          'container': false,
-          'browser': DESIRED_BROWSER,
-          'browser_version': '*',
-          'commands_not_successful': 1, // to be removed
-          'devx': true,
-          'os': 'test', // need collect
-          'performance_enabled': 'true', // to be removed
-          'public': 'team',
-          'record_logs': true, // to be removed
-          'record_mp4': 'true', // to be removed
-          'record_screenshots': 'true', // to be removed
-          'record_video': 'true', // to be removed
-          'video_url': 'test', // remove
-          'log_url': 'test' // remove
+            'container': false,
+            'browser': DESIRED_BROWSER,
+            'browser_version': '*',
+            'commands_not_successful': 1, // to be removed
+            'devx': true,
+            'os': 'test', // need collect
+            'performance_enabled': 'true', // to be removed
+            'public': 'team',
+            'record_logs': true, // to be removed
+            'record_mp4': 'true', // to be removed
+            'record_screenshots': 'true', // to be removed
+            'record_video': 'true', // to be removed
+            'video_url': 'test', // remove
+            'log_url': 'test' // remove
         }
-      };
+    };
     
-      let sessionId;
-      await Promise.all([
-        api.createResultJob(
-          body
-        ).then(
-          (resp) => {
-            sessionId = resp.id;
-          },
-          (e) => console.error('Create job failed: ', e.stack)
-        )
-      ]);
-    
-      if (undefined === sessionId || 0 === sessionId) {
-        return 0;
-      }
-    
-      return sessionId;
+    let sessionId;
+    await Promise.all([
+      api.createResultJob(
+        body
+      ).then(
+        (resp) => {
+          sessionId = resp.id;
+        },
+        (e) => console.error('Create job failed: ', e.stack)
+      )
+    ]);
+  
+    return sessionId;
 };
 
 const createjobLegacy = async (tags, api) => {
@@ -135,7 +130,7 @@ module.exports = class TestrunnerReporter {
 
         log.info('Create job shell')
         if (process.env.ENABLE_PLATFORM === 'true') {
-            this.sessionId = createJobShell(tags, api);
+            this.sessionId = createJobShell(tags, api)
         } else {
             this.sessionId = createjobLegacy(tags, api)
         }
@@ -155,7 +150,8 @@ module.exports = class TestrunnerReporter {
         /**
          * only upload assets if a session was initiated before
          */
-        if (!sessionId) {
+
+        if (!sessionId || 0 === sessionId) {
             return
         }
 
