@@ -151,7 +151,7 @@ module.exports = class TestrunnerReporter {
          * only upload assets if a session was initiated before
          */
 
-        if (!sessionId || 0 === sessionId) {
+        if (!sessionId) {
             return
         }
 
