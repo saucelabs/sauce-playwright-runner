@@ -32,6 +32,9 @@ for (const match of buildMatches) {
     build = build.replace(match, replacement || '')
 }
 
+// NOTE: this function is not available currently.
+// It will be ready once data store API actually works.
+// Keep these pieces of code for future integration.
 const createJobShell = async (tags, api) => {
     const body = {
         'name': jobName,
