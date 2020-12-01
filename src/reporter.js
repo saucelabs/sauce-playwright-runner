@@ -132,7 +132,7 @@ module.exports = class TestrunnerReporter {
         }
 
         log.info('Create job shell')
-        if (process.env.ENABLE_PLATFORM === 'true') {
+        if (process.env.ENABLE_DATA_STORE) {
             this.sessionId = createJobShell(tags, api)
         } else {
             this.sessionId = createjobLegacy(tags, api)
