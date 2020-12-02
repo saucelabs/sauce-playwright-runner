@@ -32,52 +32,111 @@ for (const match of buildMatches) {
     build = build.replace(match, replacement || '')
 }
 
+// NOTE: this function is not available currently.
+// It will be ready once data store API actually works.
+// Keep these pieces of code for future integration.
+const createJobShell = async (tags, api) => {
+    const body = {
+        name: jobName,
+        acl: [
+          {
+            type: 'username',
+            value: process.env.SAUCE_USERNAME
+          }
+        ],
+        //'start_time: startTime,
+        //'end_time: endTime,
+        source: 'vdc', // will use devx
+        platform: 'webdriver', // will use playwright
+        status: 'complete',
+        live: false,
+        metadata: {},
+        tags: tags,
+        attributes: {
+            container: false,
+            browser: DESIRED_BROWSER,
+            browser_version: '*',
+            commands_not_successful: 1, // to be removed
+            devx: true,
+            os: 'test', // need collect
+            performance_enabled: 'true', // to be removed
+            public: 'team',
+            record_logs: true, // to be removed
+            record_mp4: 'true', // to be removed
+            record_screenshots: 'true', // to be removed
+            record_video: 'true', // to be removed
+            video_url: 'test', // remove
+            log_url: 'test' // remove
+        }
+    };
+    
+    let sessionId;
+    await Promise.all([
+      api.createResultJob(
+        body
+      ).then(
+        (resp) => {
+          sessionId = resp.id;
+        },
+        (e) => console.error('Create job failed: ', e.stack)
+      )
+    ]);
+  
+    return sessionId || 0;
+};
+
+const createjobLegacy = async (tags, api) => {
+    /**
+     * don't try to create a job if no credentials are set
+     */
+    if (!process.env.SAUCE_USERNAME || !process.env.SAUCE_ACCESS_KEY) {
+        return
+    }
+
+    /**
+     * create a job shell by trying to initialise a session with
+     * invalid capabilities
+     * ToDo(Christian): remove once own testrunner job API is available
+     */
+    await remote({
+        user: process.env.SAUCE_USERNAME,
+        key: process.env.SAUCE_ACCESS_KEY,
+        region: region,
+        connectionRetryCount: 0,
+        logLevel: 'silent',
+        capabilities: {
+            browserName: DESIRED_BROWSER,
+            platformName: '*',
+            browserVersion: '*',
+            'sauce:options': {
+                devX: true,
+                name: jobName,
+                tags: tags,
+                build
+            }
+        }
+    }).catch((err) => err)
+
+    const { jobs } = await api.listJobs(
+        process.env.SAUCE_USERNAME,
+        { limit: 1, full: true, name: jobName }
+    )
+    return jobs && jobs.length && jobs[0].id;
+};
+
 module.exports = class TestrunnerReporter {
     constructor () {
+        let tags = process.env.SAUCE_TAGS
+        if (tags) {
+            tags = tags.split(",")
+        }
+
         log.info('Create job shell')
-        this.sessionId = (async () => {
-            /**
-             * don't try to create a job if no credentials are set
-             */
-            if (!process.env.SAUCE_USERNAME || !process.env.SAUCE_ACCESS_KEY) {
-                return
-            }
-
-            let tags = process.env.SAUCE_TAGS
-            if (tags) {
-                tags = tags.split(",")
-            }
-
-            /**
-             * create a job shell by trying to initialise a session with
-             * invalid capabilities
-             * ToDo(Christian): remove once own testrunner job API is available
-             */
-            await remote({
-                user: process.env.SAUCE_USERNAME,
-                key: process.env.SAUCE_ACCESS_KEY,
-                region: region,
-                connectionRetryCount: 0,
-                logLevel: 'silent',
-                capabilities: {
-                    browserName: DESIRED_BROWSER,
-                    platformName: '*',
-                    browserVersion: '*',
-                    'sauce:options': {
-                        devX: true,
-                        name: jobName,
-                        tags: tags,
-                        build
-                    }
-                }
-            }).catch((err) => err)
-
-            const { jobs } = await api.listJobs(
-                process.env.SAUCE_USERNAME,
-                { limit: 1, full: true, name: jobName }
-            )
-            return jobs && jobs.length && jobs[0].id
-        })()
+        if (process.env.ENABLE_DATA_STORE) {
+            this.sessionId = createJobShell(tags, api)
+        } else {
+            this.sessionId = createjobLegacy(tags, api)
+        }
     }
 
     async onRunStart () {
@@ -94,6 +153,7 @@ module.exports = class TestrunnerReporter {
         /**
          * only upload assets if a session was initiated before
          */
+
         if (!sessionId) {
             return
         }
