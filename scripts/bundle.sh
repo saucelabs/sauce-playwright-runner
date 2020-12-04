@@ -12,5 +12,6 @@ cp "$(which node)" bundle/
 pushd bundle/
 npm cache clean --force
 npm ci --production
+npx playwright-test --version
 # TODO: Add "saucectl" tests here
 popd
