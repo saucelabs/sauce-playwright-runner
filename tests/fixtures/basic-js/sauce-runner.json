@@ -9,7 +9,7 @@
             "name": "basic-js",
             "param": {
               "browserName": "firefox",
-              "slowMo": 1000
+              "slowMo": 4000
             },
             "testMatch": "**/*.spec.js"
         }

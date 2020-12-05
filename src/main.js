@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 const yargs = require('yargs/yargs');
+const fs = require('fs');
 const { spawn } = require('child_process');
 const _ = require('lodash');
 const path = require('path');
-const { shouldRecordVideo, getAbsolutePath, loadRunConfig } = require('./utils');
+const { shouldRecordVideo, getAbsolutePath, loadRunConfig, toHyphenated } = require('./utils');
 
 async function run (nodeBin, runCfgPath, suiteName) {
   runCfgPath = getAbsolutePath(runCfgPath);
@@ -16,22 +17,29 @@ async function run (nodeBin, runCfgPath, suiteName) {
     },
     reporter: 'junit,line',
   };
+  let env = {...process.env};
   if (process.env.SAUCE_VM) {
     defaultArgs = _.defaultsDeep(defaultArgs, {
       output: path.join(cwd, '__assets__'),
     });
+    env.FOLIO_JUNIT_OUTPUT_NAME = path.join(cwd, '__assets__', 'junit.xml');
   }
 
-  const args = _.defaultsDeep(defaultArgs, runCfg.folio);
-  // TODO: Add the 'suite' here
+  let args = _.defaultsDeep(defaultArgs, runCfg.folio);
+  
+  const suite = _.find(runCfg.suites, ({name}) => name === suiteName);
+  if (!suite) {
+    throw new Error(`Could not find suite named 'suiteName'`);
+  }
+  args = _.defaultsDeep(args, suite);
 
   const folioBin = path.join(__dirname, '..', 'node_modules', '.bin', 'folio');
   const procArgs = [folioBin];
 
 
   for (let [key, value] of Object.entries(args)) {
-    key = key.toLowerCase();
-    if (key === 'name') {
+    key = toHyphenated(key);
+    if (key.toLowerCase() === 'name') {
       continue;
     }
     if (key === 'param') {
@@ -40,14 +48,14 @@ async function run (nodeBin, runCfgPath, suiteName) {
         procArgs.push(`${paramName}=${paramValue}`);
       }
     } else {
-      // TODO: Validate the key here?
       procArgs.push(`--${key}`);
       procArgs.push(value);
     }
     
   }
 
-  const folioProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd});
+  // TODO: properly format shell args here
+  const folioProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd, env});
   folioProc.on('close', (code) => {
     process.exit(code);
   });

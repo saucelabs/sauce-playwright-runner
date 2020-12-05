@@ -90,6 +90,9 @@ function getAbsolutePath (pathToDir) {
 }
 
 function shouldRecordVideo () {
+  if (process.env.SAUCE_VM) {
+    return false;
+  }
   let isVideoRecording = process.env.SAUCE_VIDEO_RECORDING;
   if (isVideoRecording === undefined) {
     return true;
@@ -105,4 +108,23 @@ function loadRunConfig (cfgPath) {
   throw new Error(`Runner config (${cfgPath}) unavailable.`);
 }
 
-module.exports = { exec, logHelper, loadRunConfig, shouldRecordVideo, getAbsolutePath };
+/**
+ * Convert a camel-case or snake-case string into a hyphenated one
+ *
+ * @param {str} str String to hyphenate
+ */
+function toHyphenated (str) {
+  const out = [];
+  for (let i=0; i<str.length; i++) {
+    const char = str.charAt(i);
+    if (char.toUpperCase() === char && char.toLowerCase() !== char) {
+      out.push('-');
+      out.push(char.toLowerCase());
+    } else {
+      out.push(char);
+    }
+  }
+  return out.join('');
+}
+
+module.exports = { exec, logHelper, loadRunConfig, shouldRecordVideo, getAbsolutePath, toHyphenated };
