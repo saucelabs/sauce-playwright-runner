@@ -1,0 +1,17 @@
+{
+    "folio": {
+        "param": {
+            "browserName": "webkit"
+        }
+    },
+    "suites": [
+        {
+            "name": "basic-js",
+            "param": {
+              "browserName": "firefox",
+              "slowMo": 4000
+            },
+            "testMatch": "**/*.spec.js"
+        }
+    ]
+}
