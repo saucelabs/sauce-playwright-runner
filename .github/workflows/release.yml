@@ -54,6 +54,7 @@ jobs:
           echo "::set-output name=release_id::$(node ./.github/workflows/helpers/print-release-id.js)"
         env:
           GH_REF: ${{ github.ref }}
+          GH_REPO: ${{ github.repository }}
       - name: Print release id
         run: echo ${{ steps.get_release_id.outputs.release_id }}
       - name: Bundle Directory
