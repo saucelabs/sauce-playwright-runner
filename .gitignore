@@ -118,3 +118,4 @@ results/
 tests/fixtures/playwright-tests/typescript-*/**/*.js
 
 bundle/
+bundle/Cache/

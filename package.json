@@ -4,7 +4,7 @@
   "description": "Sauce Labs Playwright Test Runner",
   "license": "MIT",
   "private": true,
-  "main": "index.js",
+  "main": "src/main.js",
   "scripts": {
     "build": "docker build -t saucelabs/${npm_package_name}:latest --cache-from saucelabs/${npm_package_name}:latest .",
     "docker:push": "docker push saucelabs/${npm_package_name}:latest",
@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/saucelabs/testrunner-toolkit",
   "dependencies": {
+    "@playwright/test": "^0.9.13",
     "@wdio/logger": "^5.16.10",
     "find-process": "^1.4.3",
     "got": "^11.0.2",
@@ -28,10 +29,10 @@
     "jest-cli": "^26.4.2",
     "js-yaml": "3.14.0",
     "playwright": "^1.4.1",
-    "playwright-test": "^1.0.0",
     "saucelabs": "^4.6.0",
     "shelljs": "^0.8.3",
-    "webdriverio": "^5.21.0"
+    "webdriverio": "^5.21.0",
+    "yargs": "^16.1.1"
   },
   "devDependencies": {
     "@types/jest": "^26.0.13",
