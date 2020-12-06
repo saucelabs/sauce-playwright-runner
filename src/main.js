@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const yargs = require('yargs/yargs');
 const fs = require('fs');
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
 const _ = require('lodash');
 const path = require('path');
 const { shouldRecordVideo, getAbsolutePath, loadRunConfig, toHyphenated } = require('./utils');
@@ -34,9 +34,8 @@ async function run (nodeBin, runCfgPath, suiteName) {
   args = _.defaultsDeep(args, suite);
 
   const folioBin = path.join(__dirname, '..', 'node_modules', '.bin', 'folio');
-  const procArgs = [folioBin];
 
-
+  const procArgs = [];
   for (let [key, value] of Object.entries(args)) {
     key = toHyphenated(key);
     if (key.toLowerCase() === 'name') {
@@ -51,11 +50,15 @@ async function run (nodeBin, runCfgPath, suiteName) {
       procArgs.push(`--${key}`);
       procArgs.push(value);
     }
-    
   }
 
-  // TODO: properly format shell args here
-  const folioProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd, env});
+  // Add the node binary that's currently being used to the path
+  const isWindows = process.platform === 'win32';
+  const pathKey = isWindows ? 'Path': 'PATH';
+  env[pathKey] = `${path.dirname(nodeBin)}:${env[pathKey]}`;
+
+  // Run the folio binary
+  const folioProc = spawn(folioBin, procArgs, {stdio: 'inherit', cwd, env, shell: true});
   folioProc.on('close', (code) => {
     process.exit(code);
   });
