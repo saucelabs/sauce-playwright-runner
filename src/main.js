@@ -54,8 +54,12 @@ async function run (nodeBin, runCfgPath, suiteName) {
 
   // Add the node binary that's currently being used to the path
   const isWindows = process.platform === 'win32';
-  const pathKey = isWindows ? 'Path': 'PATH';
-  env[pathKey] = `${path.dirname(nodeBin)}:${env[pathKey]}`;
+  const nodePath = path.dirname(nodeBin);
+  if (isWindows) {
+    env.Path = `${nodePath};${env.Path}`;
+  } else {
+    env.PATH = `${nodePath}:${env.PATH}`;
+  }
 
   // Run the folio binary
   const folioProc = spawn(folioBin, procArgs, {stdio: 'inherit', cwd, env, shell: true});
