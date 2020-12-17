@@ -24,6 +24,8 @@ const api = new SauceLabs({
 const jobName = process.env.SAUCE_JOB_NAME || `DevX Playwright Test Run - ${(new Date()).getTime()}`;
 let build = process.env.SAUCE_BUILD_NAME;
 
+let startTime, endTime, hasPassed;
+
 /**
  * replace placeholders (e.g. $BUILD_ID) with environment values
  */
@@ -129,28 +131,70 @@ const createjobLegacy = async (tags, api) => {
   return jobs && jobs.length && jobs[0].id;
 };
 
+// TODO Tian: this method is a temporary solution for creating jobs via test-composer.
+// Once the global data store is ready, this method will be deprecated.
+const createjobWorkaround = async (tags, api, passed, startTime, endTime) => {
+    /**
+     * don't try to create a job if no credentials are set
+     */
+    if (!process.env.SAUCE_USERNAME || !process.env.SAUCE_ACCESS_KEY) {
+        return;
+    }
+
+    const body = {
+        name: jobName,
+        user: process.env.SAUCE_USERNAME,
+        startTime,
+        endTime,
+        framework: 'playwright',
+        frameworkVersion: '*', // collect
+        status: 'complete',
+        errors: [],
+        passed,
+        tags,
+        build,
+        browserName: DESIRED_BROWSER,
+        browserVersion: '*',
+        platformName: '*' // in docker, no specified platform
+    };
+    
+    let sessionId;
+    await api.createJob(
+        body
+    ).then(
+        (resp) => {
+          sessionId = resp.ID;
+        },
+        (e) => console.error('Create job failed: ', e.stack)
+    );
+    
+    return sessionId || 0;
+};
+
 module.exports = class TestrunnerReporter {
-  constructor () {
-    let tags = process.env.SAUCE_TAGS;
-    if (tags) {
-      tags = tags.split(',');
-    }
-
-    log.info('Create job shell');
-    if (process.env.ENABLE_DATA_STORE) {
-      this.sessionId = createJobShell(tags, api);
-    } else {
-      this.sessionId = createjobLegacy(tags, api, region, tld);
-    }
-  }
-
   async onRunStart () {
+    startTime = new Date().toISOString();
     log.info('Start video capturing');
     await exec('start-video');
   }
 
   async onRunComplete (test, { testResults, numFailedTests }) {
+    endTime = new Date().toISOString();
     log.info('Finished testrun!');
+
+    let tags = process.env.SAUCE_TAGS;
+    if (tags) {
+      tags = tags.split(",")
+    }
+
+    let hasPassed = numFailedTests === 0
+
+    let sessionId;
+    if (process.env.ENABLE_DATA_STORE) {
+      sessionId = await createJobShell(tags, api)
+    } else {
+      sessionId = await createjobWorkaround(tags, api, hasPassed, startTime, endTime)
+    }
 
     const hasPassed = numFailedTests === 0;
     const sessionId = await this.sessionId;
@@ -189,12 +233,7 @@ module.exports = class TestrunnerReporter {
                   }
                 },
                 (e) => log.error('upload failed:', e.stack)
-      ),
-      api.updateJob(process.env.SAUCE_USERNAME, sessionId, {
-        name: jobName,
-        passed: hasPassed
-      })
-    ]);
+    ),
 
     let domain;
 
