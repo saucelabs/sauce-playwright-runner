@@ -111,3 +111,4 @@ tests/fixtures/typescript/
 /.sauce/
 
 run.yaml
+tests/fixtures/basic-js/test-results/
