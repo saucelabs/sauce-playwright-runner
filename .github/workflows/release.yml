@@ -37,7 +37,6 @@ jobs:
           tags: |
             saucelabs/stt-playwright-jest-node:latest
             saucelabs/stt-playwright-jest-node:${{ steps.prep.outputs.version }}
-<<<<<<< HEAD
   release-windows-bundle:
     runs-on: windows-latest
     steps:
@@ -77,9 +76,6 @@ jobs:
           asset_path: ./sauce-playwright-win.zip
           asset_name: sauce-playwright-win.zip
           asset_content_type: application/zip
-=======
-
->>>>>>> origin/master
   release-template-bundle:
     runs-on: ubuntu-latest
     steps:
