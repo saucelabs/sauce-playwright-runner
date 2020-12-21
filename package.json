@@ -4,7 +4,7 @@
   "description": "Sauce Labs Playwright Test Runner",
   "license": "MIT",
   "private": true,
-  "main": "index.js",
+  "main": "src/main.js",
   "scripts": {
     "build": "docker build -t saucelabs/${npm_package_name}:latest --cache-from saucelabs/${npm_package_name}:latest .",
     "docker:push": "docker push saucelabs/${npm_package_name}:latest",
@@ -20,22 +20,32 @@
   },
   "homepage": "https://github.com/saucelabs/testrunner-toolkit",
   "dependencies": {
+    "@playwright/test": "^0.9.13",
     "@wdio/logger": "^5.16.10",
     "find-process": "^1.4.3",
     "got": "^11.0.2",
     "jest": "^26.4.2",
     "jest-circus": "^26.4.2",
     "jest-cli": "^26.4.2",
+    "js-yaml": "3.14.0",
     "playwright": "^1.4.1",
     "saucelabs": "^4.6.0",
     "shelljs": "^0.8.3",
     "webdriverio": "^5.21.0",
-    "js-yaml": "3.14.0"
+    "yargs": "^16.1.1"
   },
   "devDependencies": {
     "@types/jest": "^26.0.13",
     "@types/mocha": "^8.0.3",
     "@types/node": "^14.10.1",
+    "axios": "^0.20.0",
+    "bluebird": "^3.7.2",
+    "eslint": "^7.9.0",
+    "eslint-config-appium": "^4.5.0",
+    "eslint-plugin-jest": "^24.0.2",
+    "husky": "^4.3.0",
+    "jest": "^26.4.2",
+    "mocha": "^8.1.3",
     "typescript": "^3.9.7"
   }
 }

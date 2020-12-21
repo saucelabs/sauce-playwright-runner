@@ -1,5 +1,7 @@
 const shell = require('shelljs')
 const logger = require('@wdio/logger').default
+const path = require('path');
+const fs = require('fs');
 
 const log = logger('utils')
 const sendString = 'SEND ► '
@@ -7,7 +9,7 @@ const receiveString = '◀ RECV'
 
 let lastCommand = Date.now()
 
-exports.logHelper = (type, severity, message, args, hints) => {
+const logHelper = (type, severity, message, args, hints) => {
     if (message.includes(receiveString)) {
         const line = message.slice(message.indexOf('{'))
 
@@ -66,7 +68,7 @@ exports.logHelper = (type, severity, message, args, hints) => {
 }
 
 const COMMAND_TIMEOUT = 5000
-exports.exec = async (expression) => {
+const exec = async (expression) => {
     const cp = shell.exec(expression, { async: true, silent: true })
     cp.stdout.on('data', (data) => log.info(`${data}`))
     cp.stderr.on('data', (data) => log.info(`${data}`))
@@ -79,3 +81,50 @@ exports.exec = async (expression) => {
         })
     })
 }
+
+function getAbsolutePath (pathToDir) {
+  if (path.isAbsolute(pathToDir)) {
+    return pathToDir;
+  }
+  return path.join(process.cwd(), pathToDir);
+}
+
+function shouldRecordVideo () {
+  if (process.env.SAUCE_VM) {
+    return false;
+  }
+  let isVideoRecording = process.env.SAUCE_VIDEO_RECORDING;
+  if (isVideoRecording === undefined) {
+    return true;
+  }
+  let videoOption = String(isVideoRecording).toLowerCase();
+  return videoOption === 'true' || videoOption === '1';
+}
+
+function loadRunConfig (cfgPath) {
+  if (fs.existsSync(cfgPath)) {
+    return require(cfgPath);
+  }
+  throw new Error(`Runner config (${cfgPath}) unavailable.`);
+}
+
+/**
+ * Convert a camel-case or snake-case string into a hyphenated one
+ *
+ * @param {str} str String to hyphenate
+ */
+function toHyphenated (str) {
+  const out = [];
+  for (let i=0; i<str.length; i++) {
+    const char = str.charAt(i);
+    if (char.toUpperCase() === char && char.toLowerCase() !== char) {
+      out.push('-');
+      out.push(char.toLowerCase());
+    } else {
+      out.push(char);
+    }
+  }
+  return out.join('');
+}
+
+module.exports = { exec, logHelper, loadRunConfig, shouldRecordVideo, getAbsolutePath, toHyphenated };
