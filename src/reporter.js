@@ -138,6 +138,20 @@ const createjobWorkaround = async (tags, api, passed, startTime, endTime) => {
     if (!process.env.SAUCE_USERNAME || !process.env.SAUCE_ACCESS_KEY) {
         return;
     }
+    let browserVersion;
+    switch (DESIRED_BROWSER.toLowerCase()) {
+        case 'firefox':
+            browserVersion = firefoxVersion
+            break
+        case 'chrome':
+            browserVersion = chromeVersion
+            break
+        case 'googlechrome':
+            browserVersion = chromeVersion
+            break
+        default:
+            browserVersion = '*'
+    }
 
     const body = {
         name: jobName,
@@ -145,15 +159,15 @@ const createjobWorkaround = async (tags, api, passed, startTime, endTime) => {
         startTime,
         endTime,
         framework: 'playwright',
-        frameworkVersion: '*', // collect
+        frameworkVersion: playwrightVersion,
         status: 'complete',
         errors: [],
         passed,
         tags,
         build,
         browserName: DESIRED_BROWSER,
-        browserVersion: DESIRED_BROWSER.toLowerCase() === "firefox" ? firefoxVersion : chromeVersion,
-        platformName: 'sauce-devx-runner' // in docker, no specified platform
+        browserVersion,
+        platformName: process.env.SAUCE_IMAGE_NAME
     };
     
     let sessionId;
