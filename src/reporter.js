@@ -4,7 +4,7 @@ const path = require('path')
 const findProcess = require('find-process')
 const logger = require('@wdio/logger').default
 const SauceLabs = require('saucelabs').default
-const { remote } = require('webdriverio')
+const { remote } = require('webdriverio');
 
 const { exec } = require('./utils')
 const { LOG_FILES, HOME_DIR, DESIRED_BROWSER } = require('./constants')
@@ -54,7 +54,7 @@ const createJobShell = async (tags, api) => {
         tags: tags,
         attributes: {
             container: false,
-            browser: DESIRED_BROWSER,
+            browser: 'chromium',
             browser_version: '*',
             commands_not_successful: 1, // to be removed
             devx: true,
@@ -78,7 +78,9 @@ const createJobShell = async (tags, api) => {
         (resp) => {
           sessionId = resp.id;
         },
-        (e) => console.error('Create job failed: ', e.stack)
+        (e) => {
+          console.error('Create job failed: ', e.stack)
+        },
       )
     ]);
   
@@ -105,7 +107,7 @@ const createjobLegacy = async (tags, api) => {
         connectionRetryCount: 0,
         logLevel: 'silent',
         capabilities: {
-            browserName: DESIRED_BROWSER,
+            browserName: 'chrome',
             platformName: '*',
             browserVersion: '*',
             'sauce:options': {
@@ -115,7 +117,9 @@ const createjobLegacy = async (tags, api) => {
                 build
             }
         }
-    }).catch((err) => err)
+    }).catch((err) => {
+        // Do nothing. Proceed in spite of error.
+    });
 
     const { jobs } = await api.listJobs(
         process.env.SAUCE_USERNAME,
@@ -204,3 +208,6 @@ module.exports = class TestrunnerReporter {
         console.log(`\nOpen job details page: https://app.${domain}/tests/${sessionId}\n`)
     }
 }
+
+module.exports.createjobLegacy = createjobLegacy;
+module.exports.createJobShell = createJobShell;
