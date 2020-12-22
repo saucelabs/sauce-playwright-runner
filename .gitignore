@@ -112,3 +112,4 @@ tests/fixtures/typescript/
 
 run.yaml
 tests/fixtures/basic-js/test-results/
+tests/fixtures/basic-js/__assets__/

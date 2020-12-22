@@ -1,0 +1,24 @@
+apiVersion: v1alpha
+kind: folio
+sauce:
+  region: us-west-1
+  metadata:
+    name: Playwright Hello World
+    tags:
+      - e2e
+      - release team
+      - other tag
+    build: Release $CI_COMMIT_SHORT_SHA
+docker:
+  image:
+    name: saucelabs/stt-playwright-jest-node
+    tag: latest
+folio:
+  param:
+    browserName: "firefox"
+suites:
+  - name: "default"
+    param:
+      browserName: "webkit"
+      slowMo: 10000
+    testMatch: "**/*.spec.js"

@@ -97,6 +97,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
             {
                 files: [
                     //logFilePath,
+                    path.join(process.cwd(), 'console.log'),
                     path.join(cwd, '__assets__', 'junit.xml'), // TOOD: Should add junit.xml.json as well
                     ...containerLogFiles
                 ]
