@@ -23,6 +23,7 @@
     "@playwright/test": "^0.9.13",
     "@wdio/logger": "^5.16.10",
     "find-process": "^1.4.3",
+    "glob": "^7.1.6",
     "got": "^11.0.2",
     "jest": "^26.4.2",
     "jest-circus": "^26.4.2",

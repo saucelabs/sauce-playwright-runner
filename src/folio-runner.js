@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 const yargs = require('yargs/yargs');
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
 const _ = require('lodash');
 const path = require('path');
 const { shouldRecordVideo, getAbsolutePath, loadRunConfig, toHyphenated } = require('./utils');
 const { createjobLegacy, createJobShell } = require('./reporter');
 const SauceLabs = require('saucelabs').default;
 const { LOG_FILES, HOME_DIR, DESIRED_BROWSER } = require('./constants')
-const fs = require('fs')
+const fs = require('fs');
+const glob = require('glob');
 
 const region = process.env.SAUCE_REGION || 'us-west-1';
 const jobName = process.env.SAUCE_JOB_NAME || `DevX Playwright Test Run - ${(new Date()).getTime()}`;
@@ -24,7 +25,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
   const cwd = path.dirname(runCfgPath);
   let defaultArgs = {
     param: {
-      headful: true,
+      headful: false,
       video: shouldRecordVideo(),
     },
     reporter: 'junit,line',
@@ -54,7 +55,10 @@ async function run (nodeBin, runCfgPath, suiteName) {
     if (key.toLowerCase() === 'name') {
       continue;
     }
-    if (key === 'param') {
+    if (value === '') {
+      continue;
+    }
+    if (key === 'param' || key === 'params') {
       procArgs.push(`--param`);
       for (let [paramName, paramValue] of Object.entries(value)) {
         procArgs.push(`${paramName}=${paramValue}`);
@@ -91,18 +95,34 @@ async function run (nodeBin, runCfgPath, suiteName) {
       }
       const containerLogFiles = LOG_FILES.filter(
         (path) => fs.existsSync(path));
+
+      // Take the 1st webm video we find and translate it video.mp4
+      // TODO: We need to translate all .webm to .mp4 and combine them into one video.mp4
+      const webmFiles = glob.sync(path.join(cwd, '__assets__', '**', '*.webm'));
+      let videoLocation;
+      if (webmFiles.length > 0) {
+        videoLocation = path.join(cwd, '__assets__', 'video.mp4');
+        try {
+          await execSync(`ffmpeg -i ${webmFiles[0]} ${videoLocation}`);
+        } catch (e) {
+          videoLocation = null;
+          console.error(`Failed to convert ${webmFiles[0]} to mp4: '${e}'`);
+        }
+      }
+
+      let files = [
+        path.join(process.cwd(), 'console.log'),
+        path.join(cwd, '__assets__', 'junit.xml'), // TOOD: Should add junit.xml.json as well
+        ...containerLogFiles
+      ];
+
+      if (videoLocation) {
+        files.push(videoLocation);
+      }
+
       await Promise.all([
-        api.uploadJobAssets(
-            sessionId,
-            {
-                files: [
-                    //logFilePath,
-                    path.join(process.cwd(), 'console.log'),
-                    path.join(cwd, '__assets__', 'junit.xml'), // TOOD: Should add junit.xml.json as well
-                    ...containerLogFiles
-                ]
-            }
-        ).then(
+        api.uploadJobAssets(sessionId, {files})
+          .then(
             (resp) => {
                 if (resp.errors) {
                     for (let err of resp.errors) {
