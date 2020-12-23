@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`utils .logHelper should add to global logs 1`] = `
+Array [
+  Object {
+    "HTTPStatus": 200,
+    "between_commands": 1,
+    "duration": 1,
+    "id": "foo",
+    "in_video_timeline": 0,
+    "method": "SOCKET",
+    "path": "warn",
+    "request": "some-param",
+    "result": "",
+    "screenshot": 0,
+    "start_time": 2,
+    "statusCode": 0,
+    "suggestion": null,
+    "suggestion_values": Array [],
+  },
+]
+`;
