@@ -143,10 +143,7 @@ const createjobWorkaround = async (tags, api, passed, startTime, endTime) => {
         case 'firefox':
             browserVersion = firefoxVersion
             break
-        case 'chrome':
-            browserVersion = chromeVersion
-            break
-        case 'googlechrome':
+        case 'chromium':
             browserVersion = chromeVersion
             break
         default:
