@@ -77,6 +77,9 @@ jobs:
           #asset_path: ./sauce-playwright-win.zip
           #asset_name: sauce-playwright-win.zip
           #asset_content_type: application/zip
+          #build-args: |
+          #BUILD_TAG=${{ steps.prep.outputs.version }}
+
   release-template-bundle:
     runs-on: ubuntu-latest
     steps:
