@@ -37,6 +37,7 @@ jobs:
           tags: |
             saucelabs/stt-playwright-jest-node:latest
             saucelabs/stt-playwright-jest-node:${{ steps.prep.outputs.version }}
+  # TODO: Re-enable this once we start making playwright bundles
   #release-windows-bundle:
     #runs-on: windows-latest
     #steps:
