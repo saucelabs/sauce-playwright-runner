@@ -6,7 +6,7 @@ const path = require('path');
 const { shouldRecordVideo, getAbsolutePath, loadRunConfig, toHyphenated } = require('./utils');
 const { createjobLegacy, createJobShell } = require('./reporter');
 const SauceLabs = require('saucelabs').default;
-const { LOG_FILES, HOME_DIR, DESIRED_BROWSER } = require('./constants')
+const { LOG_FILES } = require('./constants')
 const fs = require('fs');
 const glob = require('glob');
 
@@ -30,21 +30,20 @@ async function run (nodeBin, runCfgPath, suiteName) {
     },
     reporter: 'junit,line',
   };
-  let env = {...process.env};
-  //if (process.env.SAUCE_VM) {
-    defaultArgs = _.defaultsDeep(defaultArgs, {
-      output: path.join(cwd, '__assets__'),
-    });
-    env.FOLIO_JUNIT_OUTPUT_NAME = path.join(cwd, '__assets__', 'junit.xml');
-  //}
-
-  let args = _.defaultsDeep(defaultArgs, runCfg.folio);
+  let env = {
+    ...process.env,
+    FOLIO_JUNIT_OUTPUT_NAME: path.join(cwd, '__assets__', 'junit.xml')
+  };
+  defaultArgs = _.defaultsDeep(defaultArgs, {
+    output: path.join(cwd, '__assets__'),
+  });
   
+  let args = {};
   const suite = _.find(runCfg.suites, ({name}) => name === suiteName);
   if (!suite) {
-    throw new Error(`Could not find suite named 'suiteName'`);
+    throw new Error(`Could not find suite named '${suiteName}'`);
   }
-  args = _.defaultsDeep(args, suite);
+  args = _.defaultsDeep(suite, args);
 
   const folioBin = path.join(__dirname, '..', 'node_modules', '.bin', 'folio');
   const procArgs = [folioBin];

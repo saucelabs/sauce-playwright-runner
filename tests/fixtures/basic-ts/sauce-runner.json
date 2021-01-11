@@ -4,13 +4,13 @@
     },
     "suites": [
         {
-            "name": "basic-js",
+            "name": "basic-ts",
             "param": {
               "browserName": "chromium",
               "headful": true,
               "slowMo": 10000
             },
-            "testMatch": "**/*.spec.js"
+            "testMatch": "**/*.spec.ts"
         }
     ]
 }
