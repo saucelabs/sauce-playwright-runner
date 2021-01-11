@@ -9,7 +9,10 @@
     "build": "docker build -t saucelabs/${npm_package_name}:latest --cache-from saucelabs/${npm_package_name}:latest .",
     "docker:push": "docker push saucelabs/${npm_package_name}:latest",
     "start": "docker run --env SAUCE_USERNAME --env SAUCE_ACCESS_KEY -d saucelabs/${npm_package_name}:latest",
-    "test": "DISPLAY=\"$(cat DISPLAY)\" DEBUG=\"playwright:*\" bin/jest --config=./.config/jest.config.js --runInBand --forceExit"
+    "test": "DISPLAY=\"$(cat DISPLAY)\" DEBUG=\"playwright:*\" bin/jest --config=./.config/jest.config.js --runInBand --forceExit",
+    "test-integration": "bash tests/integration/integration-tests.sh",
+    "lint": "eslint tests/ src/",
+    "unit-test": "jest --env node"
   },
   "repository": {
     "type": "git",
@@ -48,5 +51,11 @@
     "jest": "^26.4.2",
     "mocha": "^8.1.3",
     "typescript": "^3.9.7"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint",
+      "pre-push": "npm run unit-test"
+    }
   }
 }
