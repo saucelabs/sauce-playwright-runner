@@ -13,12 +13,12 @@ docker:
   image:
     name: saucelabs/stt-playwright-jest-node
     tag: latest
-folio:
-  param:
-    browserName: "firefox"
+playwright:
+  version: "1.4.1"
 suites:
   - name: "default"
     param:
       browserName: "webkit"
       slowMo: 10000
+      screenshotOnFailure: ""
     testMatch: "**/*.spec.js"

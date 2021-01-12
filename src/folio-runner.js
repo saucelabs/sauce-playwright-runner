@@ -46,15 +46,23 @@ async function run (nodeBin, runCfgPath, suiteName) {
   const folioBin = path.join(__dirname, '..', 'node_modules', '.bin', 'folio');
   const procArgs = [folioBin];
 
-
+  // Convert the JSON values to command line arguments
+  // (CLI reference https://github.com/microsoft/playwright-test/blob/master/README.md#run-the-test)
   for (let [key, value] of Object.entries(args)) {
     key = toHyphenated(key);
     if (key.toLowerCase() === 'name') {
       continue;
     }
-    if (value === '') {
-      continue;
-    }
+
+    // The 'param' value is special. It works like this.
+    // Input:
+    //
+    // param:
+    //    browserName: "webkit"
+    //    slowMo: 10000
+    //
+    // Output:
+    // folio ... --param browserName=webkit slowMo=10000
     if (key === 'param' || key === 'params') {
       procArgs.push(`--param`);
       for (let [paramName, paramValue] of Object.entries(value)) {
