@@ -2,6 +2,7 @@ const shell = require('shelljs');
 const logger = require('@wdio/logger').default;
 const path = require('path');
 const fs = require('fs');
+const yargs = require('yargs/yargs');
 
 const log = logger('utils');
 const sendString = 'SEND ► ';
@@ -129,4 +130,24 @@ function exec (expression) {
   });
 }
 
-module.exports = { exec, logHelper, loadRunConfig, shouldRecordVideo, getAbsolutePath, toHyphenated };
+function getArgs () {
+  const argv = yargs(process.argv.slice(2))
+      .command('$0', 'the default command')
+      .option('runCfgPath', {
+        alias: 'r',
+        type: 'string',
+        description: 'Path to sauce runner json',
+      })
+      .option('suiteName', {
+        alias: 's',
+        type: 'string',
+        description: 'Select the suite to run'
+      })
+      .demandOption(['runCfgPath', 'suiteName'])
+      .argv;
+  const { runCfgPath, suiteName } = argv;
+  const nodeBin = process.argv[0];
+  return { nodeBin, runCfgPath, suiteName };
+}
+
+module.exports = { exec, logHelper, loadRunConfig, shouldRecordVideo, getAbsolutePath, toHyphenated, getArgs };

@@ -1,9 +1,8 @@
 #!/usr/bin/env node
-const yargs = require('yargs/yargs');
 const { spawn, execSync } = require('child_process');
 const _ = require('lodash');
 const path = require('path');
-const { shouldRecordVideo, getAbsolutePath, loadRunConfig, toHyphenated } = require('./utils');
+const { shouldRecordVideo, getAbsolutePath, loadRunConfig, toHyphenated, getArgs } = require('./utils');
 const { createjobLegacy, createJobShell } = require('./reporter');
 const SauceLabs = require('saucelabs').default;
 const { LOG_FILES } = require('./constants');
@@ -158,21 +157,6 @@ async function run (nodeBin, runCfgPath, suiteName) {
 }
 
 if (require.main === module) {
-  const argv = yargs(process.argv.slice(2))
-      .command('$0', 'the default command')
-      .option('runCfgPath', {
-        alias: 'r',
-        type: 'string',
-        description: 'Path to sauce runner json',
-      })
-      .option('suiteName', {
-        alias: 's',
-        type: 'string',
-        description: 'Select the suite to run'
-      })
-      .demandOption(['runCfgPath', 'suiteName'])
-      .argv;
-  const { runCfgPath, suiteName } = argv;
-  const nodeBin = process.argv[0];
+  const {nodeBin, runCfgPath, suiteName} = getArgs();
   run(nodeBin, runCfgPath, suiteName);
 }
