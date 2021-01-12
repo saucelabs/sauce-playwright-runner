@@ -6,7 +6,7 @@ const SauceLabs = require('saucelabs').default;
 const { remote } = require('webdriverio');
 
 const { exec } = require('./utils');
-const { LOG_FILES, HOME_DIR } = require('./constants');
+const { LOG_FILES, HOME_DIR, DESIRED_BROWSER } = require('./constants');
 
 const log = logger('reporter');
 
@@ -55,7 +55,7 @@ const createJobShell = async (tags, api) => {
     tags,
     attributes: {
       container: false,
-      browser: 'chromium',
+      browser: DESIRED_BROWSER,
       browser_version: '*',
       commands_not_successful: 1, // to be removed
       devx: true,
@@ -97,18 +97,21 @@ const createjobLegacy = async (tags, api) => {
   }
 
   /**
-     * create a job shell by trying to initialise a session with
-     * invalid capabilities
-     * ToDo(Christian): remove once own testrunner job API is available
-     */
+   * create a job shell by trying to initialise a session with
+   * invalid capabilities
+   * ToDo(Christian): remove once own testrunner job API is available
+   */
+  const hostname = `ondemand.${region}.saucelabs.${tld}`;
   await remote({
     user: process.env.SAUCE_USERNAME,
     key: process.env.SAUCE_ACCESS_KEY,
     region,
+    tld,
+    hostname,
     connectionRetryCount: 0,
     logLevel: 'silent',
     capabilities: {
-      browserName: 'chrome',
+      browserName: DESIRED_BROWSER,
       platformName: '*',
       browserVersion: '*',
       'sauce:options': {

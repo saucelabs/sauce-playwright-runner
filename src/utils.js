@@ -10,7 +10,7 @@ const receiveString = '◀ RECV';
 global._timeOfLastCommand = Date.now();
 
 // eslint-disable-next-line no-unused-vars
-const logHelper = (type, severity, message, args, hints) => {
+function logHelper (type, severity, message, args, hints) {
   if (message.includes(receiveString)) {
     const line = message.slice(message.indexOf('{'));
 
@@ -66,7 +66,7 @@ const logHelper = (type, severity, message, args, hints) => {
     log.error(`Couldn't parse log line: ${line}`);
   }
   global._timeOfLastCommand = Date.now();
-};
+}
 
 function getAbsolutePath (pathToDir) {
   if (path.isAbsolute(pathToDir)) {
@@ -114,7 +114,8 @@ function toHyphenated (str) {
 }
 
 const COMMAND_TIMEOUT = 5000;
-const exec = (expression) => {
+
+function exec (expression) {
   const cp = shell.exec(expression, { async: true, silent: true });
   cp.stdout.on('data', (data) => log.info(`${data}`));
   cp.stderr.on('data', (data) => log.info(`${data}`));
@@ -126,6 +127,6 @@ const exec = (expression) => {
       resolve();
     });
   });
-};
+}
 
 module.exports = { exec, logHelper, loadRunConfig, shouldRecordVideo, getAbsolutePath, toHyphenated };

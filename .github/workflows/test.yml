@@ -41,9 +41,16 @@ jobs:
       - run: pushd saucectl && make build && popd
         name: Build Saucectl and run E2E tests
 
-      # Run e2e tests
+      # Run e2e tests (Docker)
       - run: bash ./tests/e2e/run.sh
         env:
           SKIP_CI: true
           SAUCE_CTL_BINARY: ./saucectl/saucectl
         name: Build Saucectl and run E2E tests
+
+      # Run direct e2e test
+      - run: node . --suiteName basic-js --runCfgPath ./tests/fixtures/basic-js/sauce-runner.json
+        env:
+          SAUCE_VM: true
+        name: Run test locally
+
