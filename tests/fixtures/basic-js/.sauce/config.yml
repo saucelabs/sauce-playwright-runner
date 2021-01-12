@@ -19,6 +19,6 @@ suites:
   - name: "default"
     param:
       browserName: "webkit"
-      slowMo: 10000
-      screenshotOnFailure: ""
+      screenshotOnFailure: 
+      slowMo: 1000
     testMatch: "**/*.spec.js"

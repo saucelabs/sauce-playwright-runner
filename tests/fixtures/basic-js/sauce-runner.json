@@ -8,7 +8,7 @@
             "param": {
               "browserName": "chromium",
               "headful": true,
-              "slowMo": 10000
+              "slowMo": 1000
             },
             "testMatch": "**/*.spec.js"
         }

@@ -12,12 +12,6 @@ const glob = require('glob');
 const region = process.env.SAUCE_REGION || 'us-west-1';
 const jobName = process.env.SAUCE_JOB_NAME || `DevX Playwright Test Run - ${(new Date()).getTime()}`;
 
-const api = new SauceLabs({
-  user: process.env.SAUCE_USERNAME,
-  key: process.env.SAUCE_ACCESS_KEY,
-  region
-});
-
 async function run (nodeBin, runCfgPath, suiteName) {
   runCfgPath = getAbsolutePath(runCfgPath);
   const runCfg = await loadRunConfig(runCfgPath);
@@ -55,18 +49,20 @@ async function run (nodeBin, runCfgPath, suiteName) {
     }
 
     // The 'param' value is special. It works like this.
-    // Input:
+    // Input (yml)
+    // =============
     //
     // param:
     //    browserName: "webkit"
     //    slowMo: 10000
     //
     // Output:
-    // folio ... --param browserName=webkit slowMo=10000
+    // =============
+    // folio ... --param browserName=webkit --param slowMo=10000
     if (key === 'param' || key === 'params') {
-      procArgs.push(`--param`);
       for (let [paramName, paramValue] of Object.entries(value)) {
-        procArgs.push(`${paramName}=${paramValue}`);
+        procArgs.push(`--param`);
+        procArgs.push(paramValue ? `${paramName}=${paramValue}` : paramName);
       }
     } else {
       procArgs.push(`--${key}`);
@@ -83,6 +79,12 @@ async function run (nodeBin, runCfgPath, suiteName) {
       const hasPassed = code === 0;
       resolve(hasPassed);
     });
+  });
+
+  const api = new SauceLabs({
+    user: process.env.SAUCE_USERNAME,
+    key: process.env.SAUCE_ACCESS_KEY,
+    region
   });
 
   async function createJob (hasPassed) {
@@ -157,14 +159,23 @@ async function run (nodeBin, runCfgPath, suiteName) {
     }
 
     console.log(`\nOpen job details page: https://app.${domain}/tests/${sessionId}\n`);
-    process.exit(0);
+    return true;
   } catch (e) {
     console.error(`Could not complete job: '${e}'`);
-    process.exit(1);
+    return false;
   }
 }
 
 if (require.main === module) {
   const {nodeBin, runCfgPath, suiteName} = getArgs();
-  run(nodeBin, runCfgPath, suiteName);
+  run(nodeBin, runCfgPath, suiteName)
+    // eslint-disable-next-line promise/prefer-await-to-then
+    .then((passed) => process.exit(passed ? 0 : 1))
+    // eslint-disable-next-line promise/prefer-await-to-callbacks
+    .catch((err) => {
+      console.log(err);
+      process.exit(1);
+    });
 }
+
+module.exports = { run };
