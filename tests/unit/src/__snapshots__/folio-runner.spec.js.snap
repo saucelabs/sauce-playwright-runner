@@ -1,35 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`folio-runner .run should add to global logs 1`] = `
-Array [
-  "/fake/path/to/node",
-  Array [
-    "folio",
-    "--param",
-    "browserName=chromium",
-    "--param",
-    "headful=true",
-    "--param",
-    "slowMo=1000",
-    "--param",
-    "video=true",
-    "--test-match",
-    "**/*.spec.js",
-    "--reporter",
-    "junit,line",
-    "--output",
-    "__assets__",
-  ],
-  Object {
-    "cwd": "basic-js",
-    "env": Object {
-      "FOLIO_JUNIT_OUTPUT_NAME": "junit.xml",
-    },
-    "stdio": "inherit",
-  },
-]
-`;
-
 exports[`folio-runner .run should run playwright test as a spawn command 1`] = `
 Array [
   "/fake/path/to/node",
@@ -54,6 +24,7 @@ Array [
     "cwd": "basic-js",
     "env": Object {
       "FOLIO_JUNIT_OUTPUT_NAME": "junit.xml",
+      "HELLO": "world",
       "SAUCE_TAGS": "tag-one,tag-two",
     },
     "stdio": "inherit",

@@ -29,7 +29,8 @@ describe('folio-runner', function () {
         return folioProc;
       });
       process.env = {
-        SAUCE_TAGS: 'tag-one,tag-two'
+        SAUCE_TAGS: 'tag-one,tag-two',
+        HELLO: 'world',
       };
     });
     afterEach(function () {
