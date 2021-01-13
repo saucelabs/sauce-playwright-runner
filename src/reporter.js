@@ -110,7 +110,7 @@ const createjobWorkaround = async (tags, api, passed, startTime, endTime) => {
     build,
     browserName: DESIRED_BROWSER,
     browserVersion: DESIRED_BROWSER.toLowerCase() === 'firefox' ? process.env.FF_VER : process.env.CHROME_VER,
-    platformName: process.env.IMAGE_NAME + '/' + process.env.IMAGE_TAG
+    platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG
   };
 
   let sessionId;

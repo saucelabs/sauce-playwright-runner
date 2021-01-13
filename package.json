@@ -30,7 +30,7 @@
     "jest-circus": "^26.4.2",
     "jest-cli": "^26.4.2",
     "playwright": "^1.4.1",
-    "saucelabs": "^4.6.2",
+    "saucelabs": "^4.6.3",
     "shelljs": "^0.8.3",
     "webdriverio": "^5.21.0",
     "js-yaml": "3.14.0"
