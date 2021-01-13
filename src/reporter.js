@@ -3,7 +3,6 @@ const path = require('path');
 
 const logger = require('@wdio/logger').default;
 const SauceLabs = require('saucelabs').default;
-const { remote } = require('webdriverio');
 
 const { exec } = require('./utils');
 const { LOG_FILES, HOME_DIR, DESIRED_BROWSER } = require('./constants');
@@ -23,6 +22,8 @@ const api = new SauceLabs({
 // SAUCE_JOB_NAME is only available for saucectl >= 0.16, hence the fallback
 const jobName = process.env.SAUCE_JOB_NAME || `DevX Playwright Test Run - ${(new Date()).getTime()}`;
 let build = process.env.SAUCE_BUILD_NAME;
+
+let startTime, endTime;
 
 /**
  * replace placeholders (e.g. $BUILD_ID) with environment values
@@ -56,7 +57,7 @@ const createJobShell = async (tags, api) => {
     attributes: {
       container: false,
       browser: DESIRED_BROWSER,
-      browser_version: '*',
+      browser_version: DESIRED_BROWSER.toLowerCase() === 'firefox' ? process.env.FF_VER : process.env.CHROME_VER,
       commands_not_successful: 1, // to be removed
       devx: true,
       os: 'test', // need collect
@@ -74,19 +75,20 @@ const createJobShell = async (tags, api) => {
   let sessionId;
   await Promise.all([
     api.createResultJob(
-        body
+      body
     ).then(
-        (resp) => {
-          sessionId = resp.id;
-        },
-        (e) => console.error('Create job failed: ', e.stack)
+      (resp) => {
+        sessionId = resp.id;
+      },
+      (e) => console.error('Create job failed: ', e.stack)
     )
   ]);
 
   return sessionId || 0;
 };
-
-const createjobLegacy = async (tags, api) => {
+// TODO Tian: this method is a temporary solution for creating jobs via test-composer.
+// Once the global data store is ready, this method will be deprecated.
+const createjobWorkaround = async (tags, api, passed, startTime, endTime) => {
   /**
      * don't try to create a job if no credentials are set
      */
@@ -94,66 +96,59 @@ const createjobLegacy = async (tags, api) => {
     return;
   }
 
-  /**
-     * create a job shell by trying to initialise a session with
-     * invalid capabilities
-     * ToDo(Christian): remove once own testrunner job API is available
-     */
-
-  const hostname = `ondemand.${region}.saucelabs.${tld}`;
-  await remote({
+  const body = {
+    name: jobName,
     user: process.env.SAUCE_USERNAME,
-    key: process.env.SAUCE_ACCESS_KEY,
-    region,
-    tld,
-    hostname,
-    connectionRetryCount: 0,
-    logLevel: 'silent',
-    capabilities: {
-      browserName: DESIRED_BROWSER,
-      platformName: '*',
-      browserVersion: '*',
-      'sauce:options': {
-        devX: true,
-        name: jobName,
-        tags,
-        build
-      }
-    }
-  }).catch((err) => err);
+    startTime,
+    endTime,
+    framework: 'playwright',
+    frameworkVersion: process.env.PLAYWRIGHT_VERSION,
+    status: 'complete',
+    errors: [],
+    passed,
+    tags,
+    build,
+    browserName: DESIRED_BROWSER,
+    browserVersion: DESIRED_BROWSER.toLowerCase() === 'firefox' ? process.env.FF_VER : process.env.CHROME_VER,
+    platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG
+  };
 
-  const { jobs } = await api.listJobs(
-        process.env.SAUCE_USERNAME,
-        { limit: 1, full: true, name: jobName }
+  let sessionId;
+  await api.createJob(
+        body
+  ).then(
+        (resp) => {
+          sessionId = resp.ID;
+        },
+        (e) => console.error('Create job failed: ', e.stack)
   );
-  return jobs && jobs.length && jobs[0].id;
+
+  return sessionId || 0;
 };
 
 module.exports = class TestrunnerReporter {
-  constructor () {
-    let tags = process.env.SAUCE_TAGS;
-    if (tags) {
-      tags = tags.split(',');
-    }
-
-    log.info('Create job shell');
-    if (process.env.ENABLE_DATA_STORE) {
-      this.sessionId = createJobShell(tags, api);
-    } else {
-      this.sessionId = createjobLegacy(tags, api, region, tld);
-    }
-  }
-
   async onRunStart () {
+    startTime = new Date().toISOString();
     log.info('Start video capturing');
     await exec('start-video');
   }
 
   async onRunComplete (test, { testResults, numFailedTests }) {
+    endTime = new Date().toISOString();
     log.info('Finished testrun!');
 
+    let tags = process.env.SAUCE_TAGS;
+    if (tags) {
+      tags = tags.split(',');
+    }
+
+    let sessionId;
     const hasPassed = numFailedTests === 0;
-    const sessionId = await this.sessionId;
+    if (process.env.ENABLE_DATA_STORE) {
+      sessionId = await createJobShell(tags, api);
+    } else {
+      sessionId = await createjobWorkaround(tags, api, hasPassed, startTime, endTime);
+    }
 
     /**
          * only upload assets if a session was initiated before
@@ -173,27 +168,23 @@ module.exports = class TestrunnerReporter {
 
     await Promise.all([
       api.uploadJobAssets(
-                sessionId,
-                {
-                  files: [
-                    logFilePath,
-                    ...containterLogFiles
-                  ]
-                }
+            sessionId,
+            {
+              files: [
+                logFilePath,
+                ...containterLogFiles
+              ]
+            }
       ).then(
-                (resp) => {
-                  if (resp.errors) {
-                    for (let err of resp.errors) {
-                      console.error(err);
-                    }
-                  }
-                },
-                (e) => log.error('upload failed:', e.stack)
-      ),
-      api.updateJob(process.env.SAUCE_USERNAME, sessionId, {
-        name: jobName,
-        passed: hasPassed
-      })
+            (resp) => {
+              if (resp.errors) {
+                for (let err of resp.errors) {
+                  console.error(err);
+                }
+              }
+            },
+            (e) => log.error('upload failed:', e.stack)
+      )
     ]);
 
     let domain;
