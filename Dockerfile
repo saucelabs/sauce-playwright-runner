@@ -1,4 +1,4 @@
-FROM saucelabs/testrunner-image:v0.1.0
+FROM saucelabs/testrunner-image:v0.1.1
 
 USER root
 
@@ -83,6 +83,8 @@ WORKDIR /home/seluser
 COPY package.json .
 COPY package-lock.json .
 RUN npm ci --production
+ENV PLAYWRIGHT_VERSION=^1.4.1
+
 
 # Playwright caches the downloaded browser by default in ~/.cache/ms-playwright
 # However, running the container in CI may result in a different active user and therefore home folder.
@@ -93,6 +95,10 @@ COPY --chown=seluser:seluser . .
 
 # Workaround for permissions in CI if run with a different user
 RUN chmod 777 -R /home/seluser/
+
+ENV IMAGE_NAME=saucelabs/stt-playwright-jest-node
+ARG BUILD_TAG
+ENV IMAGE_TAG=${BUILD_TAG}
 
 #==================
 # ENTRYPOINT & CMD
