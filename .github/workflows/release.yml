@@ -19,7 +19,7 @@ jobs:
         name: Prepare
         id: prep
         run: |
-          VERSION=${GITHUB_REF#refs/tags}
+          VERSION=${GITHUB_REF#refs/tags/}
           echo ::set-output name=version::${VERSION}
       -
         name: Login to DockerHub
@@ -93,10 +93,10 @@ jobs:
       - name: Prepare
         id: prep
         run: |
-          VERSION=${GITHUB_REF#refs/tags}
+          VERSION=${GITHUB_REF#refs/tags/}
           echo ::set-output name=version::${VERSION}
       - name: Update Release version
-        run: sed -i "s/VERSION/${{ steps.prep.outputs.version }}/g" .saucetpl/.sauce/config.yml
+        run: sed -i "s/##VERSION##/${{ steps.prep.outputs.version }}/g" .saucetpl/.sauce/config.yml
       - name: Archive template
         run: cd .saucetpl && tar -czf ../saucetpl.tar.gz .
       - name: Check if release exists
