@@ -1,6 +1,7 @@
 {
     "playwright": {
-        "version": "1.4.1"
+        "version": "1.4.1",
+        "projectPath": "path/to/project"
     },
     "suites": [
         {

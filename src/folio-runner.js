@@ -3,7 +3,7 @@ const { spawn, execSync } = require('child_process');
 const _ = require('lodash');
 const path = require('path');
 const { shouldRecordVideo, getAbsolutePath, loadRunConfig, toHyphenated, getArgs } = require('./utils');
-const { createjobLegacy, createJobShell } = require('./reporter');
+const { createJobShell } = require('./reporter');
 const SauceLabs = require('saucelabs').default;
 const { LOG_FILES } = require('./constants');
 const fs = require('fs');
@@ -15,7 +15,7 @@ const jobName = process.env.SAUCE_JOB_NAME || `DevX Playwright Test Run - ${(new
 async function run (nodeBin, runCfgPath, suiteName) {
   runCfgPath = getAbsolutePath(runCfgPath);
   const runCfg = await loadRunConfig(runCfgPath);
-  const cwd = path.dirname(runCfgPath);
+  const cwd = process.cwd();
   let defaultArgs = {
     param: {
       headful: process.env.SAUCE_VM ? true : false,
@@ -40,7 +40,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
   const folioBin = path.join(__dirname, '..', 'node_modules', '.bin', 'folio');
   const procArgs = [folioBin];
 
-  // Convert the JSON values to command line arguments
+  // Converts the JSON values to command line arguments
   // (CLI reference https://github.com/microsoft/playwright-test/blob/master/README.md#run-the-test)
   for (let [key, value] of Object.entries(args)) {
     key = toHyphenated(key);
@@ -68,11 +68,15 @@ async function run (nodeBin, runCfgPath, suiteName) {
       procArgs.push(`--${key}`);
       procArgs.push(value);
     }
+  }
 
+  const projectPath = runCfg.playwright.projectPath ? path.join(cwd, runCfg.playwright.projectPath) : cwd;
+  if (!fs.existsSync(projectPath)) {
+    throw new Error(`Could not find projectPath directory: '${projectPath}'`);
   }
 
   // TODO: properly format shell args here
-  const folioProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd, env});
+  const folioProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd: projectPath, env});
 
   const folioPromise = new Promise((resolve) => {
     folioProc.on('close', (code /*, ...args*/) => {
@@ -92,12 +96,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
     if (tags) {
       tags = tags.split(',');
     }
-    let sessionId;
-    if (process.env.ENABLE_DATA_STORE) {
-      sessionId = await createJobShell(tags, api);
-    } else {
-      sessionId = await createjobLegacy(tags, api);
-    }
+    let sessionId = await createJobShell(tags, api);
     const containerLogFiles = LOG_FILES.filter(
       (path) => fs.existsSync(path));
 
@@ -116,7 +115,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
     }
 
     let files = [
-      path.join(process.cwd(), 'console.log'),
+      path.join(cwd, 'console.log'),
       path.join(cwd, '__assets__', 'junit.xml'), // TOOD: Should add junit.xml.json as well
       ...containerLogFiles
     ];

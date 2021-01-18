@@ -200,5 +200,4 @@ module.exports = class TestrunnerReporter {
   }
 };
 
-module.exports.createjobLegacy = createjobLegacy;
 module.exports.createJobShell = createJobShell;

@@ -1,5 +1,5 @@
 apiVersion: v1alpha
-kind: folio
+kind: playwright
 sauce:
   region: us-west-1
   metadata:
