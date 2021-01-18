@@ -134,6 +134,10 @@ module.exports = class TestrunnerReporter {
   }
 
   async onRunComplete (test, { testResults, numFailedTests }) {
+    if (process.env.SAUCE_USERNAME === '' || process.env.SAUCE_ACCESS_KEY === '') {
+      console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY');
+      return;
+    }
     endTime = new Date().toISOString();
     log.info('Finished testrun!');
 
