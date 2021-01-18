@@ -28,9 +28,11 @@ describe('folio-runner', function () {
       }
     ]
   };
+  let backupLoadRunConfig;
   describe('.run', function () {
-    let spawnMock, folioProc, backupEnv, fsExistsMock, loadRunConfigSpy;
+    let spawnMock, folioProc, backupEnv, fsExistsMock;
     beforeEach(function () {
+      backupLoadRunConfig = utils.loadRunConfig;
       backupEnv = {};
       spawnMock = jest.spyOn(childProcess, 'spawn');
       fsExistsMock = jest.spyOn(fs, 'existsSync');
@@ -50,8 +52,6 @@ describe('folio-runner', function () {
         return folioProc;
       });
       fsExistsMock.mockImplementation((url) => url.startsWith('/bad/path') ? false : true);
-      loadRunConfigSpy = jest.spyOn(utils, 'loadRunConfig');
-      loadRunConfigSpy.mockImplementation(() => ({...baseRunCfg}));
       process.env = {
         SAUCE_TAGS: 'tag-one,tag-two',
         HELLO: 'world',
@@ -59,9 +59,10 @@ describe('folio-runner', function () {
     });
     afterEach(function () {
       process.env = backupEnv;
-      loadRunConfigSpy.mockReset();
+      utils.loadRunConfig = backupLoadRunConfig;
     });
     it('should run playwright test as a spawn command', async function () {
+      utils.loadRunConfig = jest.fn(() => ({...baseRunCfg}));
       await run('/fake/path/to/node', '/fake/runner/path', 'basic-js');
       const [[nodeBin, procArgs, spawnArgs]] = spawnMock.mock.calls;
       procArgs[0] = path.basename(procArgs[0]);

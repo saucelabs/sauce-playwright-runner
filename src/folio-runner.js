@@ -2,19 +2,21 @@
 const { spawn, execSync } = require('child_process');
 const _ = require('lodash');
 const path = require('path');
-const { shouldRecordVideo, getAbsolutePath, loadRunConfig, toHyphenated, getArgs } = require('./utils');
+const utils = require('./utils');
 const { createJobShell } = require('./reporter');
 const SauceLabs = require('saucelabs').default;
 const { LOG_FILES } = require('./constants');
 const fs = require('fs');
 const glob = require('glob');
 
+const { shouldRecordVideo, getAbsolutePath, toHyphenated, getArgs } = utils;
+
 const region = process.env.SAUCE_REGION || 'us-west-1';
 const jobName = process.env.SAUCE_JOB_NAME || `DevX Playwright Test Run - ${(new Date()).getTime()}`;
 
 async function run (nodeBin, runCfgPath, suiteName) {
   runCfgPath = getAbsolutePath(runCfgPath);
-  const runCfg = await loadRunConfig(runCfgPath);
+  const runCfg = await utils.loadRunConfig(runCfgPath);
   const cwd = process.cwd();
   let defaultArgs = {
     param: {
