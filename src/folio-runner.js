@@ -39,7 +39,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
   }
   args = _.defaultsDeep(suite, args);
 
-  const folioBin = path.join(__dirname, '..', 'node_modules', '.bin', 'folio');
+  const folioBin = path.join(__dirname, '..', 'node_modules', 'folio', 'cli');
   const procArgs = [folioBin];
 
   // Converts the JSON values to command line arguments
