@@ -6,13 +6,15 @@ on:
       - master
 
 jobs:
-  build_and_test:
+  build_and_test_docker:
     runs-on: ubuntu-latest
     steps:
       -
         name: Checkout
         uses: actions/checkout@v2
       
+
+
       - run: make docker
         name: Make Docker
 
@@ -33,7 +35,11 @@ jobs:
           SAUCE_CTL_BINARY: ./saucectl/saucectl
         name: Build Saucectl and run E2E tests
 
-      # Run direct e2e test
+  build_and_test_local:
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm ci --production
+        name: Install dependencies
       - run: node . --suiteName basic-js --runCfgPath ./tests/fixtures/basic-js/sauce-runner.json
         env:
           SAUCE_VM: true

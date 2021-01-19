@@ -15,6 +15,7 @@ docker:
     tag: latest
 playwright:
   version: "1.4.1"
+  projectPath: "tests/e2e/fixtures/basic-js/"
 suites:
   - name: "default"
     param:
