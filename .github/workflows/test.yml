@@ -12,8 +12,6 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
-      
-
 
       - run: make docker
         name: Make Docker
@@ -38,6 +36,9 @@ jobs:
   build_and_test_local:
     runs-on: windows-latest
     steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
       - run: npm ci --production
         name: Install dependencies
       - run: node . --suiteName basic-js --runCfgPath ./tests/fixtures/basic-js/sauce-runner.json
