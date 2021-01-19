@@ -4,7 +4,7 @@ exports[`folio-runner .run should run playwright test as a spawn command 1`] = `
 Array [
   "/fake/path/to/node",
   Array [
-    "folio",
+    "cli",
     "--param",
     "browserName=chromium",
     "--param",
