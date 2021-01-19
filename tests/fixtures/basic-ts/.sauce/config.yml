@@ -1,0 +1,25 @@
+apiVersion: v1alpha
+kind: playwright
+sauce:
+  region: us-west-1
+  metadata:
+    name: Playwright Hello World
+    tags:
+      - e2e
+      - release team
+      - other tag
+    build: Release $CI_COMMIT_SHORT_SHA
+docker:
+  image:
+    name: saucelabs/stt-playwright-jest-node
+    tag: latest
+playwright:
+  version: "1.4.1"
+  projectPath: "tests/e2e/fixtures/basic-ts/"
+suites:
+  - name: "default"
+    param:
+      browserName: "webkit"
+      screenshotOnFailure: 
+      slowMo: 1000
+    testMatch: "**/*.spec.js"

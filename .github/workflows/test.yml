@@ -27,7 +27,7 @@ jobs:
         name: Build Saucectl and run E2E tests
 
       # Run e2e tests (Docker)
-      - run: bash ./tests/e2e/run.sh
+      - run: bash ./tests/run.sh
         env:
           SKIP_CI: true
           SAUCE_CTL_BINARY: ./saucectl/saucectl

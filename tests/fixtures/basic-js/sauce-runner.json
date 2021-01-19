@@ -1,7 +1,7 @@
 {
     "playwright": {
         "version": "1.4.1",
-        "projectPath": "./"
+        "projectPath": "./tests/fixtures/basic-js/"
     },
     "suites": [
         {

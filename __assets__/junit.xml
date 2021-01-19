@@ -1,0 +1,6 @@
+<testsuites id="" name="" tests="1" failures="0" skipped="0" errors="0" time="12.135">
+<testsuite name="tests/test.spec.js" timestamp="1611094543605" hostname="" tests="1" failures="0" skipped="0" time="11.8" errors="0">
+<testcase name="is a basic test with the page" classname="tests/test.spec.js " time="11.8">
+</testcase>
+</testsuite>
+</testsuites>
