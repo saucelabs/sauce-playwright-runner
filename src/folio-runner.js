@@ -1,15 +1,15 @@
 #!/usr/bin/env node
-const { spawn, execSync } = require('child_process');
+const { spawn } = require('child_process');
 const _ = require('lodash');
 const path = require('path');
 const utils = require('./utils');
-const { createJobShell } = require('./reporter');
+const { createJobShell, createJobWorkaround } = require('./reporter');
 const SauceLabs = require('saucelabs').default;
 const { LOG_FILES } = require('./constants');
 const fs = require('fs');
 const glob = require('glob');
 
-const { shouldRecordVideo, getAbsolutePath, toHyphenated, getArgs } = utils;
+const { shouldRecordVideo, getAbsolutePath, toHyphenated, getArgs, exec } = utils;
 
 const region = process.env.SAUCE_REGION || 'us-west-1';
 const jobName = process.env.SAUCE_JOB_NAME || `DevX Playwright Test Run - ${(new Date()).getTime()}`;
@@ -93,12 +93,18 @@ async function run (nodeBin, runCfgPath, suiteName) {
     region
   });
 
-  async function createJob (hasPassed) {
+  async function createJob (hasPassed, startTime, endTime, args, playwright) {
     let tags = process.env.SAUCE_TAGS;
     if (tags) {
       tags = tags.split(',');
     }
-    let sessionId = await createJobShell(tags, api);
+    let sessionId;
+    if (process.env.ENABLE_DATA_STORE) {
+      // TODO: When we enable this make sure it's getting the proper parameters
+      sessionId = await createJobShell(tags, api);
+    } else {
+      sessionId = await createJobWorkaround(tags, api, hasPassed, startTime, endTime, args, playwright);
+    }
     const containerLogFiles = LOG_FILES.filter(
       (path) => fs.existsSync(path));
 
@@ -109,7 +115,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
     if (webmFiles.length > 0) {
       videoLocation = path.join(cwd, '__assets__', 'video.mp4');
       try {
-        await execSync(`ffmpeg -i ${webmFiles[0]} ${videoLocation}`);
+        await exec(`ffmpeg -i ${webmFiles[0]} ${videoLocation}`, {suppressLogs: true});
       } catch (e) {
         videoLocation = null;
         console.error(`Failed to convert ${webmFiles[0]} to mp4: '${e}'`);
@@ -143,12 +149,15 @@ async function run (nodeBin, runCfgPath, suiteName) {
         passed: hasPassed
       })
     ]);
+
+    return sessionId;
   }
 
   try {
+    let startTime = new Date().toISOString();
     const hasPassed = await folioPromise;
-    let sessionId;
-    await createJob(hasPassed);
+    let endTime = new Date().toISOString();
+    let sessionId = await createJob(hasPassed, startTime, endTime, args, runCfg.playwright);
 
     let domain;
     switch (region) {
@@ -171,7 +180,9 @@ if (require.main === module) {
   const {nodeBin, runCfgPath, suiteName} = getArgs();
   run(nodeBin, runCfgPath, suiteName)
     // eslint-disable-next-line promise/prefer-await-to-then
-    .then((passed) => process.exit(passed ? 0 : 1))
+    .then((passed) => {
+      process.exit(passed ? 0 : 1);
+    })
     // eslint-disable-next-line promise/prefer-await-to-callbacks
     .catch((err) => {
       console.log(err);

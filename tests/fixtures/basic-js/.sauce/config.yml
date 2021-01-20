@@ -1,25 +1,19 @@
 apiVersion: v1alpha
-kind: playwright
+metadata:
+  name: Feature XYZ
+  tags:
+  - e2e
+  - release team
+  - other tag
+  build: Release $CI_COMMIT_SHORT_SHA
+suites:
+- name: saucy test
+  match: .*.(spec|test).js$
+playwright:
+- tests/example.test.js
+fileTransfer: mount
+image:
+  base: saucelabs/stt-playwright-jest-node
+  version: v0.2.5
 sauce:
   region: us-west-1
-  metadata:
-    name: Playwright Hello World
-    tags:
-      - e2e
-      - release team
-      - other tag
-    build: Release $CI_COMMIT_SHORT_SHA
-docker:
-  image:
-    name: saucelabs/stt-playwright-jest-node
-    tag: latest
-playwright:
-  version: "1.4.1"
-  projectPath: "tests/e2e/fixtures/basic-js/"
-suites:
-  - name: "default"
-    param:
-      browserName: "webkit"
-      screenshotOnFailure: 
-      slowMo: 1000
-    testMatch: "**/*.spec.js"

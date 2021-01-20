@@ -116,10 +116,12 @@ function toHyphenated (str) {
 
 const COMMAND_TIMEOUT = 5000;
 
-function exec (expression) {
+function exec (expression, {suppressLogs = false}) {
   const cp = shell.exec(expression, { async: true, silent: true });
-  cp.stdout.on('data', (data) => log.info(`${data}`));
-  cp.stderr.on('data', (data) => log.info(`${data}`));
+  if (!suppressLogs) {
+    cp.stdout.on('data', (data) => log.info(`${data}`));
+    cp.stderr.on('data', (data) => log.info(`${data}`));
+  }
 
   return new Promise((resolve) => {
     const timeout = setTimeout(resolve, COMMAND_TIMEOUT);
@@ -150,4 +152,8 @@ function getArgs () {
   return { nodeBin, runCfgPath, suiteName };
 }
 
-module.exports = { exec, logHelper, loadRunConfig, shouldRecordVideo, getAbsolutePath, toHyphenated, getArgs };
+async function supportsFfmpeg () {
+
+}
+
+module.exports = { exec, logHelper, loadRunConfig, shouldRecordVideo, getAbsolutePath, toHyphenated, getArgs, supportsFfmpeg };

@@ -9,8 +9,9 @@ const { LOG_FILES, HOME_DIR, DESIRED_BROWSER } = require('./constants');
 
 const log = logger('reporter');
 
-const region = process.env.SAUCE_REGION || 'us-west-1';
+const region = process.env.SAUCE_REGION || '';
 const tld = region === 'staging' ? 'net' : 'com';
+const { remote } = require('webdriverio');
 
 const api = new SauceLabs({
   user: process.env.SAUCE_USERNAME,
@@ -33,6 +34,7 @@ for (const match of buildMatches) {
   const replacement = process.env[match.slice(1)];
   build = build.replace(match, replacement || '');
 }
+
 
 // NOTE: this function is not available currently.
 // It will be ready once data store API actually works.
@@ -80,20 +82,28 @@ const createJobShell = async (tags, api) => {
       (resp) => {
         sessionId = resp.id;
       },
-      (e) => console.error('Create job failed: ', e.stack)
+      (e) => {
+        console.error('Create job failed: ', e.stack);
+      }
     )
   ]);
 
   return sessionId || 0;
 };
+
 // TODO Tian: this method is a temporary solution for creating jobs via test-composer.
 // Once the global data store is ready, this method will be deprecated.
-const createjobWorkaround = async (tags, api, passed, startTime, endTime) => {
+async function createJobWorkaround (tags, api, passed, startTime, endTime, args, playwright) {
   /**
      * don't try to create a job if no credentials are set
      */
   if (!process.env.SAUCE_USERNAME || !process.env.SAUCE_ACCESS_KEY) {
     return;
+  }
+
+  let browserVersion = DESIRED_BROWSER.toLowerCase() === 'firefox' ? process.env.FF_VER : process.env.CHROME_VER;
+  if (!browserVersion) {
+    browserVersion = playwright.version;
   }
 
   const body = {
@@ -108,9 +118,9 @@ const createjobWorkaround = async (tags, api, passed, startTime, endTime) => {
     passed,
     tags,
     build,
-    browserName: DESIRED_BROWSER,
-    browserVersion: DESIRED_BROWSER.toLowerCase() === 'firefox' ? process.env.FF_VER : process.env.CHROME_VER,
-    platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG
+    browserName: args.param.browserName,
+    browserVersion,
+    platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG,
   };
 
   let sessionId;
@@ -120,11 +130,56 @@ const createjobWorkaround = async (tags, api, passed, startTime, endTime) => {
         (resp) => {
           sessionId = resp.ID;
         },
-        (e) => console.error('Create job failed: ', e.stack)
+        (e) => {
+          console.error('Create job failed: ', e.stack);
+        }
   );
 
   return sessionId || 0;
-};
+}
+
+async function createJobLegacy (api, region, tld, browserName, testName, metadata) {
+  try {
+    const hostname = `ondemand.${region}.saucelabs.${tld}`;
+    await remote({
+      user: process.env.SAUCE_USERNAME,
+      key: process.env.SAUCE_ACCESS_KEY,
+      region,
+      tld,
+      hostname,
+      connectionRetryCount: 0,
+      logLevel: 'silent',
+      capabilities: {
+        browserName,
+        platformName: '*',
+        browserVersion: '*',
+        'sauce:options': {
+          devX: true,
+          name: testName,
+          framework: 'cypress',
+          build: metadata.build,
+          tags: metadata.tags,
+        }
+      }
+    }).catch((err) => err);
+  } catch (e) {
+    console.error(e);
+  }
+
+  let sessionId;
+  try {
+    const { jobs } = await api.listJobs(
+      process.env.SAUCE_USERNAME,
+      { limit: 1, full: true, name: testName }
+    );
+    sessionId = jobs && jobs.length && jobs[0].id;
+  } catch (e) {
+    console.warn('Failed to prepare test', e);
+  }
+
+  return sessionId || 0;
+}
+
 
 module.exports = class TestrunnerReporter {
   async onRunStart () {
@@ -147,7 +202,7 @@ module.exports = class TestrunnerReporter {
     if (process.env.ENABLE_DATA_STORE) {
       sessionId = await createJobShell(tags, api);
     } else {
-      sessionId = await createjobWorkaround(tags, api, hasPassed, startTime, endTime);
+      sessionId = await createJobWorkaround(tags, api, hasPassed, startTime, endTime);
     }
 
     /**
@@ -201,3 +256,5 @@ module.exports = class TestrunnerReporter {
 };
 
 module.exports.createJobShell = createJobShell;
+module.exports.createJobWorkaround = createJobWorkaround;
+module.exports.createJobLegacy = createJobLegacy;
