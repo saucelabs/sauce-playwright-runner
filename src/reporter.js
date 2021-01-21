@@ -9,7 +9,7 @@ const { LOG_FILES, HOME_DIR, DESIRED_BROWSER } = require('./constants');
 
 const log = logger('reporter');
 
-const region = process.env.SAUCE_REGION || '';
+const region = process.env.SAUCE_REGION || 'us-west-1';
 const tld = region === 'staging' ? 'net' : 'com';
 const { remote } = require('webdriverio');
 
