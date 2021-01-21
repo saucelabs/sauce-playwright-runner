@@ -154,12 +154,13 @@ async function run (nodeBin, runCfgPath, suiteName) {
   }
 
   try {
-    if (!process.env.SAUCE_VM) {
-      let startTime = new Date().toISOString();
-      const hasPassed = await folioPromise;
-      let endTime = new Date().toISOString();
-      let sessionId = await createJob(hasPassed, startTime, endTime, args, runCfg.playwright);
+    let startTime = new Date().toISOString();
+    const hasPassed = await folioPromise;
+    let endTime = new Date().toISOString();
 
+    // If it's not a VM, than create the job and upload the assets
+    if (!process.env.SAUCE_VM) {
+      let sessionId = await createJob(hasPassed, startTime, endTime, args, runCfg.playwright);
       let domain;
       switch (region) {
         case 'us-west-1':
@@ -170,8 +171,8 @@ async function run (nodeBin, runCfgPath, suiteName) {
       }
 
       console.log(`\nOpen job details page: https://app.${domain}/tests/${sessionId}\n`);
-      return true;
     }
+    return true;
   } catch (e) {
     console.error(`Could not complete job: '${e}'`);
     return false;
