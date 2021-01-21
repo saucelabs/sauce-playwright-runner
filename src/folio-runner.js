@@ -78,7 +78,6 @@ async function run (nodeBin, runCfgPath, suiteName) {
     throw new Error(`Could not find projectPath directory: '${projectPath}'`);
   }
 
-  // TODO: properly format shell args here
   const folioProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd: projectPath, env});
 
   const folioPromise = new Promise((resolve) => {
