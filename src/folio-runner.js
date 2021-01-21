@@ -166,6 +166,9 @@ async function run (nodeBin, runCfgPath, suiteName) {
         case 'us-west-1':
           domain = 'saucelabs.com';
           break;
+        case 'staging':
+          domain = 'ondemand.staging.saucelabs.net';
+          break;
         default:
           domain = `${region}.saucelabs.com`;
       }
