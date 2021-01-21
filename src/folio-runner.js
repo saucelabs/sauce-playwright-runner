@@ -155,22 +155,24 @@ async function run (nodeBin, runCfgPath, suiteName) {
   }
 
   try {
-    let startTime = new Date().toISOString();
-    const hasPassed = await folioPromise;
-    let endTime = new Date().toISOString();
-    let sessionId = await createJob(hasPassed, startTime, endTime, args, runCfg.playwright);
+    if (!process.env.SAUCE_VM) {
+      let startTime = new Date().toISOString();
+      const hasPassed = await folioPromise;
+      let endTime = new Date().toISOString();
+      let sessionId = await createJob(hasPassed, startTime, endTime, args, runCfg.playwright);
 
-    let domain;
-    switch (region) {
-      case 'us-west-1':
-        domain = 'saucelabs.com';
-        break;
-      default:
-        domain = `${region}.saucelabs.com`;
+      let domain;
+      switch (region) {
+        case 'us-west-1':
+          domain = 'saucelabs.com';
+          break;
+        default:
+          domain = `${region}.saucelabs.com`;
+      }
+
+      console.log(`\nOpen job details page: https://app.${domain}/tests/${sessionId}\n`);
+      return true;
     }
-
-    console.log(`\nOpen job details page: https://app.${domain}/tests/${sessionId}\n`);
-    return true;
   } catch (e) {
     console.error(`Could not complete job: '${e}'`);
     return false;
