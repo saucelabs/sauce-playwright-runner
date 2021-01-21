@@ -41,12 +41,13 @@ async function run (nodeBin, runCfgPath, suiteName) {
 
   const folioBin = path.join(__dirname, '..', 'node_modules', 'folio', 'cli');
   const procArgs = [folioBin];
+  const excludeParams = ['name', 'platform-name', 'browser-name', 'playwright-version'];
 
   // Converts the JSON values to command line arguments
   // (CLI reference https://github.com/microsoft/playwright-test/blob/master/README.md#run-the-test)
   for (let [key, value] of Object.entries(args)) {
     key = toHyphenated(key);
-    if (key.toLowerCase() === 'name') {
+    if (excludeParams.includes(key.toLowerCase())) {
       continue;
     }
 
