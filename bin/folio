@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+
+const { folioRecorder } = require('../src/folio-recorder');
+
+(async () => folioRecorder())();

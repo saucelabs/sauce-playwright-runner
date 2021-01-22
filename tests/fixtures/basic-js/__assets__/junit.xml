@@ -1,6 +1,0 @@
-<testsuites id="" name="" tests="1" failures="0" skipped="0" errors="0" time="5.342">
-<testsuite name="tests/test.spec.js" timestamp="1607208371030" hostname="" tests="1" failures="0" skipped="0" time="5.139" errors="0">
-<testcase name="is a basic test with the page" classname="tests/test.spec.js " time="5.139">
-</testcase>
-</testsuite>
-</testsuites>

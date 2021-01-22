@@ -1,5 +1,8 @@
 const shell = require('shelljs');
 const logger = require('@wdio/logger').default;
+const path = require('path');
+const fs = require('fs');
+const yargs = require('yargs/yargs');
 
 const log = logger('utils');
 const sendString = 'SEND ► ';
@@ -8,7 +11,7 @@ const receiveString = '◀ RECV';
 global._timeOfLastCommand = Date.now();
 
 // eslint-disable-next-line no-unused-vars
-exports.logHelper = (type, severity, message, args, hints) => {
+function logHelper (type, severity, message, args, hints) {
   if (message.includes(receiveString)) {
     const line = message.slice(message.indexOf('{'));
 
@@ -64,13 +67,61 @@ exports.logHelper = (type, severity, message, args, hints) => {
     log.error(`Couldn't parse log line: ${line}`);
   }
   global._timeOfLastCommand = Date.now();
-};
+}
+
+function getAbsolutePath (pathToDir) {
+  if (path.isAbsolute(pathToDir)) {
+    return pathToDir;
+  }
+  return path.join(process.cwd(), pathToDir);
+}
+
+function shouldRecordVideo () {
+  if (process.env.SAUCE_VM) {
+    return false;
+  }
+  let isVideoRecording = process.env.SAUCE_VIDEO_RECORDING;
+  if (isVideoRecording === undefined) {
+    return true;
+  }
+  let videoOption = String(isVideoRecording).toLowerCase();
+  return videoOption === 'true' || videoOption === '1';
+}
+
+function loadRunConfig (cfgPath) {
+  if (fs.existsSync(cfgPath)) {
+    return require(cfgPath);
+  }
+  throw new Error(`Runner config (${cfgPath}) unavailable.`);
+}
+
+/**
+ * Convert a camel-case or snake-case string into a hyphenated one
+ *
+ * @param {str} str String to hyphenate
+ */
+function toHyphenated (str) {
+  const out = [];
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charAt(i);
+    if (char.toUpperCase() === char && char.toLowerCase() !== char) {
+      out.push('-');
+      out.push(char.toLowerCase());
+    } else {
+      out.push(char);
+    }
+  }
+  return out.join('');
+}
 
 const COMMAND_TIMEOUT = 5000;
-exports.exec = (expression) => {
+
+function exec (expression, {suppressLogs = false}) {
   const cp = shell.exec(expression, { async: true, silent: true });
-  cp.stdout.on('data', (data) => log.info(`${data}`));
-  cp.stderr.on('data', (data) => log.info(`${data}`));
+  if (!suppressLogs) {
+    cp.stdout.on('data', (data) => log.info(`${data}`));
+    cp.stderr.on('data', (data) => log.info(`${data}`));
+  }
 
   return new Promise((resolve) => {
     const timeout = setTimeout(resolve, COMMAND_TIMEOUT);
@@ -79,4 +130,30 @@ exports.exec = (expression) => {
       resolve();
     });
   });
-};
+}
+
+function getArgs () {
+  const argv = yargs(process.argv.slice(2))
+      .command('$0', 'the default command')
+      .option('runCfgPath', {
+        alias: 'r',
+        type: 'string',
+        description: 'Path to sauce runner json',
+      })
+      .option('suiteName', {
+        alias: 's',
+        type: 'string',
+        description: 'Select the suite to run'
+      })
+      .demandOption(['runCfgPath', 'suiteName'])
+      .argv;
+  const { runCfgPath, suiteName } = argv;
+  const nodeBin = process.argv[0];
+  return { nodeBin, runCfgPath, suiteName };
+}
+
+async function supportsFfmpeg () {
+
+}
+
+module.exports = { exec, logHelper, loadRunConfig, shouldRecordVideo, getAbsolutePath, toHyphenated, getArgs, supportsFfmpeg };
