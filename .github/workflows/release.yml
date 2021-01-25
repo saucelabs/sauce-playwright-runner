@@ -6,7 +6,31 @@ on:
       - 'v*.*.*'
 
 jobs:
+  version-consistency:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Check that playwright version is synced
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          PLAYWRIGHT_VERSION_LOCKED=`< package-lock.json jq -r '.dependencies["playwright"].version'`
+          echo Comparing "v${VERSION}" with "v${PLAYWRIGHT_VERSION_LOCKED}"
+          if [ "v${PLAYWRIGHT_VERSION_LOCKED}" != "v${VERSION}" ]; then
+            exit 1
+          fi
+
+          TEST_VERSION=0.$(echo ${VERSION} | sed 's/\.//g')
+          PLAYWRIGHT_TEST_VERSION=`< package.json jq -r '.dependencies["@playwright/test"]' | sed -E 's/\.[0-9]+$//'`
+          PLAYWRIGHT_TEST_VERSION_LOCKED=`< package-lock.json jq -r '.dependencies["@playwright/test"].version' | sed -E 's/\.[0-9]+$//'`
+
+          echo Comparing "v${TEST_VERSION}" with "v${PLAYWRIGHT_TEST_VERSION}" and "v${PLAYWRIGHT_TEST_VERSION_LOCKED}"
+          if [ "v${TEST_VERSION}" != "v${PLAYWRIGHT_TEST_VERSION}" ] || [ "v${PLAYWRIGHT_TEST_VERSION}" != "v${PLAYWRIGHT_TEST_VERSION_LOCKED}" ]; then
+            exit 1
+          fi
+          exit 0
   release-docker:
+    needs: version-consistency
     runs-on: ubuntu-latest
     steps:
       -
@@ -35,13 +59,14 @@ jobs:
           context: .
           file: ./Dockerfile
           tags: |
-            saucelabs/stt-playwright-jest-node:latest
-            saucelabs/stt-playwright-jest-node:${{ steps.prep.outputs.version }}
+            saucelabs/stt-playwright-node:latest
+            saucelabs/stt-playwright-node:${{ steps.prep.outputs.version }}
           build-args: |
             BUILD_TAG=${{ steps.prep.outputs.version }}
 
   # TODO: Re-enable this once we start making playwright bundles
   release-windows-bundle:
+    needs: version-consistency
     runs-on: windows-latest
     steps:
       - name: Checkout
@@ -76,11 +101,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: https://uploads.github.com/repos/saucelabs/sauce-playwright-runner/releases/${{ steps.get_release_id.outputs.release_id }}/assets?name=sauce-playwright-runner.zip
+          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.release_id }}/assets?name=sauce-playwright-runner.zip
           asset_path: ./sauce-playwright-win.zip
           asset_name: sauce-playwright-win.zip
           asset_content_type: application/zip
   release-template-bundle:
+    needs: version-consistency
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -94,9 +120,11 @@ jobs:
         id: prep
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
+          NUM_VERSION=${GITHUB_REF#refs/tags/v}
           echo ::set-output name=version::${VERSION}
+          echo ::set-output name=num_version::${NUM_VERSION}
       - name: Update Release version
-        run: sed -i "s/##VERSION##/${{ steps.prep.outputs.version }}/g" .saucetpl/.sauce/config.yml
+        run: sed -i "s/##VERSION##/${{ steps.prep.outputs.num_version }}/g" .saucetpl/.sauce/config.yml
       - name: Archive template
         run: cd .saucetpl && tar -czf ../saucetpl.tar.gz .
       - name: Check if release exists
