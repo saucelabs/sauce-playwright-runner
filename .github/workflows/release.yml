@@ -6,7 +6,31 @@ on:
       - 'v*.*.*'
 
 jobs:
+  version-consistency:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Check that playwright version is synced
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          PLAYWRIGHT_VERSION_LOCKED=`< package-lock.json jq -r '.dependencies["playwright"].version'`
+          echo Comparing "v${VERSION}" with "v${PLAYWRIGHT_VERSION_LOCKED}"
+          if [ "v${PLAYWRIGHT_VERSION_LOCKED}" != "v${VERSION}" ]; then
+            exit 1
+          fi
+
+          TEST_VERSION=$(echo ${VERSION} | sed 's/\.//g')
+          PLAYWRIGHT_TEST_VERSION=`< package.json jq -r '.dependencies["@playwright/test"].version'`
+          PLAYWRIGHT_TEST_VERSION_LOCKED=`< package-lock.json jq -r '.dependencies["@playwright/test"].version'`
+
+          echo Comparing "v${TEST_VERSION}" with "v${PLAYWRIGHT_TEST_VERSION}" and "v${PLAYWRIGHT_TEST_VERSION_LOCKED}"
+          if [ "v${TEST_VERSION}" != "v${PLAYWRIGHT_TEST_VERSION}" ] || [ "v${PLAYWRIGHT_TEST_VERSION}" != "v${PLAYWRIGHT_TEST_VERSION_LOCKED}" ]; then
+            exit 1
+          fi
+          exit 0
   release-docker:
+    depends-on: version-consistency
     runs-on: ubuntu-latest
     steps:
       -
@@ -21,27 +45,28 @@ jobs:
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           echo ::set-output name=version::${VERSION}
-      -
-        name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      -
-        name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          push: true
-          context: .
-          file: ./Dockerfile
-          tags: |
-            saucelabs/stt-playwright-jest-node:latest
-            saucelabs/stt-playwright-jest-node:${{ steps.prep.outputs.version }}
-          build-args: |
-            BUILD_TAG=${{ steps.prep.outputs.version }}
+      # -
+      #   name: Login to DockerHub
+      #   uses: docker/login-action@v1
+      #   with:
+      #     username: ${{ secrets.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
+      # -
+      #   name: Build and push
+      #   uses: docker/build-push-action@v2
+      #   with:
+      #     push: true
+      #     context: .
+      #     file: ./Dockerfile
+      #     tags: |
+      #       saucelabs/stt-playwright-node:latest
+      #       saucelabs/stt-playwright-node:${{ steps.prep.outputs.version }}
+      #     build-args: |
+      #       BUILD_TAG=${{ steps.prep.outputs.version }}
 
   # TODO: Re-enable this once we start making playwright bundles
   release-windows-bundle:
+    depends-on: version-consistency
     runs-on: windows-latest
     steps:
       - name: Checkout
@@ -81,6 +106,7 @@ jobs:
           asset_name: sauce-playwright-win.zip
           asset_content_type: application/zip
   release-template-bundle:
+    depends-on: version-consistency
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
