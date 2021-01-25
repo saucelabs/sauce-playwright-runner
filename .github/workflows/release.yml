@@ -21,7 +21,7 @@ jobs:
           fi
 
           TEST_VERSION=$(echo ${VERSION} | sed 's/\.//g')
-          PLAYWRIGHT_TEST_VERSION=`< package.json jq -r '.dependencies["@playwright/test"].version'`
+          PLAYWRIGHT_TEST_VERSION=`< package.json jq -r '.dependencies["@playwright/test"]'`
           PLAYWRIGHT_TEST_VERSION_LOCKED=`< package-lock.json jq -r '.dependencies["@playwright/test"].version'`
 
           echo Comparing "v${TEST_VERSION}" with "v${PLAYWRIGHT_TEST_VERSION}" and "v${PLAYWRIGHT_TEST_VERSION_LOCKED}"
