@@ -11,8 +11,8 @@ sauce:
 docker:
   fileTransfer: mount
   image:
-    name: saucelabs/stt-playwright-jest-node
-    tag: latest
+    name: saucelabs/stt-playwright-node
+    tag: local
 playwright:
   projectPath: ./tests
   version: 1.7.1
@@ -21,6 +21,6 @@ suites:
     # platformName: "Windows 10"
     testMatch: '**/*.js'
     # Playwright-test settings
-    param:
+    params:
       browserName: "firefox"
       slowMo: 1000

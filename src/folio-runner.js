@@ -158,24 +158,31 @@ async function run (nodeBin, runCfgPath, suiteName) {
     const hasPassed = await folioPromise;
     let endTime = new Date().toISOString();
 
-    // If it's not a VM, than create the job and upload the assets
-    if (!process.env.SAUCE_VM) {
-      let sessionId = await createJob(hasPassed, startTime, endTime, args, runCfg.playwright);
-      let domain;
-      switch (region) {
-        case 'us-west-1':
-          domain = 'saucelabs.com';
-          break;
-        case 'staging':
-          domain = 'ondemand.staging.saucelabs.net';
-          break;
-        default:
-          domain = `${region}.saucelabs.com`;
-      }
-
-      console.log(`\nOpen job details page: https://app.${domain}/tests/${sessionId}\n`);
+    // If it's a VM, don't try to upload the assets
+    if (process.env.SAUCE_VM) {
+      return hasPassed;
     }
-    return true;
+
+    if (!(process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY)) {
+      console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY');
+      return hasPassed;
+    }
+
+    let sessionId = await createJob(hasPassed, startTime, endTime, args, runCfg.playwright);
+    let domain;
+    switch (region) {
+      case 'us-west-1':
+        domain = 'saucelabs.com';
+        break;
+      case 'staging':
+        domain = 'ondemand.staging.saucelabs.net';
+        break;
+      default:
+        domain = `${region}.saucelabs.com`;
+    }
+
+    console.log(`\nOpen job details page: https://app.${domain}/tests/${sessionId}\n`);
+    return hasPassed;
   } catch (e) {
     console.error(`Could not complete job: '${e}'`);
     return false;

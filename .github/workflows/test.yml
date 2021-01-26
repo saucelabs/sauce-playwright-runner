@@ -22,9 +22,13 @@ jobs:
           repository: saucelabs/saucectl
           path: saucectl
 
-      # Build saucectl
       - run: pushd saucectl && make build && popd
         name: Build Saucectl and run E2E tests
+
+      # There is discrepencies between uid used to clone and uid in container,
+      # As a temporary measure, we chmod files to allow test outputs to be written.
+      - name: Workaround for container permissions
+        run: sudo chmod -R 777 tests/
 
       # Run e2e tests (Docker)
       - run: bash ./tests/run.sh
