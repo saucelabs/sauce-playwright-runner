@@ -3,7 +3,7 @@
 cnt=0
 max=120
 while true;do
-    if [ $cnt -qt $max ];then
+    if [ $cnt -gt $max ];then
         echo "Timed out while waiting for DISPLAY file."
         exit 1
     fi
