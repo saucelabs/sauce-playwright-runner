@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+cnt=0
+max=120
+while true;do
+    if [ $cnt -qt $max ];then
+        echo "Timed out while waiting for DISPLAY file."
+        exit 1
+    fi
+    if [ -f DISPLAY ];then
+        exit 0
+    fi
+    cnt=$((cnt+1))
+    sleep 1
+done
+
+exit 0
