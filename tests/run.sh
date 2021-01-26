@@ -3,12 +3,6 @@
 unset SAUCE_USERNAME
 unset SAUCE_ACCESS_KEY
 
-# Install saucectl
-echo "Install saucectl"
-npm install saucectl --no-save > /dev/null 2>&1
-
-SAUCECTL="npx saucectl"
-
 # build image
 echo "Build docker images"
 docker build -t saucelabs/stt-playwright-node:local . > /dev/null 2>&1
@@ -23,7 +17,7 @@ for i in ${tests[@]}; do
 
     echo "Running ${key}:"
     pushd ./tests/fixtures/${key}/ > /dev/null
-    ${SAUCECTL} run -c .sauce/config.yml > ${tmpfile} 2>&1
+    ${SAUCE_CTL_BINARY} run -c .sauce/config.yml > ${tmpfile} 2>&1
     RETURN_CODE=${?}
     popd > /dev/null
 
