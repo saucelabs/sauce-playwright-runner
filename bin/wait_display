@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 
+echo "Waiting for DISPLAY to be available"
+
 cnt=0
-max=120
+max=10
 while true;do
     if [ $cnt -gt $max ];then
-        echo "Timed out while waiting for DISPLAY file."
+        echo " -> Timed out"
         exit 1
     fi
     if [ -f DISPLAY ];then
+        echo " -> OK"
         exit 0
     fi
     cnt=$((cnt+1))
