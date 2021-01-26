@@ -1,0 +1,17 @@
+{
+    "playwright": {
+        "version": "1.7.1",
+        "projectPath": "./tests/fixtures/basic-js/"
+    },
+    "suites": [
+        {
+            "name": "basic-js",
+            "param": {
+              "browserName": "chromium",
+              "headful": true,
+              "slowMo": 1000
+            },
+            "testMatch": "**/*.js"
+        }
+    ]
+}
