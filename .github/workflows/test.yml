@@ -22,9 +22,11 @@ jobs:
           repository: saucelabs/saucectl
           path: saucectl
 
-      # Build saucectl
       - run: pushd saucectl && make build && popd
         name: Build Saucectl and run E2E tests
+
+      - name: Workaround for container permissions
+        run: sudo chmod -R 777 tests/
 
       # Run e2e tests (Docker)
       - run: bash ./tests/run.sh
