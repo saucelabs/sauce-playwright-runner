@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { it, expect } from '@playwright/test';
+const { it, expect } = require('@playwright/test');
 
 it('is a basic test with the page', async ({ page }) => {
   await page.goto('https://playwright.dev/');
-  expect(await page.innerText('.navbar__title')).toBe('Playwright');
+  expect(await page.innerText('.navbar__title')).toBe('failure');
 });
