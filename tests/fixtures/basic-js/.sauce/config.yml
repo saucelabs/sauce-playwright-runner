@@ -10,9 +10,7 @@ sauce:
     build: "$BUILD_ID"
 docker:
   fileTransfer: mount
-  image:
-    name: saucelabs/stt-playwright-node
-    tag: local
+  image: saucelabs/stt-playwright-node:local
 playwright:
   projectPath: ./tests
   version: 1.7.1
