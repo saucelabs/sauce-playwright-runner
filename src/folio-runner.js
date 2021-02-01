@@ -25,10 +25,6 @@ async function run (nodeBin, runCfgPath, suiteName) {
     },
     reporter: 'junit,line',
   };
-  let env = {
-    ...process.env,
-    FOLIO_JUNIT_OUTPUT_NAME: path.join(cwd, '__assets__', 'junit.xml')
-  };
   let args = _.defaultsDeep(defaultArgs, {
     output: path.join(cwd, '__assets__'),
   });
@@ -37,11 +33,16 @@ async function run (nodeBin, runCfgPath, suiteName) {
   if (!suite) {
     throw new Error(`Could not find suite named '${suiteName}'`);
   }
+  let env = {
+    ...process.env,
+    ...suite.env,
+    FOLIO_JUNIT_OUTPUT_NAME: path.join(cwd, '__assets__', 'junit.xml')
+  };
   args = _.defaultsDeep(suite, args);
 
   const folioBin = path.join(__dirname, '..', 'node_modules', 'folio', 'cli');
   const procArgs = [folioBin];
-  const excludeParams = ['name', 'platform-name', 'browser-name', 'playwright-version'];
+  const excludeParams = ['name', 'platform-name', 'browser-name', 'playwright-version', 'env'];
 
   // Converts the JSON values to command line arguments
   // (CLI reference https://github.com/microsoft/playwright-test/blob/master/README.md#run-the-test)
