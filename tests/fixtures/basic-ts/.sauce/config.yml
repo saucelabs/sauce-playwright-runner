@@ -18,7 +18,7 @@ suites:
   - name: default
     params:
       browserName: webkit
-      screenshotOnFailure:
+      screenshotOnFailure: false
       slowMo: 1000
       headful: false
     testMatch: "**/*.spec.ts"
