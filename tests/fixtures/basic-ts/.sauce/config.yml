@@ -10,9 +10,7 @@ sauce:
       - other tag
     build: Release $CI_COMMIT_SHORT_SHA
 docker:
-  image:
-    name: saucelabs/stt-playwright-node
-    tag: local
+  image: saucelabs/stt-playwright-node:local
 playwright:
   version: 1.7.1
   projectPath: ./tests/
@@ -20,7 +18,7 @@ suites:
   - name: default
     params:
       browserName: webkit
-      screenshotOnFailure: 
+      screenshotOnFailure: false
       slowMo: 1000
       headful: false
     testMatch: "**/*.spec.ts"
