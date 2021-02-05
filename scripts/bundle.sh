@@ -15,3 +15,6 @@ npm ci --production
 npx folio --version
 # TODO: Add "saucectl" tests here
 popd
+
+# Add missing vcruntime140_1.dll
+cp ./libs/vcruntime140_1.dll ${PLAYWRIGHT_BROWSERS_PATH}/firefox-*/firefox/
