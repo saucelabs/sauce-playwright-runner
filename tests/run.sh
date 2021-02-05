@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-unset SAUCE_USERNAME
-unset SAUCE_ACCESS_KEY
-
 SAUCECTL=$(realpath ${SAUCE_CTL_BINARY})
 # build image
 echo "Build docker images"
