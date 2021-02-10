@@ -120,7 +120,7 @@ jobs:
         id: prep
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
-          NUM_VERSION=${GITHUB_REF#refs/tags/v}
+          NUM_VERSION=`< package-lock.json jq -r '.dependencies["playwright"].version'`
           echo ::set-output name=version::${VERSION}
           echo ::set-output name=num_version::${NUM_VERSION}
       - name: Update Release version
