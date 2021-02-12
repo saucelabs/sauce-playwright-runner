@@ -100,6 +100,9 @@ ENV IMAGE_NAME=saucelabs/stt-playwright-node
 ARG BUILD_TAG
 ENV IMAGE_TAG=${BUILD_TAG}
 
+# Let saucectl know where to read job details url
+LABEL com.saucelabs.job-details-url=/tmp/output-job-details-url
+
 #==================
 # ENTRYPOINT & CMD
 #==================
