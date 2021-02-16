@@ -185,9 +185,9 @@ async function run (nodeBin, runCfgPath, suiteName) {
     const jobDetailsUrl = `https://app.${domain}/tests/${sessionId}`;
     console.log(`\nOpen job details page: ${jobDetailsUrl}\n`);
 
-    // Store file containing job-details url.
-    // Path is similar to com.saucelabs.job-details-url LABEL in Dockerfile.
-    fs.writeFileSync('/tmp/output-job-details-url', JSON.stringify({
+    // Store file containing details like job-details url.
+    // Path is similar to com.saucelabs.job-info LABEL in Dockerfile.
+    fs.writeFileSync('/tmp/output.json', JSON.stringify({
       jobDetailsUrl
     }));
 
