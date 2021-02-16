@@ -187,7 +187,9 @@ async function run (nodeBin, runCfgPath, suiteName) {
 
     // Store file containing job-details url.
     // Path is similar to com.saucelabs.job-details-url LABEL in Dockerfile.
-    fs.writeFileSync('/tmp/output-job-details-url', jobDetailsUrl);
+    fs.writeFileSync('/tmp/output-job-details-url', JSON.stringify({
+      jobDetailsUrl
+    }));
 
     return hasPassed;
   } catch (e) {
