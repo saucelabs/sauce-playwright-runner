@@ -182,7 +182,15 @@ async function run (nodeBin, runCfgPath, suiteName) {
         domain = `${region}.saucelabs.com`;
     }
 
-    console.log(`\nOpen job details page: https://app.${domain}/tests/${sessionId}\n`);
+    const jobDetailsUrl = `https://app.${domain}/tests/${sessionId}`;
+    console.log(`\nOpen job details page: ${jobDetailsUrl}\n`);
+
+    // Store file containing details like job-details url.
+    // Path is similar to com.saucelabs.job-info LABEL in Dockerfile.
+    fs.writeFileSync('/tmp/output.json', JSON.stringify({
+      jobDetailsUrl
+    }));
+
     return hasPassed;
   } catch (e) {
     console.error(`Could not complete job: '${e}'`);
