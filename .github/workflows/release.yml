@@ -1,65 +1,120 @@
-name: Docker Release
+name: Release New Version
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      releaseType:
+        description: 'Release type - major, minor or patch'
+        required: true
+        default: 'patch'
 
 jobs:
-  release-docker:
+  create-release-draft:
     runs-on: ubuntu-latest
     steps:
       -
+        name: Clone Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      -
+        name: Setup Node version
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      -
+        name: Setup Git
+        run: |
+          git config --global user.name "devx-sauce-bot"
+          git config --global user.email "devx.bot@saucelabs.com"
+      -
+        name: Install dependencies
+        run: npm ci
+      -
+        name: Release
+        run: npm run release:ci -- ${{github.event.inputs.releaseType}}
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+  release-docker:
+    runs-on: ubuntu-latest
+    needs: [create-release-draft]
+    steps:
+      -
+        name: Find Draft tag
+        id: prep
+        run: |
+          VERSION=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases | jq -r '.[0] | select(.draft == true) | .tag_name')
+          RELEASE_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases | jq -r '.[0] | select(.draft == true) | .id')
+          if [ "${VERSION}" = "" ];then
+            echo "No draft version found"
+            exit 1
+          fi
+          echo ::set-output name=version::${VERSION}
+          echo ::set-output name=release_id::${RELEASE_ID}
+      -
         name: Checkout
         uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.prep.output.version }}
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-      -
-        name: Prepare
-        id: prep
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/}
-          echo ::set-output name=version::${VERSION}
-      -
-        name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      -
-        name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          push: true
-          context: .
-          file: ./Dockerfile
-          tags: |
-            saucelabs/stt-playwright-node:latest
-            saucelabs/stt-playwright-node:${{ steps.prep.outputs.version }}
-          build-args: |
-            BUILD_TAG=${{ steps.prep.outputs.version }}
+      # -
+      #   name: Login to DockerHub
+      #   uses: docker/login-action@v1
+      #   with:
+      #     username: ${{ secrets.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
+      # -
+      #   name: Build and push
+      #   uses: docker/build-push-action@v2
+      #   with:
+      #     push: true
+      #     context: .
+      #     file: ./Dockerfile
+      #     tags: |
+      #       saucelabs/stt-playwright-node:latest
+      #       saucelabs/stt-playwright-node:${{ steps.prep.outputs.version }}
+      #     build-args: |
+      #       BUILD_TAG=${{ steps.prep.outputs.version }}
 
-  # TODO: Re-enable this once we start making playwright bundles
   release-windows-bundle:
     runs-on: windows-latest
+    needs: [create-release-draft]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Use Node.js v12.x
+      -
+        name: Find draft tag
+        id: prep
+        run: |
+          $res = Invoke-WebRequest -Uri "https://api.github.com/repos/${{ github.repository }}/releases" -Headers @{'Authorization' = 'token ${{ secrets.GITHUB_TOKEN }}'}
+          $jsonObj = ConvertFrom-Json $([String]::new($res.Content))
+          $latestRelease = $jsonObj[0]
+          $draft = $latestRelease.draft
+          $tagName = $latestRelease.tag_name
+          $releaseId = $latestRelease.id
+
+          if ( ! $draft ) {
+            exit 1
+          }
+
+          if ( $tagName -eq "" ) {
+            echo "No draft version found"
+            exit 1
+          }
+          Write-Output "::set-output name=version::$tagName"
+          Write-Output "::set-output name=release_id::$releaseId"
+      -
+        name: Checkout
+        uses: actions/checkout@v2 
+        with:
+          ref: ${{ steps.prep.output.version }}
+      -
+        name: Use Node.js v12.x
         uses: actions/setup-node@v1
         with:
           node-version: 12.x
       - run: npm install
-      - name: Get release ID
-        id: get_release_id
-        run: |
-          echo "::set-output name=release_id::$(node ./.github/workflows/helpers/print-release-id.js)"
-        env:
-          GH_REF: ${{ github.ref }}
-          GH_REPO: ${{ github.repository }}
-      - name: Print release id
-        run: echo ${{ steps.get_release_id.outputs.release_id }}
       - name: Bundle Directory
         run: bash ./scripts/bundle.sh
       - name: List bundle contents
@@ -76,59 +131,66 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.release_id }}/assets?name=sauce-playwright-runner.zip
+          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-playwright-runner.zip
           asset_path: ./sauce-playwright-win.zip
           asset_name: sauce-playwright-win.zip
           asset_content_type: application/zip
+
   release-template-bundle:
     runs-on: ubuntu-latest
+    needs: [create-release-draft]
     steps:
-      - name: Checkout
+      -
+        name: Find Draft tag
+        id: prep
+        run: |
+          VERSION=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases | jq -r '.[0] | select(.draft == true) | .tag_name')
+          RELEASE_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases | jq -r '.[0] | select(.draft == true) | .id')
+          if [ "${VERSION}" = "" ];then
+            echo "No draft version found"
+            exit 1
+          fi
+          echo ::set-output name=version::${VERSION}
+          echo ::set-output name=release_id::${RELEASE_ID}
+      -
+        name: Checkout
         uses: actions/checkout@v2
-      - name: Use Node.js v14.x
+        with:
+          ref: ${{ steps.prep.output.version }}
+      -
+        name: Use Node.js v14.x
         uses: actions/setup-node@v1
         with:
           node-version: 14.x
-      - run: npm install
-      - name: Prepare
-        id: prep
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/}
-          NUM_VERSION=`< package-lock.json jq -r '.dependencies["playwright"].version'`
-          echo ::set-output name=version::${VERSION}
-          echo ::set-output name=num_version::${NUM_VERSION}
-      - name: Update Release version
-        run: sed -i "s/##VERSION##/${{ steps.prep.outputs.num_version }}/g" .saucetpl/.sauce/config.yml
-      - name: Archive template
+      -
+        name: Print release id
+        run: echo ${{ steps.prep.outputs.release_id }}
+      -
+        name: Archive template
         run: cd .saucetpl && tar -czf ../saucetpl.tar.gz .
-      - name: Check if release exists
-        id: check_release
-        run: echo ::set-output name=success::$(curl -s -o /dev/null -w "%{http_code}" https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ steps.prep.outputs.version }})
-      - name: Create Release
-        id: create_release
-        if: steps.check_release.outputs.success != '200'
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.prep.outputs.version }}
-          release_name: Release ${{ steps.prep.outputs.version }}
-          body: Release ${{ steps.prep.outputs.version }}
-          draft: false
-      - name: Get release ID
-        id: get_release_id
-        run: |
-          echo "::set-output name=release_id::$(node ./.github/workflows/helpers/print-release-id.js)"
-        env:
-          GH_REF: ${{ github.ref }}
-          GH_REPO: ${{ github.repository }}
-      - name: Upload Template Asset
+      -
+        name: Upload Template Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.release_id }}/assets?name=saucetpl.tar.gz
+          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=saucetpl.tar.gz
           asset_path: ./saucetpl.tar.gz
           asset_name: saucetpl.tar.gz
           asset_content_type: application/tar+gzip
+
+  publish-release:
+    runs-on: ubuntu-latest
+    needs: [release-docker, release-windows-bundle, release-template-bundle]
+    steps:
+      -
+        name: Publish release
+        run: |
+          RELEASE_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases | jq -r '.[0] | select(.draft == true) | .id')
+          if [ "${RELEASE_ID}" -eq "" ];then
+            exit 1
+          fi
+          curl -f -X PATCH -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/${{ github.repository }}/releases/${RELEASE_ID} \
+            -d '{"draft":"false"}'
