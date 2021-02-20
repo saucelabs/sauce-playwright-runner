@@ -12,7 +12,12 @@
     "test": "./bin/wait_display && DISPLAY=\"$(cat DISPLAY)\" ./bin/folio",
     "test-integration": "bash tests/integration/integration-tests.sh",
     "lint": "eslint tests/ src/",
-    "unit-test": "jest --env node"
+    "unit-test": "jest --env node",
+    "release": "release-it --github.release",
+    "release:ci": "npm run release -- --ci --npm.skipChecks --no-git.requireCleanWorkingDir",
+    "release:patch": "npm run release -- patch",
+    "release:minor": "npm run release -- minor",
+    "release:major": "npm run release -- major"
   },
   "repository": {
     "type": "git",
