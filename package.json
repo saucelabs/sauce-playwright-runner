@@ -1,6 +1,6 @@
 {
   "name": "sauce-playwright-runner",
-  "version": "1.7.4",
+  "version": "1.7.5",
   "description": "Sauce Labs Playwright Test Runner",
   "license": "MIT",
   "private": true,

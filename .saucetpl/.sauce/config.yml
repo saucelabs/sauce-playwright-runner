@@ -9,7 +9,7 @@ sauce:
       - e2e
     build: "$BUILD_ID"
 playwright:
-  version: ##VERSION##
+  version: 1.7.1
   projectPath: tests/
 docker:
   fileTransfer: mount
