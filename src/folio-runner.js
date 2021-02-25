@@ -34,6 +34,11 @@ async function createJob (hasPassed, startTime, endTime, args, playwright) {
   } else {
     sessionId = await createJobWorkaround(tags, api, hasPassed, startTime, endTime, args, playwright);
   }
+
+  if (!sessionId) {
+    throw new Error('Unable to retrieve test entry. Assets won\'t be uploaded.');
+  }
+
   const containerLogFiles = LOG_FILES.filter(
     (path) => fs.existsSync(path));
 
@@ -202,7 +207,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
     return hasPassed;
   }
 
-  runReporter({ hasPassed, startTime, endTime, args, playwright: runCfg.playwright });
+  await runReporter({ hasPassed, startTime, endTime, args, playwright: runCfg.playwright });
   return hasPassed;
 }
 
