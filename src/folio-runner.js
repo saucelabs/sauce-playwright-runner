@@ -154,48 +154,52 @@ async function run (nodeBin, runCfgPath, suiteName) {
     return sessionId;
   }
 
-  try {
-    let startTime = new Date().toISOString();
-    const hasPassed = await folioPromise;
-    let endTime = new Date().toISOString();
+  async function runReporter ({ hasPassed, startTime, endTime, args, playwright }) {
+    let jobDetailsUrl, reportingSucceeded = false;
+    try {
+      let sessionId = await createJob(hasPassed, startTime, endTime, args, playwright);
+      let domain;
+      switch (region) {
+        case 'us-west-1':
+          domain = 'saucelabs.com';
+          break;
+        case 'staging':
+          domain = 'ondemand.staging.saucelabs.net';
+          break;
+        default:
+          domain = `${region}.saucelabs.com`;
+      }
 
-    // If it's a VM, don't try to upload the assets
-    if (process.env.SAUCE_VM) {
-      return hasPassed;
+      reportingSucceeded = true;
+      jobDetailsUrl = `https://app.${domain}/tests/${sessionId}`;
+      console.log(`\nOpen job details page: ${jobDetailsUrl}\n`);
+    } catch (e) {
+      console.log(`Failed to upload results to Sauce Labs. Reason: ${e.message}`);
+    } finally {
+      utils.updateExportedValueToSaucectl({ jobDetailsUrl, reportingSucceeded });
     }
-
-    if (!(process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY)) {
-      console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY');
-      return hasPassed;
-    }
-
-    let sessionId = await createJob(hasPassed, startTime, endTime, args, runCfg.playwright);
-    let domain;
-    switch (region) {
-      case 'us-west-1':
-        domain = 'saucelabs.com';
-        break;
-      case 'staging':
-        domain = 'ondemand.staging.saucelabs.net';
-        break;
-      default:
-        domain = `${region}.saucelabs.com`;
-    }
-
-    const jobDetailsUrl = `https://app.${domain}/tests/${sessionId}`;
-    console.log(`\nOpen job details page: ${jobDetailsUrl}\n`);
-
-    // Store file containing details like job-details url.
-    // Path is similar to com.saucelabs.job-info LABEL in Dockerfile.
-    fs.writeFileSync('/tmp/output.json', JSON.stringify({
-      jobDetailsUrl
-    }));
-
-    return hasPassed;
-  } catch (e) {
-    console.error(`Could not complete job: '${e}'`);
-    return false;
   }
+
+  let startTime, endTime, hasPassed = false;
+  try {
+    startTime = new Date().toISOString();
+    hasPassed = await folioPromise;
+    endTime = new Date().toISOString();
+  } catch (e) {
+    console.error(`Could not complete job. Reason: ${e}`);
+  }
+
+  // If it's a VM, don't try to upload the assets
+  if (process.env.SAUCE_VM) {
+    return hasPassed;
+  }
+
+  if (!(process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY)) {
+    console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY');
+    return hasPassed;
+  }
+  runReporter({ hasPassed, startTime, endTime, args, playwright: runCfg.playwright });
+  return hasPassed;
 }
 
 if (require.main === module) {

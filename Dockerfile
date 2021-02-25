@@ -102,6 +102,7 @@ ENV IMAGE_TAG=${BUILD_TAG}
 
 # Let saucectl know where to read job details url
 LABEL com.saucelabs.job-info=/tmp/output.json
+RUN echo "{}" > /tmp/output.json
 
 #==================
 # ENTRYPOINT & CMD
