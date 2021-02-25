@@ -4,6 +4,7 @@ const _ = require('lodash');
 const path = require('path');
 const utils = require('./utils');
 const { createJobShell, createJobWorkaround } = require('./reporter');
+const { updateExportedValueToSaucectl } = require('./saucectl-exporter');
 const SauceLabs = require('saucelabs').default;
 const { LOG_FILES } = require('./constants');
 const fs = require('fs');
@@ -110,7 +111,7 @@ async function runReporter ({ hasPassed, startTime, endTime, args, playwright })
   } catch (e) {
     console.log(`Failed to upload results to Sauce Labs. Reason: ${e.message}`);
   } finally {
-    utils.updateExportedValueToSaucectl({ jobDetailsUrl, reportingSucceeded });
+    updateExportedValueToSaucectl({ jobDetailsUrl, reportingSucceeded });
   }
 }
 
