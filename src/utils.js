@@ -165,11 +165,13 @@ function exportValueToSaucectl (payload) {
 }
 
 function updateExportedValueToSaucectl (data) {
-  const st = fs.statSync(OUTPUT_FILE_PATH);
-  let fileData = {};
-  if (st && st.isFile()) {
-    fileData = JSON.parse(fs.readFileSync(OUTPUT_FILE_PATH)) || {};
-  }
+  let fileData;
+  try {
+    const st = fs.statSync(OUTPUT_FILE_PATH);
+    if (st.isFile()) {
+      fileData = JSON.parse(fs.readFileSync(OUTPUT_FILE_PATH)) || {};
+    }
+  } catch (e) {}
   fileData = { ...fileData, ...data };
   exportValueToSaucectl(fileData);
 }
