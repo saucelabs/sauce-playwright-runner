@@ -5,128 +5,169 @@ on:
     inputs:
       releaseType:
         description: 'Release type - major, minor or patch'
-        required: true
-        default: 'patch'
+        required: false
+        default: ''
+      preReleaseFlavor:
+        description: 'Pre-Release flavor - rc, beta, or anything'
+        required: false
+        default: ''
 
 jobs:
   create-release-draft:
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
         with:
+          ref: ${{ github.ref }}
           fetch-depth: 0
-      -
-        name: Setup Node version
+
+      - name: Setup Node version
         uses: actions/setup-node@v1
         with:
           node-version: 14.x
-      -
-        name: Setup Git
+
+      - name: Setup Git
         run: |
           git config --global user.name "devx-sauce-bot"
           git config --global user.email "devx.bot@saucelabs.com"
-      -
-        name: Install dependencies
+
+      - name: Install dependencies
         run: npm ci
-      -
-        name: Release
-        run: npm run release:ci -- ${{github.event.inputs.releaseType}}
+
+      - name: generate (pre-)release draft
         env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "${{ github.event.inputs.releaseType }}" ] && [ -z "${{ github.event.inputs.preReleaseFlavor }}" ];then
+            echo "No release type provided."
+            exit 1
+          fi
+
+          if [ -n "${{ github.event.inputs.preReleaseFlavor }}" ];then
+            PRE_RELEASE_ARGS="--preRelease=${{ github.event.inputs.preReleaseFlavor }} --github.preRelease"
+          fi
+
+          npx release-it ${{ github.event.inputs.releaseType }} ${PRE_RELEASE_ARGS}
 
   release-docker:
     runs-on: ubuntu-latest
     needs: [create-release-draft]
     steps:
-      -
-        name: Find Draft tag
+      - name: Find matching draft tag
         id: prep
         run: |
-          VERSION=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases | jq -r '.[0] | select(.draft == true) | .tag_name')
-          RELEASE_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases | jq -r '.[0] | select(.draft == true) | .id')
+          VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.draft == true) | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
+          RELEASE_ID=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.draft == true) | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .id")
+
           if [ "${VERSION}" = "" ];then
-            echo "No draft version found"
-            exit 1
+              echo "No draft version found"
+              exit 1
           fi
           echo ::set-output name=version::${VERSION}
           echo ::set-output name=release_id::${RELEASE_ID}
-      -
-        name: Checkout
-        uses: actions/checkout@v2
+
+      - run: echo "${{ steps.prep.outputs.release_id }} - ${{  steps.prep.outputs.version }}"
+
+      - uses: actions/checkout@v2
         with:
-          ref: ${{ steps.prep.output.version }}
-      -
-        name: Set up Docker Buildx
+          ref: ${{ steps.prep.outputs.version }}
+
+      - name: Update Release version
+        run: |
+          npm version --no-git-tag-version ${{  steps.prep.outputs.version }}
+
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-      -
-        name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      -
-        name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          push: true
-          context: .
-          file: ./Dockerfile
-          tags: |
-            saucelabs/stt-playwright-node:latest
-            saucelabs/stt-playwright-node:${{ steps.prep.outputs.version }}
-          build-args: |
-            BUILD_TAG=${{ steps.prep.outputs.version }}
+
+      # - name: Login to DockerHub
+      #   uses: docker/login-action@v1
+      #   with:
+      #     username: ${{ secrets.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
+      #
+      # - name: Build and push
+      #   uses: docker/build-push-action@v2
+      #   with:
+      #     push: true
+      #     context: .
+      #     file: ./Dockerfile
+      #     tags: |
+      #       saucelabs/stt-playwright-node:latest
+      #       saucelabs/stt-playwright-node:${{ steps.prep.outputs.version }}
+      #     build-args: |
+      #       BUILD_TAG=${{ steps.prep.outputs.version }}
 
   release-windows-bundle:
     runs-on: windows-latest
     needs: [create-release-draft]
     steps:
-      - name: Find draft tag
+      - name: Find matching draft tag
         id: prep
         run: |
-          $res = Invoke-WebRequest -Uri "https://api.github.com/repos/${{ github.repository }}/releases" -Headers @{'Authorization' = 'token ${{ secrets.GITHUB_TOKEN }}'}
+          $res = Invoke-WebRequest -Uri "https://api.github.com/repos/${{ github.repository }}/releases" -Headers @{'Authorization' = "token ${{ github.token }}"}
           $jsonObj = ConvertFrom-Json $([String]::new($res.Content))
-          $latestRelease = $jsonObj[0]
-          $draft = $latestRelease.draft
-          $tagName = $latestRelease.tag_name
-          $releaseId = $latestRelease.id
 
-          if ( ! $draft ) {
-            exit 1
+          $selectedRelease = $null
+          Foreach ($release in $jsonObj)
+          {
+              if ( ! $release.body -contains "- jobId: ${{ github.run_id }}}\\n") {
+                  continue
+              }
+              if ( ! $release.draft ) {
+                  continue
+              }
+              $selectedRelease = $release
+              break
           }
 
-          if ( $tagName -eq "" ) {
-            echo "No draft version found"
-            exit 1
+          if ( $null -eq $selectedRelease ) {
+              exit 1
           }
+
+          $tagName = $selectedRelease.tag_name
+          $releaseId = $selectedRelease.id
           Write-Output "::set-output name=version::$tagName"
           Write-Output "::set-output name=release_id::$releaseId"
-      - name: Checkout
-        uses: actions/checkout@v2 
+
+      - run: Write-Output "${{ steps.prep.outputs.release_id }} - ${{  steps.prep.outputs.version }}"
+
+      - uses: actions/checkout@v2
         with:
-          ref: ${{ steps.prep.output.version }}
+          ref: ${{ steps.prep.outputs.version }}
+
       - name: Use Node.js v12.x
         uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - run: npm install
+
+      - name: Update Release version
+        run: |
+          npm version --no-git-tag-version ${{  steps.prep.outputs.version }}
+
+      - run: npm ci --production
+
       - name: Bundle Directory
         run: bash ./scripts/bundle.sh
+
       - name: List bundle contents
         run: ls -R bundle/
+
       - name: Archive bundle
         uses: azure/powershell@v1
         with:
           inlineScript: |
             Compress-Archive bundle/ sauce-playwright-win.zip
           azPSVersion: '3.1.0'
+
       - name: Upload Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-playwright-runner.zip
           asset_path: ./sauce-playwright-win.zip
@@ -137,34 +178,48 @@ jobs:
     runs-on: ubuntu-latest
     needs: [create-release-draft]
     steps:
-      - name: Find Draft tag
+      - name: Find matching draft tag
         id: prep
         run: |
-          VERSION=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases | jq -r '.[0] | select(.draft == true) | .tag_name')
-          RELEASE_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases | jq -r '.[0] | select(.draft == true) | .id')
+          VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.draft == true) | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
+          RELEASE_ID=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.draft == true) | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .id")
+
           if [ "${VERSION}" = "" ];then
-            echo "No draft version found"
-            exit 1
+              echo "No draft version found"
+              exit 1
           fi
           echo ::set-output name=version::${VERSION}
           echo ::set-output name=release_id::${RELEASE_ID}
-      - name: Checkout
-        uses: actions/checkout@v2
+
+      - run: echo "${{ steps.prep.outputs.release_id }} - ${{  steps.prep.outputs.version }}"
+
+      - uses: actions/checkout@v2
         with:
-          ref: ${{ steps.prep.output.version }}
+          ref: ${{ steps.prep.outputs.version }}
+
       - name: Use Node.js v14.x
         uses: actions/setup-node@v1
         with:
           node-version: 14.x
-      - name: Print release id
-        run: echo ${{ steps.prep.outputs.release_id }}
+
+      - name: Update Release version
+        run: |
+          npm version --no-git-tag-version ${{  steps.prep.outputs.version }}
+          PLAYWRIGHT_VERSION=`< package-lock.json  jq -r '.dependencies["playwright"].version'`
+          sed -i "s/##VERSION##/${PLAYWRIGHT_VERSION}/g" .saucetpl/.sauce/config.yml
+
       - name: Archive template
         run: cd .saucetpl && tar -czf ../saucetpl.tar.gz .
+
       - name: Upload Template Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=saucetpl.tar.gz
           asset_path: ./saucetpl.tar.gz
@@ -175,13 +230,21 @@ jobs:
     runs-on: ubuntu-latest
     needs: [release-docker, release-windows-bundle, release-template-bundle]
     steps:
-      -
-        name: Publish release
+      - name: Find matching draft tag
+        id: prep
         run: |
-          RELEASE_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases | jq -r '.[0] | select(.draft == true) | .id')
-          if [ "${RELEASE_ID}" -eq "" ];then
-            exit 1
+          RELEASE_ID=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.draft == true) | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .id")
+
+          if [ "${RELEASE_ID}" = "" ];then
+              echo "No draft version found"
+              exit 1
           fi
-          curl -f -X PATCH -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/${{ github.repository }}/releases/${RELEASE_ID} \
+          echo ::set-output name=release_id::${RELEASE_ID}
+
+      - name: Publish release
+        run: |
+          curl -f -X PATCH -H "Authorization: token ${{ github.token }}" \
+            https://api.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }} \
             -d '{"draft":"false"}'
