@@ -4,7 +4,7 @@ const _ = require('lodash');
 const path = require('path');
 const utils = require('./utils');
 const { createJobShell, createJobWorkaround } = require('./reporter');
-const { updateExportedValue } = require('sauce-testrunner-utils/src/saucectl');
+const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
 const SauceLabs = require('saucelabs').default;
 const { LOG_FILES } = require('./constants');
 const fs = require('fs');
@@ -15,6 +15,8 @@ const { shouldRecordVideo, getAbsolutePath, toHyphenated, getArgs, exec } = util
 const region = process.env.SAUCE_REGION || 'us-west-1';
 const jobName = process.env.SAUCE_JOB_NAME || `DevX Playwright Test Run - ${(new Date()).getTime()}`;
 
+// Path has to match the value of the Dockerfile label com.saucelabs.job-info !
+const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 
 async function createJob (hasPassed, startTime, endTime, args, playwright) {
   const api = new SauceLabs({
@@ -111,7 +113,7 @@ async function runReporter ({ hasPassed, startTime, endTime, args, playwright })
   } catch (e) {
     console.log(`Failed to upload results to Sauce Labs. Reason: ${e.message}`);
   } finally {
-    updateExportedValue({ jobDetailsUrl, reportingSucceeded });
+    updateExportedValue(SAUCECTL_OUTPUT_FILE, { jobDetailsUrl, reportingSucceeded });
   }
 }
 
