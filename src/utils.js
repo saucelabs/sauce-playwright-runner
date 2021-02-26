@@ -156,4 +156,6 @@ async function supportsFfmpeg () {
 
 }
 
-module.exports = { exec, logHelper, loadRunConfig, shouldRecordVideo, getAbsolutePath, toHyphenated, getArgs, supportsFfmpeg };
+module.exports = {
+  exec, logHelper, loadRunConfig, shouldRecordVideo, getAbsolutePath, toHyphenated,
+  getArgs, supportsFfmpeg };
