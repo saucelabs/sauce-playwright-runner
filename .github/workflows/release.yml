@@ -248,3 +248,22 @@ jobs:
           curl -f -X PATCH -H "Authorization: token ${{ github.token }}" \
             https://api.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }} \
             -d '{"draft":"false"}'
+
+  # Post Deploy Tests
+  post-release-windows-tests:
+    runs-on: ubuntu-latest
+    needs: publish-release
+    env:
+      SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
+      SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
+    steps:
+      - uses: actions/checkout@master
+      - name: Install Deps
+        run: npm ci
+      - name: cloud tests
+        working-directory: ./tests/fixtures/basic-js
+        run: |
+          VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.draft == true) | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
+          npx saucectl run --test-env sauce --ccy 5 --region us-west-1 --runner-version ${VERSION}
