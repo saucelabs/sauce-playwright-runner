@@ -4,6 +4,7 @@ const _ = require('lodash');
 const path = require('path');
 const utils = require('./utils');
 const { createJobShell, createJobWorkaround } = require('./reporter');
+const { prepareNpmEnv } = require('sauce-testrunner-utils');
 const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
 const SauceLabs = require('saucelabs').default;
 const { LOG_FILES } = require('./constants');
@@ -18,7 +19,7 @@ const jobName = process.env.SAUCE_JOB_NAME || `DevX Playwright Test Run - ${(new
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 
-async function createJob (hasPassed, startTime, endTime, args, playwright) {
+async function createJob (hasPassed, startTime, endTime, args, playwright, metrics) {
   const api = new SauceLabs({
     user: process.env.SAUCE_USERNAME,
     key: process.env.SAUCE_ACCESS_KEY,
@@ -65,6 +66,16 @@ async function createJob (hasPassed, startTime, endTime, args, playwright) {
     ...containerLogFiles
   ];
 
+  // Upload metrics
+  for (let [, mt] of Object.entries(metrics)) {
+    if (_.isEmpty(mt.data)) {
+      continue;
+    }
+    let mtFile = path.join(cwd, '__assets__', mt.name);
+    fs.writeFileSync(mtFile, JSON.stringify(mt.data, ' ', 2));
+    files.push(mtFile);
+  }
+
   if (videoLocation) {
     files.push(videoLocation);
   }
@@ -91,10 +102,10 @@ async function createJob (hasPassed, startTime, endTime, args, playwright) {
 }
 
 
-async function runReporter ({ hasPassed, startTime, endTime, args, playwright }) {
+async function runReporter ({ hasPassed, startTime, endTime, args, playwright, metrics }) {
   let jobDetailsUrl, reportingSucceeded = false;
   try {
-    let sessionId = await createJob(hasPassed, startTime, endTime, args, playwright);
+    let sessionId = await createJob(hasPassed, startTime, endTime, args, playwright, metrics);
     let domain;
     switch (region) {
       case 'us-west-1':
@@ -120,6 +131,7 @@ async function runReporter ({ hasPassed, startTime, endTime, args, playwright })
 async function run (nodeBin, runCfgPath, suiteName) {
   runCfgPath = getAbsolutePath(runCfgPath);
   const runCfg = await utils.loadRunConfig(runCfgPath);
+  runCfg.path = runCfgPath;
   const cwd = process.cwd();
   let defaultArgs = {
     param: {
@@ -177,10 +189,16 @@ async function run (nodeBin, runCfgPath, suiteName) {
     }
   }
 
-  const projectPath = runCfg.playwright.projectPath ? path.join(cwd, runCfg.playwright.projectPath) : cwd;
+  const sauceRunnerPath = path.dirname(runCfg.path);
+  const projectPath = runCfg.playwright.projectPath ? path.join(sauceRunnerPath, runCfg.playwright.projectPath) : sauceRunnerPath;
   if (!fs.existsSync(projectPath)) {
     throw new Error(`Could not find projectPath directory: '${projectPath}'`);
   }
+
+  // Install NPM dependencies
+  let metrics = [];
+  let npmMetrics = await prepareNpmEnv(runCfg);
+  metrics.push(npmMetrics);
 
   const folioProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd: projectPath, env});
 
@@ -210,7 +228,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
     return hasPassed;
   }
 
-  await runReporter({ hasPassed, startTime, endTime, args, playwright: runCfg.playwright });
+  await runReporter({ hasPassed, startTime, endTime, args, playwright: runCfg.playwright, metrics });
   return hasPassed;
 }
 
