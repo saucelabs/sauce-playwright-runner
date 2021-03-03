@@ -4,7 +4,7 @@ const _ = require('lodash');
 const path = require('path');
 const utils = require('./utils');
 const { createJobShell, createJobWorkaround } = require('./reporter');
-const { prepareNpmEnv } = require('sauce-testrunner-utils');
+const { prepareNpmEnv, loadRunConfig } = require('sauce-testrunner-utils');
 const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
 const SauceLabs = require('saucelabs').default;
 const { LOG_FILES } = require('./constants');
@@ -130,7 +130,7 @@ async function runReporter ({ hasPassed, startTime, endTime, args, playwright, m
 
 async function run (nodeBin, runCfgPath, suiteName) {
   runCfgPath = getAbsolutePath(runCfgPath);
-  const runCfg = await utils.loadRunConfig(runCfgPath);
+  const runCfg = await loadRunConfig(runCfgPath);
   runCfg.path = runCfgPath;
   const cwd = process.cwd();
   let defaultArgs = {

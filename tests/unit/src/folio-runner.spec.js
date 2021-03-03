@@ -1,6 +1,7 @@
 jest.mock('child_process');
 jest.mock('saucelabs');
 jest.mock('fs');
+jest.mock('sauce-testrunner-utils');
 jest.mock('../../../src/reporter');
 const path = require('path');
 const { run } = require('../../../src/folio-runner');
@@ -8,7 +9,7 @@ const childProcess = require('child_process');
 const { EventEmitter } = require('events');
 const SauceLabs = require('saucelabs').default;
 const fs = require('fs');
-const utils = require('../../../src/utils');
+const remoteUtils = require('sauce-testrunner-utils');
 
 describe('folio-runner', function () {
   const baseRunCfg = {
@@ -28,11 +29,9 @@ describe('folio-runner', function () {
       }
     ]
   };
-  let backupLoadRunConfig;
   describe('.run', function () {
     let spawnMock, folioProc, backupEnv, fsExistsMock;
     beforeEach(function () {
-      backupLoadRunConfig = utils.loadRunConfig;
       backupEnv = {};
       spawnMock = jest.spyOn(childProcess, 'spawn');
       fsExistsMock = jest.spyOn(fs, 'existsSync');
@@ -59,10 +58,9 @@ describe('folio-runner', function () {
     });
     afterEach(function () {
       process.env = backupEnv;
-      utils.loadRunConfig = backupLoadRunConfig;
     });
     it('should run playwright test as a spawn command', async function () {
-      utils.loadRunConfig = jest.fn(() => ({...baseRunCfg}));
+      remoteUtils.loadRunConfig.mockReturnValue({...baseRunCfg});
       await run('/fake/path/to/node', '/fake/runner/path', 'basic-js');
       const [[nodeBin, procArgs, spawnArgs]] = spawnMock.mock.calls;
       procArgs[0] = path.basename(procArgs[0]);
