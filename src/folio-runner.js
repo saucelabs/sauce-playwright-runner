@@ -189,8 +189,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
     }
   }
 
-  const sauceRunnerPath = path.dirname(runCfg.path);
-  const projectPath = runCfg.playwright.projectPath ? path.join(sauceRunnerPath, runCfg.playwright.projectPath) : sauceRunnerPath;
+  const projectPath = path.dirname(runCfg.path);
   if (!fs.existsSync(projectPath)) {
     throw new Error(`Could not find projectPath directory: '${projectPath}'`);
   }
