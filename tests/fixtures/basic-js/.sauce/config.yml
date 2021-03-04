@@ -10,6 +10,7 @@ sauce:
     build: "$BUILD_ID"
 docker:
   fileTransfer: mount
+  image: "saucelabs/stt-playwright-node:local"
 playwright:
   projectPath: tests/ # Path where tests reside (relative to where you run SauceCtl)
   version: 1.7.1 # Playwright-Test runner version
