@@ -18,16 +18,19 @@ jobs:
 
       - uses: actions/setup-go@v2
         with:
-          go-version: '^1.16.0'
+          go-version: '1.16.0'
 
-      # Checkout the latest saucectl
-      - uses: actions/checkout@v2
+      # Install saucectl
+      - uses: saucelabs/saucectl-run-action@v1
         with:
-          repository: saucelabs/saucectl
-          path: saucectl
+          skip-run: true
 
-      - run: pushd saucectl && make build && popd
-        name: Build Saucectl and run E2E tests
+      - name: get saucectl path
+        id: saucectl_path
+        run: |
+          SAUCECTL_PATH=$(which saucectl)
+          echo "SAUCECTL_PATH=${SAUCECTL_PATH}"
+          echo ::set-output name=saucectl_path::${SAUCECTL_PATH}
 
       # There is discrepencies between uid used to clone and uid in container,
       # As a temporary measure, we chmod files to allow test outputs to be written.
@@ -38,7 +41,7 @@ jobs:
       - run: bash ./tests/run.sh
         env:
           SKIP_CI: true
-          SAUCE_CTL_BINARY: ./saucectl/saucectl
+          SAUCE_CTL_BINARY: ${{ steps.saucectl_path.outputs.saucectl_path }}
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
         name: Build Saucectl and run E2E tests

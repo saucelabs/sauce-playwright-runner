@@ -21,7 +21,7 @@ Array [
     "__assets__",
   ],
   Object {
-    "cwd": "project",
+    "cwd": "runner",
     "env": Object {
       "FOLIO_JUNIT_OUTPUT_NAME": "junit.xml",
       "HELLO": "world",

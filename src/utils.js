@@ -1,7 +1,6 @@
 const shell = require('shelljs');
 const logger = require('@wdio/logger').default;
 const path = require('path');
-const fs = require('fs');
 const yargs = require('yargs/yargs');
 
 const log = logger('utils');
@@ -88,13 +87,6 @@ function shouldRecordVideo () {
   return videoOption === 'true' || videoOption === '1';
 }
 
-function loadRunConfig (cfgPath) {
-  if (fs.existsSync(cfgPath)) {
-    return require(cfgPath);
-  }
-  throw new Error(`Runner config (${cfgPath}) unavailable.`);
-}
-
 /**
  * Convert a camel-case or snake-case string into a hyphenated one
  *
@@ -157,5 +149,5 @@ async function supportsFfmpeg () {
 }
 
 module.exports = {
-  exec, logHelper, loadRunConfig, shouldRecordVideo, getAbsolutePath, toHyphenated,
+  exec, logHelper, shouldRecordVideo, getAbsolutePath, toHyphenated,
   getArgs, supportsFfmpeg };
