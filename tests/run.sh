@@ -14,10 +14,10 @@ for i in ${tests[@]}; do
     tmpfile=$(mktemp)
 
     echo "Running ${key}:"
-    pushd ./tests/fixtures/${key}/ > /dev/null
-    ${SAUCECTL} run -c .sauce/config.yml > ${tmpfile} 2>&1
+    pushd ./tests/fixtures/${key}/ # > /dev/null
+    ${SAUCECTL} run -c .sauce/config.yml # > ${tmpfile} 2>&1
     RETURN_CODE=${?}
-    popd > /dev/null
+    popd # > /dev/null
 
     echo "Result: ${RETURN_CODE}"
     if ([ "${result}" == "success" ] && [ "${RETURN_CODE}" -ne 0 ]) ||
