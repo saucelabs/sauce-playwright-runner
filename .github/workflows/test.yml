@@ -21,7 +21,7 @@ jobs:
           go-version: '1.16.0'
 
       # Install saucectl
-      - uses: saucelabs/saucectl-run-action@fix-latest-installation
+      - uses: saucelabs/saucectl-run-action@v1
         with:
           skip-run: true
 
