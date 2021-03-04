@@ -28,7 +28,7 @@ jobs:
       - name: get saucectl path
         id: saucectl_path
         run: |
-          SAUCECTL_PATH=$(realpath saucecl)
+          SAUCECTL_PATH=$(which saucectl)
           echo "SAUCECTL_PATH=${SAUCECTL_PATH}"
           echo ::set-output name=saucectl_path::${SAUCECTL_PATH}
 
