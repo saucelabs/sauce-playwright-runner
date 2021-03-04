@@ -9,7 +9,7 @@ const childProcess = require('child_process');
 const { EventEmitter } = require('events');
 const SauceLabs = require('saucelabs').default;
 const fs = require('fs');
-const remoteUtils = require('sauce-testrunner-utils');
+const testRunnerUtils = require('sauce-testrunner-utils');
 
 describe('folio-runner', function () {
   const baseRunCfg = {
@@ -60,7 +60,7 @@ describe('folio-runner', function () {
       process.env = backupEnv;
     });
     it('should run playwright test as a spawn command', async function () {
-      remoteUtils.loadRunConfig.mockReturnValue({...baseRunCfg});
+      testRunnerUtils.loadRunConfig.mockReturnValue({...baseRunCfg});
       await run('/fake/path/to/node', '/fake/runner/path', 'basic-js');
       const [[nodeBin, procArgs, spawnArgs]] = spawnMock.mock.calls;
       procArgs[0] = path.basename(procArgs[0]);
