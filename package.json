@@ -38,7 +38,7 @@
     "jest-cli": "^26.4.2",
     "js-yaml": "3.14.0",
     "lodash": "^4.17.20",
-    "sauce-testrunner-utils": "^0.1.1",
+    "sauce-testrunner-utils": "^0.3.0",
     "saucelabs": "^4.6.3",
     "shelljs": "^0.8.3",
     "webdriverio": "^5.21.0",
