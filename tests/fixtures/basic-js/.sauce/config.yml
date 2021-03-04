@@ -11,7 +11,7 @@ sauce:
 docker:
   fileTransfer: mount
 playwright:
-  projectPath: tests/ # Path where tests reside (relative to where you run SauceCtl)
+  projectPath: ./ # Path where tests reside (relative to where you run SauceCtl)
   version: 1.7.1 # Playwright-Test runner version
 suites:
   - name: "saucy test"
