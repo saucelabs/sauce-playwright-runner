@@ -59,15 +59,12 @@ jobs:
           SAUCE_VM: true
         name: Run test locally
 
-  build_and_test_template:
+  test_template:
     runs-on: ubuntu-latest
     steps:
       -
         name: Checkout
         uses: actions/checkout@v2
-
-      - run: make docker
-        name: Make Docker
 
       - uses: actions/setup-go@v2
         with:
@@ -78,19 +75,7 @@ jobs:
         with:
           skip-run: true
 
-      - name: get saucectl path
-        id: saucectl_path
-        run: |
-          SAUCECTL_PATH=$(which saucectl)
-          echo "SAUCECTL_PATH=${SAUCECTL_PATH}"
-          echo ::set-output name=saucectl_path::${SAUCECTL_PATH}
-
-      # There is discrepencies between uid used to clone and uid in container,
-      # As a temporary measure, we chmod files to allow test outputs to be written.
-      - name: Workaround for container permissions
-        run: sudo chmod -R 777 tests/
-
-      # Run e2e tests (Docker)
+      # Run test in template
       - run: |
           cd .saucetpl
           sed -i -e 's/##VERSION##/latest/g' .sauce/config.yml
@@ -99,5 +84,4 @@ jobs:
           SKIP_CI: true
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-        name: Build Saucectl and run template tests
-
+        name: Run template tests
