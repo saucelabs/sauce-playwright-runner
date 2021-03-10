@@ -94,7 +94,7 @@ jobs:
       - run: |
           cd .saucetpl
           sed -i -e 's/##VERSION##/latest/g' .sauce/config.yml
-          saucectl run
+          saucectl run --test-env sauce
         env:
           SKIP_CI: true
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
