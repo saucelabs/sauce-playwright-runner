@@ -66,10 +66,6 @@ jobs:
         name: Checkout
         uses: actions/checkout@v2
 
-      - uses: actions/setup-go@v2
-        with:
-          go-version: '1.16.0'
-
       - name: Use yq
         run: sudo snap install yq
 
