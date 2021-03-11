@@ -74,6 +74,11 @@ jobs:
         with:
           skip-run: true
 
+      # There is discrepencies between uid used to clone and uid in container,
+      # As a temporary measure, we chmod files to allow test outputs to be written.
+      - name: Workaround for container permissions
+        run: sudo chmod -R 777 tests/
+
       # Run test in template
       - run: |
           docker build -t saucelabs/stt-playwright-node:local . > /dev/null 2>&1
