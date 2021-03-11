@@ -66,6 +66,9 @@ jobs:
         name: Checkout
         uses: actions/checkout@v2
 
+      - run: make docker
+        name: Make Docker
+
       - uses: actions/setup-go@v2
         with:
           go-version: '1.16.0'
@@ -77,9 +80,11 @@ jobs:
 
       # Run test in template
       - run: |
+          docker build -t saucelabs/stt-playwright-node:local . > /dev/null 2>&1
           cd .saucetpl
-          sed -i -e 's/##VERSION##/latest/g' .sauce/config.yml
-          saucectl run --test-env sauce
+          yq e -i '.docker.image = "saucelabs/stt-playwright-node:local"' .sauce/config.yml
+          yq e -i '.playwright.version = "latest"' .sauce/config.yml
+          saucectl run
         env:
           SKIP_CI: true
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
