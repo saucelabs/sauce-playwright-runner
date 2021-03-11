@@ -71,7 +71,7 @@ jobs:
           go-version: '1.16.0'
 
       - name: Use yq
-        uses: mikefarah/yq@v4.6.1
+        run: snap install yq
 
       # Install saucectl
       - uses: saucelabs/saucectl-run-action@v1
