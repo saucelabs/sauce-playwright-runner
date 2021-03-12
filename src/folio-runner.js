@@ -13,17 +13,18 @@ const glob = require('glob');
 
 const { shouldRecordVideo, getAbsolutePath, toHyphenated, getArgs, exec } = utils;
 
-const region = process.env.SAUCE_REGION || 'us-west-1';
 const jobName = process.env.SAUCE_JOB_NAME || `DevX Playwright Test Run - ${(new Date()).getTime()}`;
 
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 
-async function createJob (hasPassed, startTime, endTime, args, playwright, metrics) {
+async function createJob (hasPassed, startTime, endTime, args, playwright, metrics, region) {
+  const tld = region === 'staging' ? 'net' : 'com';
   const api = new SauceLabs({
     user: process.env.SAUCE_USERNAME,
     key: process.env.SAUCE_ACCESS_KEY,
-    region
+    region,
+    tld
   });
   const cwd = process.cwd();
 
@@ -102,10 +103,10 @@ async function createJob (hasPassed, startTime, endTime, args, playwright, metri
 }
 
 
-async function runReporter ({ hasPassed, startTime, endTime, args, playwright, metrics }) {
+async function runReporter ({ hasPassed, startTime, endTime, args, playwright, metrics, region }) {
   let jobDetailsUrl, reportingSucceeded = false;
   try {
-    let sessionId = await createJob(hasPassed, startTime, endTime, args, playwright, metrics);
+    let sessionId = await createJob(hasPassed, startTime, endTime, args, playwright, metrics, region);
     let domain;
     switch (region) {
       case 'us-west-1':
@@ -227,7 +228,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
     return hasPassed;
   }
 
-  await runReporter({ hasPassed, startTime, endTime, args, playwright: runCfg.playwright, metrics });
+  await runReporter({ hasPassed, startTime, endTime, args, playwright: runCfg.playwright, metrics, region: runCfg.sauce.region });
   return hasPassed;
 }
 
