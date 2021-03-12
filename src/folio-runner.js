@@ -228,7 +228,8 @@ async function run (nodeBin, runCfgPath, suiteName) {
     return hasPassed;
   }
 
-  await runReporter({ hasPassed, startTime, endTime, args, playwright: runCfg.playwright, metrics, region: runCfg.sauce.region });
+  const region = runCfg.sauce.region || 'us-west-1';
+  await runReporter({ hasPassed, startTime, endTime, args, playwright: runCfg.playwright, metrics, region });
   return hasPassed;
 }
 
