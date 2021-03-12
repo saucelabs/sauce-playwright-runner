@@ -11,7 +11,6 @@ const log = logger('reporter');
 
 const region = process.env.SAUCE_REGION || 'us-west-1';
 const tld = region === 'staging' ? 'net' : 'com';
-const { remote } = require('webdriverio');
 
 const api = new SauceLabs({
   user: process.env.SAUCE_USERNAME,
@@ -138,49 +137,6 @@ async function createJobWorkaround (tags, api, passed, startTime, endTime, args,
   return sessionId || 0;
 }
 
-async function createJobLegacy (api, region, tld, browserName, testName, metadata) {
-  try {
-    const hostname = `ondemand.${region}.saucelabs.${tld}`;
-    await remote({
-      user: process.env.SAUCE_USERNAME,
-      key: process.env.SAUCE_ACCESS_KEY,
-      region,
-      tld,
-      hostname,
-      connectionRetryCount: 0,
-      logLevel: 'silent',
-      capabilities: {
-        browserName,
-        platformName: '*',
-        browserVersion: '*',
-        'sauce:options': {
-          devX: true,
-          name: testName,
-          framework: 'cypress',
-          build: metadata.build,
-          tags: metadata.tags,
-        }
-      }
-    }).catch((err) => err);
-  } catch (e) {
-    console.error(e);
-  }
-
-  let sessionId;
-  try {
-    const { jobs } = await api.listJobs(
-      process.env.SAUCE_USERNAME,
-      { limit: 1, full: true, name: testName }
-    );
-    sessionId = jobs && jobs.length && jobs[0].id;
-  } catch (e) {
-    console.warn('Failed to prepare test', e);
-  }
-
-  return sessionId || 0;
-}
-
-
 module.exports = class TestrunnerReporter {
   async onRunStart () {
     startTime = new Date().toISOString();
@@ -261,4 +217,3 @@ module.exports = class TestrunnerReporter {
 
 module.exports.createJobShell = createJobShell;
 module.exports.createJobWorkaround = createJobWorkaround;
-module.exports.createJobLegacy = createJobLegacy;
