@@ -31,6 +31,7 @@
     "@playwright/test": "0.171.0",
     "@wdio/logger": "^5.16.10",
     "find-process": "^1.4.3",
+    "fs-extra": "^9.1.0",
     "glob": "^7.1.6",
     "got": "^11.0.2",
     "jest": "^26.4.2",

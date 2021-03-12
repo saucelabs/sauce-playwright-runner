@@ -1,6 +1,7 @@
 jest.mock('child_process');
 jest.mock('saucelabs');
 jest.mock('fs');
+jest.mock('glob');
 jest.mock('sauce-testrunner-utils');
 jest.mock('../../../src/reporter');
 const path = require('path');
@@ -9,6 +10,7 @@ const childProcess = require('child_process');
 const { EventEmitter } = require('events');
 const SauceLabs = require('saucelabs').default;
 const fs = require('fs');
+const glob = require('glob');
 const testRunnerUtils = require('sauce-testrunner-utils');
 
 describe('folio-runner', function () {
@@ -62,6 +64,7 @@ describe('folio-runner', function () {
     it('should run playwright test as a spawn command', async function () {
       testRunnerUtils.loadRunConfig.mockReturnValue({...baseRunCfg});
       await run('/fake/path/to/node', '/fake/runner/path', 'basic-js');
+      glob.sync.mockReturnValueOnce([]);
       const [[nodeBin, procArgs, spawnArgs]] = spawnMock.mock.calls;
       procArgs[0] = path.basename(procArgs[0]);
       procArgs[procArgs.length - 1] = path.basename(procArgs[procArgs.length - 1]);

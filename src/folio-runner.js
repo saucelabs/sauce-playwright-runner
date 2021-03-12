@@ -9,6 +9,7 @@ const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
 const SauceLabs = require('saucelabs').default;
 const { LOG_FILES } = require('./constants');
 const fs = require('fs');
+const fsExtra = require('fs-extra');
 const glob = require('glob');
 
 const { shouldRecordVideo, getAbsolutePath, toHyphenated, getArgs, exec } = utils;
@@ -215,6 +216,12 @@ async function run (nodeBin, runCfgPath, suiteName) {
     endTime = new Date().toISOString();
   } catch (e) {
     console.error(`Could not complete job. Reason: ${e}`);
+  }
+
+  // Move to __assets__
+  const files = glob.sync(path.join(projectPath, 'test-results', '*')) || [];
+  for (const file of files) {
+    fsExtra.moveSync(file, path.join(cwd, '__assets__', path.basename(file)));
   }
 
   // If it's a VM, don't try to upload the assets
