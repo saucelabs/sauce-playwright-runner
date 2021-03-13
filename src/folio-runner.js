@@ -108,15 +108,13 @@ async function runReporter ({ hasPassed, startTime, endTime, args, playwright, m
   try {
     let sessionId = await createJob(hasPassed, startTime, endTime, args, playwright, metrics, region);
     let domain;
+    const tld = region === 'staging' ? 'net' : 'com';
     switch (region) {
       case 'us-west-1':
         domain = 'saucelabs.com';
         break;
-      case 'staging':
-        domain = 'ondemand.staging.saucelabs.net';
-        break;
       default:
-        domain = `${region}.saucelabs.com`;
+        domain = `${region}.saucelabs.${tld}`;
     }
 
     reportingSucceeded = true;
