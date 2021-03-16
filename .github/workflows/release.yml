@@ -16,25 +16,46 @@ jobs:
   create-release-draft:
     runs-on: ubuntu-latest
     steps:
+      - name: Check tag
+        id: prep
+        run: |
+          TAG_NAME=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name | select (. != null)")
+          IS_DRAFT=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .draft | select (. != null)")
+
+          if [ -n "${TAG_NAME}" ] && [ "${IS_DRAFT}" == "false" ];then
+              echo "A release has already been published for this run_id (${{ github.run_id }} / ${TAG_NAME})."
+              exit 1
+          fi
+          echo ::set-output name=tag_name::${TAG_NAME}
+
       - uses: actions/checkout@v2
+        if: ${{ steps.prep.outputs.tag_name == '' }}
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
       - name: Setup Node version
+        if: ${{ steps.prep.outputs.tag_name == '' }}
         uses: actions/setup-node@v1
         with:
           node-version: 14.x
 
       - name: Setup Git
+        if: ${{ steps.prep.outputs.tag_name == '' }}
         run: |
           git config --global user.name "devx-sauce-bot"
           git config --global user.email "devx.bot@saucelabs.com"
 
       - name: Install dependencies
+        if: ${{ steps.prep.outputs.tag_name == '' }}
         run: npm ci
 
       - name: generate (pre-)release draft
+        if: ${{ steps.prep.outputs.tag_name == '' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
@@ -128,35 +149,51 @@ jobs:
               exit 1
           }
 
+          $selectedAsset = $null
+          Foreach ($asset in $selectedRelease.assets) {
+            if ($asset.name -eq "sauce-playwright-win.zip") {
+              $selectedAsset = $asset
+            }
+          }
+
           $tagName = $selectedRelease.tag_name
           $releaseId = $selectedRelease.id
+          $assetId = $selectedAsset.id
           Write-Output "::set-output name=version::$tagName"
           Write-Output "::set-output name=release_id::$releaseId"
+          Write-Output "::set-output name=asset_id::$assetId"
 
-      - run: Write-Output "${{ steps.prep.outputs.release_id }} - ${{  steps.prep.outputs.version }}"
+      - run: Write-Output "${{ steps.prep.outputs.release_id }} - ${{ steps.prep.outputs.version }} - ${{ steps.prep.outputs.asset_id }}"
 
       - uses: actions/checkout@v2
+        if: ${{ steps.prep.outputs.asset_id == '' }}
         with:
           ref: ${{ steps.prep.outputs.version }}
 
       - name: Use Node.js v12.x
+        if: ${{ steps.prep.outputs.asset_id == '' }}
         uses: actions/setup-node@v1
         with:
           node-version: 12.x
 
       - name: Update Release version
+        if: ${{ steps.prep.outputs.asset_id == '' }}
         run: |
           npm version --no-git-tag-version ${{  steps.prep.outputs.version }}
 
       - run: npm ci --production
+        if: ${{ steps.prep.outputs.asset_id == '' }}
 
       - name: Bundle Directory
+        if: ${{ steps.prep.outputs.asset_id == '' }}
         run: bash ./scripts/bundle.sh
 
       - name: List bundle contents
+        if: ${{ steps.prep.outputs.asset_id == '' }}
         run: ls -R bundle/
 
       - name: Archive bundle
+        if: ${{ steps.prep.outputs.asset_id == '' }}
         uses: azure/powershell@v1
         with:
           inlineScript: |
@@ -164,6 +201,7 @@ jobs:
           azPSVersion: '3.1.0'
 
       - name: Upload Release Asset
+        if: ${{ steps.prep.outputs.asset_id == '' }}
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
@@ -192,30 +230,41 @@ jobs:
               echo "No draft version found"
               exit 1
           fi
+
+          ASSET_ID=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .assets | .[] | select(.name == \"saucetpl.tar.gz\") | .id | select(. != null)")
+
           echo ::set-output name=version::${VERSION}
           echo ::set-output name=release_id::${RELEASE_ID}
+          echo ::set-output name=asset_id::${ASSET_ID}
 
-      - run: echo "${{ steps.prep.outputs.release_id }} - ${{  steps.prep.outputs.version }}"
+      - run: echo "${{ steps.prep.outputs.release_id }} - ${{ steps.prep.outputs.version }} - ${{ steps.prep.outputs.asset_id }}"
 
       - uses: actions/checkout@v2
+        if: ${{ steps.prep.outputs.asset_id == '' }}
         with:
           ref: ${{ steps.prep.outputs.version }}
 
       - name: Use Node.js v14.x
+        if: ${{ steps.prep.outputs.asset_id == '' }}
         uses: actions/setup-node@v1
         with:
           node-version: 14.x
 
       - name: Update Release version
+        if: ${{ steps.prep.outputs.asset_id == '' }}
         run: |
           npm version --no-git-tag-version ${{  steps.prep.outputs.version }}
           PLAYWRIGHT_VERSION=`< package-lock.json  jq -r '.dependencies["playwright"].version'`
           sed -i "s/##VERSION##/${PLAYWRIGHT_VERSION}/g" .saucetpl/.sauce/config.yml
 
       - name: Archive template
+        if: ${{ steps.prep.outputs.asset_id == '' }}
         run: cd .saucetpl && tar -czf ../saucetpl.tar.gz .
 
       - name: Upload Template Asset
+        if: ${{ steps.prep.outputs.asset_id == '' }}
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
