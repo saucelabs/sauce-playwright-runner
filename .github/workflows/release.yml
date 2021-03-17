@@ -151,7 +151,7 @@ jobs:
 
           $selectedAsset = $null
           Foreach ($asset in $selectedRelease.assets) {
-            if ($asset.name -eq "sauce-playwright-win.zip") {
+            if ($asset.name -eq "sauce-playwright-runner.zip") {
               $selectedAsset = $asset
             }
           }
@@ -208,8 +208,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-playwright-runner.zip
-          asset_path: ./sauce-playwright-win.zip
-          asset_name: sauce-playwright-win.zip
+          asset_path: ./sauce-playwright-runner.zip
+          asset_name: sauce-playwright-runner.zip
           asset_content_type: application/zip
 
   release-template-bundle:
