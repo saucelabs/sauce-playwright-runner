@@ -15,7 +15,7 @@ for i in ${tests[@]}; do
 
     echo "Running ${key}:"
     pushd ./tests/fixtures/${key}/ > /dev/null
-    ${SAUCECTL} run -c .sauce/config.yml > ${tmpfile} 2>&1
+    ${SAUCECTL} run --test-env docker -c .sauce/config.yml > ${tmpfile} 2>&1
     RETURN_CODE=${?}
     popd > /dev/null
 
@@ -27,6 +27,9 @@ for i in ${tests[@]}; do
 
         echo "TEST FAILURE: Result expected is ${result}, and exitCode is ${RETURN_CODE}" 
         exit 1
+    else
+        # Display warning if there is some
+        grep -E "(ERR|WRN)" ${tmpfile}
     fi
     rm -f ${tmpfile}
     echo ""
