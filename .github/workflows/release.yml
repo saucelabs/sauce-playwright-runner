@@ -309,10 +309,45 @@ jobs:
       - uses: actions/checkout@master
       - name: Install Deps
         run: npm ci
-      - name: cloud tests
-        working-directory: ./tests/fixtures/basic-js
+      - name: Parse release version
+        id: parse_version
         run: |
           VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
                       https://api.github.com/repos/${{ github.repository }}/releases | \
                       jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
-          npx saucectl run --test-env sauce --ccy 5 --region us-west-1 --runner-version "github-release: ${VERSION}"
+          echo ::set-output name=version::${VERSION}
+
+      - name: cloud tests
+        working-directory: ./tests/fixtures/basic-js
+        run: |
+          npx saucectl run --test-env sauce --ccy 5 --region us-west-1 --runner-version "github-release: ${{ steps.parse_version.outputs.version }}"
+
+      - name: Notify slack on failure
+        uses: 8398a7/action-slack@v3
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RELEASE: ${{ steps.parse_version.outputs.version }}
+        with:
+          status: custom
+          fields: commit,workflow,job
+          custom_payload: |
+            {
+              attachments: [{
+                mrkdwn_in: ['text'],
+                title: `${{ github.repository }}@${process.env.RELEASE}`,
+                title_link: `https://github.com/${{ github.repository }}/releases/${process.env.RELEASE}`,
+                text: `${process.env.AS_JOB} job failed  :homer_back_away:`,
+                color: 'danger',
+                fields: [{
+                  title: 'Commit',
+                  value: `${process.env.AS_COMMIT}`,
+                  short: true
+                },
+                {
+                  title: 'Workflow',
+                  value: `${process.env.AS_WORKFLOW}`,
+                  short: true
+                }]
+              }]
+            }
