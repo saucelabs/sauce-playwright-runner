@@ -10,7 +10,7 @@ sauce:
     build: "$BUILD_ID"
 playwright:
   version: ##VERSION##
-  projectPath: tests/
+rootDir: ./
 docker:
   fileTransfer: mount
 suites:
