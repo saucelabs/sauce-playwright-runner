@@ -197,7 +197,7 @@ jobs:
         uses: azure/powershell@v1
         with:
           inlineScript: |
-            Compress-Archive bundle/ sauce-playwright-win.zip
+            Compress-Archive bundle/ sauce-playwright-runner.zip
           azPSVersion: '3.1.0'
 
       - name: Upload Release Asset
