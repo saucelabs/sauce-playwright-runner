@@ -3,7 +3,7 @@ const { spawn } = require('child_process');
 const _ = require('lodash');
 const path = require('path');
 const utils = require('./utils');
-const { createJobShell, createJobWorkaround } = require('./reporter');
+const { createJobReportV2, createJobReport } = require('./reporter');
 const { prepareNpmEnv, loadRunConfig } = require('sauce-testrunner-utils');
 const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
 const SauceLabs = require('saucelabs').default;
@@ -19,7 +19,7 @@ const jobName = process.env.SAUCE_JOB_NAME || `DevX Playwright Test Run - ${(new
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 
-async function createJob (hasPassed, startTime, endTime, args, playwright, metrics, region) {
+async function createJob (hasPassed, startTime, endTime, args, playwright, metrics, region, metadata) {
   const tld = region === 'staging' ? 'net' : 'com';
   const api = new SauceLabs({
     user: process.env.SAUCE_USERNAME,
@@ -29,16 +29,12 @@ async function createJob (hasPassed, startTime, endTime, args, playwright, metri
   });
   const cwd = process.cwd();
 
-  let tags = process.env.SAUCE_TAGS;
-  if (tags) {
-    tags = tags.split(',');
-  }
   let sessionId;
   if (process.env.ENABLE_DATA_STORE) {
     // TODO: When we enable this make sure it's getting the proper parameters
-    sessionId = await createJobShell(tags, api);
+    sessionId = await createJobReportV2(metadata, api);
   } else {
-    sessionId = await createJobWorkaround(tags, api, hasPassed, startTime, endTime, args, playwright);
+    sessionId = await createJobReport(metadata, api, hasPassed, startTime, endTime, args, playwright);
   }
 
   if (!sessionId) {
@@ -104,10 +100,10 @@ async function createJob (hasPassed, startTime, endTime, args, playwright, metri
 }
 
 
-async function runReporter ({ hasPassed, startTime, endTime, args, playwright, metrics, region }) {
+async function runReporter ({ hasPassed, startTime, endTime, args, playwright, metrics, region, metadata }) {
   let jobDetailsUrl, reportingSucceeded = false;
   try {
-    let sessionId = await createJob(hasPassed, startTime, endTime, args, playwright, metrics, region);
+    let sessionId = await createJob(hasPassed, startTime, endTime, args, playwright, metrics, region, metadata);
     let domain;
     const tld = region === 'staging' ? 'net' : 'com';
     switch (region) {
@@ -234,7 +230,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
   }
 
   const region = runCfg.sauce.region || 'us-west-1';
-  await runReporter({ hasPassed, startTime, endTime, args, playwright: runCfg.playwright, metrics, region });
+  await runReporter({ hasPassed, startTime, endTime, args, playwright: runCfg.playwright, metrics, region, metadata: runCfg.sauce.metadata});
   return hasPassed;
 }
 

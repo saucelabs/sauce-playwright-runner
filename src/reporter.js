@@ -21,24 +21,13 @@ const api = new SauceLabs({
 
 // SAUCE_JOB_NAME is only available for saucectl >= 0.16, hence the fallback
 const jobName = process.env.SAUCE_JOB_NAME || `DevX Playwright Test Run - ${(new Date()).getTime()}`;
-let build = process.env.SAUCE_BUILD_NAME;
 
 let startTime, endTime;
-
-/**
- * replace placeholders (e.g. $BUILD_ID) with environment values
- */
-const buildMatches = (build || '').match(/\$[a-zA-Z0-9_-]+/g) || [];
-for (const match of buildMatches) {
-  const replacement = process.env[match.slice(1)];
-  build = build.replace(match, replacement || '');
-}
-
 
 // NOTE: this function is not available currently.
 // It will be ready once data store API actually works.
 // Keep these pieces of code for future integration.
-const createJobShell = async (tags, api) => {
+const createJobReportV2 = async (metadata, api) => {
   const body = {
     name: jobName,
     acl: [
@@ -54,7 +43,7 @@ const createJobShell = async (tags, api) => {
     status: 'complete',
     live: false,
     metadata: {},
-    tags,
+    tags: metadata.tags, // TODO add 'build' information once API stabilizes
     attributes: {
       container: false,
       browser: DESIRED_BROWSER,
@@ -92,7 +81,7 @@ const createJobShell = async (tags, api) => {
 
 // TODO Tian: this method is a temporary solution for creating jobs via test-composer.
 // Once the global data store is ready, this method will be deprecated.
-async function createJobWorkaround (tags, api, passed, startTime, endTime, args, playwright) {
+async function createJobReport (metadata, api, passed, startTime, endTime, args, playwright) {
   /**
      * don't try to create a job if no credentials are set
      */
@@ -115,8 +104,8 @@ async function createJobWorkaround (tags, api, passed, startTime, endTime, args,
     status: 'complete',
     errors: [],
     passed,
-    tags,
-    build,
+    tags: metadata.tags,
+    build: metadata.build,
     browserName: args.param.browserName,
     browserVersion,
     platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG,
@@ -160,9 +149,9 @@ module.exports = class TestrunnerReporter {
     let sessionId;
     const hasPassed = numFailedTests === 0;
     if (process.env.ENABLE_DATA_STORE) {
-      sessionId = await createJobShell(tags, api);
+      sessionId = await createJobReportV2(tags, api);
     } else {
-      sessionId = await createJobWorkaround(tags, api, hasPassed, startTime, endTime);
+      sessionId = await createJobReport(tags, api, hasPassed, startTime, endTime);
     }
 
     /**
@@ -215,5 +204,5 @@ module.exports = class TestrunnerReporter {
   }
 };
 
-module.exports.createJobShell = createJobShell;
-module.exports.createJobWorkaround = createJobWorkaround;
+module.exports.createJobReportV2 = createJobReportV2;
+module.exports.createJobReport = createJobReport;
