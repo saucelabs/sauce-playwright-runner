@@ -38,7 +38,7 @@
     "jest-circus": "^26.4.2",
     "jest-cli": "^26.4.2",
     "js-yaml": "3.14.0",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "sauce-testrunner-utils": "0.4.2",
     "saucelabs": "4.7.5",
     "shelljs": "^0.8.3",
