@@ -83,7 +83,7 @@ WORKDIR /home/seluser
 COPY package.json .
 COPY package-lock.json .
 RUN npm ci --production
-ENV PLAYWRIGHT_VERSION=1.11.0
+ENV PLAYWRIGHT_VERSION=1.12.0
 
 
 # Playwright caches the downloaded browser by default in ~/.cache/ms-playwright
