@@ -10,6 +10,22 @@ on:
     branches: [ master ]
 
 jobs:
+  check-consistency:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Check consistency
+        run: |
+          DOCKERIMAGE_VERSION=$(grep "ENV PLAYWRIGHT_VERSION=" Dockerfile | cut -d '=' -f 2)
+          PLAYWRIGHT_VERSION=$(< package-lock.json jq -r '.dependencies["playwright"].version')
+
+          if [ "${DOCKERIMAGE_VERSION}" != "${PLAYWRIGHT_VERSION}" ];then
+            echo "Playwright version in package-lock.json and Dockerfile differs."
+            exit 1
+          fi
   build:
     runs-on: ubuntu-latest
     strategy:
