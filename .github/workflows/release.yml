@@ -93,6 +93,11 @@ jobs:
 
       - run: echo "${{ steps.prep.outputs.release_id }} - ${{  steps.prep.outputs.version }}"
 
+      - name: Get Playwright version
+        run: |
+          PLAYWRIGHT_VERSION=$(< package-lock.json jq -r '.dependencies["playwright"].version')
+          echo "playwright_version=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
+
       - uses: actions/checkout@v2
         with:
           ref: ${{ steps.prep.outputs.version }}
@@ -121,6 +126,7 @@ jobs:
             saucelabs/stt-playwright-node:${{ steps.prep.outputs.version }}
           build-args: |
             BUILD_TAG=${{ steps.prep.outputs.version }}
+            PLAYWRIGHT_VERSION=${{ env.playwright_version }}
 
   release-windows-bundle:
     runs-on: windows-latest

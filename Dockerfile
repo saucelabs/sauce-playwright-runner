@@ -83,7 +83,6 @@ WORKDIR /home/seluser
 COPY package.json .
 COPY package-lock.json .
 RUN npm ci --production
-ENV PLAYWRIGHT_VERSION=1.11.0
 
 
 # Playwright caches the downloaded browser by default in ~/.cache/ms-playwright
@@ -97,8 +96,12 @@ COPY --chown=seluser:seluser . .
 RUN chmod 777 -R /home/seluser/
 
 ENV IMAGE_NAME=saucelabs/stt-playwright-node
+
 ARG BUILD_TAG
 ENV IMAGE_TAG=${BUILD_TAG}
+
+ARG PLAYWRIGHT_VERSION
+ENV PLAYWRIGHT_VERSION=${PLAYWRIGHT_VERSION}
 
 # Let saucectl know where to mount files
 RUN mkdir -p /home/seluser/__project__/ && chown seluser:seluser /home/seluser/__project__/
