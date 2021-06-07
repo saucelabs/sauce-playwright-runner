@@ -81,7 +81,7 @@ const createJobReportV2 = async (metadata, api) => {
 
 // TODO Tian: this method is a temporary solution for creating jobs via test-composer.
 // Once the global data store is ready, this method will be deprecated.
-async function createJobReport (metadata, api, passed, startTime, endTime, args, playwright) {
+async function createJobReport (metadata, api, passed, startTime, endTime, args, playwright, saucectlVersion) {
   /**
      * don't try to create a job if no credentials are set
      */
@@ -109,6 +109,7 @@ async function createJobReport (metadata, api, passed, startTime, endTime, args,
     browserName: args.param.browserName,
     browserVersion,
     platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG,
+    saucectlVersion: saucectlVersion,
   };
 
   let sessionId;
