@@ -109,7 +109,7 @@ async function createJobReport (metadata, api, passed, startTime, endTime, args,
     browserName: args.param.browserName,
     browserVersion,
     platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG,
-    saucectlVersion: saucectlVersion,
+    saucectlVersion,
   };
 
   let sessionId;
