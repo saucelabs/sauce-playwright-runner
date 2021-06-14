@@ -19,7 +19,7 @@ const jobName = process.env.SAUCE_JOB_NAME || `DevX Playwright Test Run - ${(new
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 
-async function createJob (hasPassed, startTime, endTime, args, playwright, metrics, region, metadata) {
+async function createJob (hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion) {
   const tld = region === 'staging' ? 'net' : 'com';
   const api = new SauceLabs({
     user: process.env.SAUCE_USERNAME,
@@ -34,7 +34,7 @@ async function createJob (hasPassed, startTime, endTime, args, playwright, metri
     // TODO: When we enable this make sure it's getting the proper parameters
     sessionId = await createJobReportV2(metadata, api);
   } else {
-    sessionId = await createJobReport(metadata, api, hasPassed, startTime, endTime, args, playwright);
+    sessionId = await createJobReport(metadata, api, hasPassed, startTime, endTime, args, playwright, saucectlVersion);
   }
 
   if (!sessionId) {
@@ -100,10 +100,10 @@ async function createJob (hasPassed, startTime, endTime, args, playwright, metri
 }
 
 
-async function runReporter ({ hasPassed, startTime, endTime, args, playwright, metrics, region, metadata }) {
+async function runReporter ({ hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion }) {
   let jobDetailsUrl, reportingSucceeded = false;
   try {
-    let sessionId = await createJob(hasPassed, startTime, endTime, args, playwright, metrics, region, metadata);
+    let sessionId = await createJob(hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion);
     let domain;
     const tld = region === 'staging' ? 'net' : 'com';
     switch (region) {
@@ -230,7 +230,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
   }
 
   const region = runCfg.sauce.region || 'us-west-1';
-  await runReporter({ hasPassed, startTime, endTime, args, playwright: runCfg.playwright, metrics, region, metadata: runCfg.sauce.metadata});
+  await runReporter({ hasPassed, startTime, endTime, args, playwright: runCfg.playwright, metrics, region, metadata: runCfg.sauce.metadata, saucectlVersion: runCfg.saucectlVersion});
   return hasPassed;
 }
 
