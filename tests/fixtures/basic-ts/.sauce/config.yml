@@ -3,7 +3,6 @@ kind: playwright
 sauce:
   region: us-west-1
   metadata:
-    name: Playwright Hello World
     tags:
       - e2e
       - release team
