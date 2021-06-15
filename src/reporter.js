@@ -1,35 +1,11 @@
-const fs = require('fs');
-const path = require('path');
-
-const logger = require('@wdio/logger').default;
-const SauceLabs = require('saucelabs').default;
-
-const { exec } = require('./utils');
-const { LOG_FILES, HOME_DIR, DESIRED_BROWSER } = require('./constants');
-
-const log = logger('reporter');
-
-const region = process.env.SAUCE_REGION || 'us-west-1';
-const tld = region === 'staging' ? 'net' : 'com';
-
-const api = new SauceLabs({
-  user: process.env.SAUCE_USERNAME,
-  key: process.env.SAUCE_ACCESS_KEY,
-  region,
-  tld
-});
-
-// SAUCE_JOB_NAME is only available for saucectl >= 0.16, hence the fallback
-const jobName = process.env.SAUCE_JOB_NAME || `DevX Playwright Test Run - ${(new Date()).getTime()}`;
-
-let startTime, endTime;
+const { DESIRED_BROWSER } = require('./constants');
 
 // NOTE: this function is not available currently.
 // It will be ready once data store API actually works.
 // Keep these pieces of code for future integration.
-const createJobReportV2 = async (metadata, api) => {
+const createJobReportV2 = async (suiteName, metadata, api) => {
   const body = {
-    name: jobName,
+    name: suiteName,
     acl: [
       {
         type: 'username',
@@ -81,7 +57,7 @@ const createJobReportV2 = async (metadata, api) => {
 
 // TODO Tian: this method is a temporary solution for creating jobs via test-composer.
 // Once the global data store is ready, this method will be deprecated.
-async function createJobReport (metadata, api, passed, startTime, endTime, args, playwright, saucectlVersion) {
+async function createJobReport (suiteName, metadata, api, passed, startTime, endTime, args, playwright, saucectlVersion) {
   /**
      * don't try to create a job if no credentials are set
      */
@@ -95,13 +71,14 @@ async function createJobReport (metadata, api, passed, startTime, endTime, args,
   }
 
   const body = {
-    name: jobName,
+    name: suiteName,
     user: process.env.SAUCE_USERNAME,
     startTime,
     endTime,
     framework: 'playwright',
     frameworkVersion: process.env.PLAYWRIGHT_VERSION,
     status: 'complete',
+    suite: suiteName,
     errors: [],
     passed,
     tags: metadata.tags,
@@ -126,84 +103,6 @@ async function createJobReport (metadata, api, passed, startTime, endTime, args,
 
   return sessionId || 0;
 }
-
-module.exports = class TestrunnerReporter {
-  async onRunStart () {
-    startTime = new Date().toISOString();
-    log.info('Start video capturing');
-    await exec('start-video');
-  }
-
-  async onRunComplete (test, { testResults, numFailedTests }) {
-    if (process.env.SAUCE_USERNAME === '' || process.env.SAUCE_ACCESS_KEY === '') {
-      console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY');
-      return;
-    }
-    endTime = new Date().toISOString();
-    log.info('Finished testrun!');
-
-    let tags = process.env.SAUCE_TAGS;
-    if (tags) {
-      tags = tags.split(',');
-    }
-
-    let sessionId;
-    const hasPassed = numFailedTests === 0;
-    if (process.env.ENABLE_DATA_STORE) {
-      sessionId = await createJobReportV2(tags, api);
-    } else {
-      sessionId = await createJobReport(tags, api, hasPassed, startTime, endTime);
-    }
-
-    /**
-         * only upload assets if a session was initiated before
-         */
-
-    if (!sessionId) {
-      return;
-    }
-
-    await exec('stop-video');
-
-    const logFilePath = path.join(HOME_DIR, 'log.json');
-    fs.writeFileSync(logFilePath, JSON.stringify(testResults, null, 4));
-
-    const containterLogFiles = LOG_FILES.filter(
-            (path) => fs.existsSync(path));
-
-    await Promise.all([
-      api.uploadJobAssets(
-            sessionId,
-            {
-              files: [
-                logFilePath,
-                ...containterLogFiles
-              ]
-            }
-      ).then(
-            (resp) => {
-              if (resp.errors) {
-                for (let err of resp.errors) {
-                  console.error(err);
-                }
-              }
-            },
-            (e) => log.error('upload failed:', e.stack)
-      )
-    ]);
-
-    let domain;
-
-    switch (region) {
-      case 'us-west-1':
-        domain = 'saucelabs.com';
-        break;
-      default:
-        domain = `${region}.saucelabs.${tld}`;
-    }
-    console.log(`\nOpen job details page: https://app.${domain}/tests/${sessionId}\n`);
-  }
-};
 
 module.exports.createJobReportV2 = createJobReportV2;
 module.exports.createJobReport = createJobReport;
