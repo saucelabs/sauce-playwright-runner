@@ -227,8 +227,9 @@ async function run (nodeBin, runCfgPath, suiteName) {
     return hasPassed;
   }
 
+  const saucectlVersion = process.env.SAUCE_SAUCECTL_VERSION;
   const region = runCfg.sauce.region || 'us-west-1';
-  await runReporter({ suiteName, hasPassed, startTime, endTime, args, playwright: runCfg.playwright, metrics, region, metadata: runCfg.sauce.metadata, saucectlVersion: runCfg.saucectlVersion});
+  await runReporter({ suiteName, hasPassed, startTime, endTime, args, playwright: runCfg.playwright, metrics, region, metadata: runCfg.sauce.metadata, saucectlVersion});
   return hasPassed;
 }
 
