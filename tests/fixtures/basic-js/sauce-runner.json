@@ -1,4 +1,11 @@
 {
+    "sauce": {
+        "region": "us-west-1",
+        "metadata": {
+            "tags": ["tag1", "tag2"],
+            "build": "Local Test Build"
+        }
+    },
     "playwright": {
         "version": "1.7.1",
         "projectPath": "./tests/fixtures/basic-js/"
