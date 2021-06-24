@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const { it, expect } = require('@playwright/test');
+const { test, expect } = require('@playwright/test');
 
-it('is a basic test with the page', async ({ page }) => {
+test('is a basic test with the page', async ({ page }) => {
   await page.goto('https://playwright.dev/');
   expect(await page.innerText('.navbar__title')).toBe('Playwright');
 });
