@@ -15,8 +15,14 @@
             "name": "basic-js",
             "param": {
               "browserName": "chromium",
-              "headful": true,
-              "slowMo": 1000
+              "globalTimeout": 900000,
+              "grep": ".*",
+              "headed": true,
+              "repeatEach": 1,
+              "retries": 0,
+              "shard": "1/2",
+              "timeout": 30000,
+              "maxFailures": 2
             },
             "testMatch": "**/*.js"
         }

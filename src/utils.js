@@ -148,6 +148,24 @@ async function supportsFfmpeg () {
 
 }
 
+function replaceLegacyKeys (args) {
+  // browserName => browser
+  if ('browserName' in args) {
+    if (!('browser' in args)) {
+      args.browser = args.browserName;
+    }
+    delete args.browserName;
+  }
+  // headful => headed
+  if ('headful' in args) {
+    if (!('headed' in args)) {
+      args.headed = args.headful;
+    }
+    delete args.headful;
+  }
+  return args;
+}
+
 module.exports = {
   exec, logHelper, shouldRecordVideo, getAbsolutePath, toHyphenated,
-  getArgs, supportsFfmpeg };
+  getArgs, supportsFfmpeg, replaceLegacyKeys };

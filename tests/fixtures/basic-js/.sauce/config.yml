@@ -12,7 +12,7 @@ docker:
   image: "saucelabs/stt-playwright-node:local"
 playwright:
   projectPath: ./ # Path where tests reside (relative to where you run SauceCtl)
-  version: 1.7.1 # Playwright-Test runner version
+  version: 1.12.2 # Playwright-Test runner version
 suites:
   - name: "saucy test"
     platformName: "Windows 10"
@@ -29,5 +29,4 @@ suites:
     # Playwright-test settings
     params:
       browserName: "webkit"
-      headful: false
-      slowMo: 1000
+      headed: true
