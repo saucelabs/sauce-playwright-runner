@@ -13,8 +13,6 @@ Array [
     "/Users/felixpescarmona/Projects/sauce-playwright-runner/__assets__",
     "--config",
     "/Users/felixpescarmona/Projects/sauce-playwright-runner/playwright.config.js",
-    "--slow-mo",
-    1000,
     "--browser",
     "chromium",
     "--headed",

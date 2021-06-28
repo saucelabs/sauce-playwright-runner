@@ -218,7 +218,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
   ];
   let args = utils.replaceLegacyKeys(suite.param);
 
-  const excludeParams = ['screenshotOnFailure', 'video', 'slowMo'];
+  const excludeParams = ['screenshot-on-failure', 'video', 'slow-mo'];
 
   for (let [key, value] of Object.entries(args)) {
     key = utils.toHyphenated(key);
