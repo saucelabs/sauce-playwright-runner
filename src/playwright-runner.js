@@ -209,9 +209,9 @@ async function run (nodeBin, runCfgPath, suiteName) {
     throw new Error(`Could not find suite named '${suiteName}'`);
   }
 
-  const playwrightBin = path.join(__dirname, '..', 'node_modules', '.bin', 'playwright');
+  const playwrightBin = path.join(__dirname, '..', 'node_modules', 'npm', 'bin', 'npx-cli.js');
   const procArgs = [
-    playwrightBin, 'test',
+    playwrightBin, 'playwright', 'test',
     '--reporter', 'junit,line',
     '--output', path.join(cwd, '__assets__'),
     '--config', path.join(__dirname, '..', 'playwright.config.js')
