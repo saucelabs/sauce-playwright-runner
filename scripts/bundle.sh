@@ -5,6 +5,7 @@ export PLAYWRIGHT_BROWSERS_PATH=$PWD/bundle/Cache/
 echo $PLAYWRIGHT_BROWSERS_PATH
 cp -r ./src/ ./bundle/src/
 cp -r bin/ bundle/bin/
+cp -r playwright.config.js bundle/
 cp package.json bundle/package.json
 cp package-lock.json bundle/package-lock.json
 cp "$(which node)" bundle/
