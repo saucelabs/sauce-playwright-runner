@@ -4,7 +4,7 @@
   "description": "Sauce Labs Playwright Test Runner",
   "license": "MIT",
   "private": true,
-  "main": "src/folio-recorder.js",
+  "main": "src/playwright-recorder.js",
   "scripts": {
     "build": "docker build -t saucelabs/${npm_package_name}:latest --cache-from saucelabs/${npm_package_name}:latest .",
     "docker:push": "docker push saucelabs/${npm_package_name}:latest",
