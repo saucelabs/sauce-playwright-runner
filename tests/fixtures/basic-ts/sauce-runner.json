@@ -1,6 +1,6 @@
 {
     "playwright": {
-        "version": "1.4.1"
+        "version": "1.12.3"
     },
     "suites": [
         {

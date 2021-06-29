@@ -11,7 +11,7 @@ sauce:
 docker:
   image: saucelabs/stt-playwright-node:local
 playwright:
-  version: 1.7.1
+  version: 1.12.3
   projectPath: ./tests/
 suites:
   - name: default
