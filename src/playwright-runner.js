@@ -214,10 +214,8 @@ async function run (nodeBin, runCfgPath, suiteName) {
     throw new Error(`Could not find projectPath directory: '${projectPath}'`);
   }
 
-  // Copy playwright configuration to project folder.
-  // As we curently don't support playwright configuration yet,
-  //   and set a configuration file automatically change the rootDir.
-  //   this is a workaround.
+  // Copy our own playwright configuration to the project folder,
+  // as we currently don't support having a user provided playwright configuration yet.
   fs.copyFileSync(path.join(__dirname, '..', 'playwright.config.js'), path.join(projectPath, 'playwright.config.js'));
 
   const playwrightBin = path.join(__dirname, '..', 'node_modules', '@playwright', 'test', 'lib', 'cli', 'cli.js');
