@@ -62,6 +62,7 @@ describe('playwright-runner', function () {
       process.env = backupEnv;
     });
     it('should run playwright test as a spawn command', async function () {
+      process.env.SAUCE_VM = 'truthy';
       testRunnerUtils.loadRunConfig.mockReturnValue({...baseRunCfg});
       await run('/fake/path/to/node', '/fake/runner/path', 'basic-js');
       glob.sync.mockReturnValueOnce([]);
@@ -74,15 +75,15 @@ describe('playwright-runner', function () {
       expect(procArgs).toMatchObject([
         'cli.js',
         'test',
-        '--reporter',
-        'junit,line',
+        '--headed',
         '--output',
         '/fake/runner/__assets__',
+        '--reporter',
+        'junit,line',
         '--config',
         '/fake/runner/playwright.config.js',
         '--browser',
         'chromium',
-        '--headed',
       ]);
       expect(spawnArgs).toMatchObject({
         'cwd': 'runner',
