@@ -209,12 +209,18 @@ async function run (nodeBin, runCfgPath, suiteName) {
     throw new Error(`Could not find suite named '${suiteName}'`);
   }
 
+  // Copy playwright configuration to project folder.
+  // As we curently don't support playwright configuration yet,
+  //   and set a configuration file automatically change the rootDir.
+  //   this is a workaround.
+  fs.copyFileSync(path.join(__dirname, '..', 'playwright.config.js'), path.join(cwd, 'playwright.config.js'));
+
   const playwrightBin = path.join(__dirname, '..', 'node_modules', '@playwright', 'test', 'lib', 'cli', 'cli.js');
   const procArgs = [
     playwrightBin, 'test',
     '--reporter', 'junit,line',
     '--output', path.join(cwd, '__assets__'),
-    '--config', path.join(__dirname, '..', 'playwright.config.js')
+    '--config', path.join(cwd, 'playwright.config.js')
   ];
   let args = utils.replaceLegacyKeys(suite.param);
 
