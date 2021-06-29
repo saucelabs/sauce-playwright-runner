@@ -4,8 +4,7 @@ exports[`playwright-runner .run should run playwright test as a spawn command 1`
 Array [
   "/fake/path/to/node",
   Array [
-    "npx-cli.js",
-    "playwright",
+    "cli.js",
     "test",
     "--reporter",
     "junit,line",
