@@ -70,7 +70,6 @@ describe('playwright-runner', function () {
       procArgs[procArgs.length - 1] = path.basename(procArgs[procArgs.length - 1]);
       spawnArgs.cwd = path.basename(spawnArgs.cwd);
       spawnArgs.env.PLAYWRIGHT_JUNIT_OUTPUT_NAME = path.basename(spawnArgs.env.PLAYWRIGHT_JUNIT_OUTPUT_NAME);
-      //), procArgs, spawnArgs]).toMatch([
       expect(nodeBin).toMatch('/fake/path/to/node');
       expect(procArgs).toMatchObject([
         'cli.js',
