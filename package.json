@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/saucelabs/testrunner-toolkit",
   "dependencies": {
+    "@babel/core": "^7.14.6",
     "@playwright/test": "1.12.3",
     "@wdio/logger": "^5.16.10",
     "find-process": "^1.4.3",
