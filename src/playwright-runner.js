@@ -209,7 +209,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
     throw new Error(`Could not find suite named '${suiteName}'`);
   }
 
-  const playwrightBin = path.join(__dirname, '..', 'no  de_modules', '@playwright', 'test', 'lib', 'cli', 'cli.js');
+  const playwrightBin = path.join(__dirname, '..', 'node_modules', '@playwright', 'test', 'lib', 'cli', 'cli.js');
   const procArgs = [
     playwrightBin, 'test',
     '--reporter', 'junit,line',
