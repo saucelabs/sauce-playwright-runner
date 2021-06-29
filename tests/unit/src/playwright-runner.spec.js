@@ -70,7 +70,30 @@ describe('playwright-runner', function () {
       procArgs[procArgs.length - 1] = path.basename(procArgs[procArgs.length - 1]);
       spawnArgs.cwd = path.basename(spawnArgs.cwd);
       spawnArgs.env.PLAYWRIGHT_JUNIT_OUTPUT_NAME = path.basename(spawnArgs.env.PLAYWRIGHT_JUNIT_OUTPUT_NAME);
-      expect([nodeBin, procArgs, spawnArgs]).toMatchSnapshot();
+      //), procArgs, spawnArgs]).toMatch([
+      expect(nodeBin).toMatch('/fake/path/to/node');
+      expect(procArgs).toMatchObject([
+        'cli.js',
+        'test',
+        '--reporter',
+        'junit,line',
+        '--output',
+        '/fake/runner/__assets__',
+        '--config',
+        '/fake/runner/playwright.config.js',
+        '--browser',
+        'chromium',
+        '--headed',
+      ]);
+      expect(spawnArgs).toMatchObject({
+        'cwd': 'runner',
+        'env': {
+          'HELLO': 'world',
+          'PLAYWRIGHT_JUNIT_OUTPUT_NAME': 'junit.xml',
+          'SAUCE_TAGS': 'tag-one,tag-two',
+        },
+        'stdio': 'inherit',
+      });
     });
   });
 });

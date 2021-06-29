@@ -209,18 +209,23 @@ async function run (nodeBin, runCfgPath, suiteName) {
     throw new Error(`Could not find suite named '${suiteName}'`);
   }
 
+  const projectPath = path.dirname(runCfg.path);
+  if (!fs.existsSync(projectPath)) {
+    throw new Error(`Could not find projectPath directory: '${projectPath}'`);
+  }
+
   // Copy playwright configuration to project folder.
   // As we curently don't support playwright configuration yet,
   //   and set a configuration file automatically change the rootDir.
   //   this is a workaround.
-  fs.copyFileSync(path.join(__dirname, '..', 'playwright.config.js'), path.join(cwd, 'playwright.config.js'));
+  fs.copyFileSync(path.join(__dirname, '..', 'playwright.config.js'), path.join(projectPath, 'playwright.config.js'));
 
   const playwrightBin = path.join(__dirname, '..', 'node_modules', '@playwright', 'test', 'lib', 'cli', 'cli.js');
   const procArgs = [
     playwrightBin, 'test',
     '--reporter', 'junit,line',
-    '--output', path.join(cwd, '__assets__'),
-    '--config', path.join(cwd, 'playwright.config.js')
+    '--output', path.join(projectPath, '__assets__'),
+    '--config', path.join(projectPath, 'playwright.config.js')
   ];
   let args = utils.replaceLegacyKeys(suite.param);
 
@@ -243,11 +248,6 @@ async function run (nodeBin, runCfgPath, suiteName) {
     ...suite.env,
     PLAYWRIGHT_JUNIT_OUTPUT_NAME: path.join(cwd, '__assets__', 'junit.xml')
   };
-
-  const projectPath = path.dirname(runCfg.path);
-  if (!fs.existsSync(projectPath)) {
-    throw new Error(`Could not find projectPath directory: '${projectPath}'`);
-  }
 
   // Install NPM dependencies
   let metrics = [];
