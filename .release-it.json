@@ -1,6 +1,6 @@
 {
     "hooks": {
-        "after:bump": ["bash ./scripts/update-playwright-browsers.sh"]
+        "after:bump": "bash ./scripts/update-playwright-browsers.sh"
     },
     "git": {
         "commit": true,
