@@ -61,7 +61,7 @@ describe('playwright-runner', function () {
     afterEach(function () {
       process.env = backupEnv;
     });
-    it('should run playwright test as a spawn command', async function () {
+    it('should run playwright test as a spawn command in VM', async function () {
       process.env.SAUCE_VM = 'truthy';
       testRunnerUtils.loadRunConfig.mockReturnValue({...baseRunCfg});
       await run('/fake/path/to/node', '/fake/runner/path', 'basic-js');
@@ -80,8 +80,6 @@ describe('playwright-runner', function () {
         '/fake/runner/__assets__',
         '--reporter',
         'junit,line',
-        '--config',
-        '/fake/runner/playwright.config.js',
         '--browser',
         'chromium',
       ]);
