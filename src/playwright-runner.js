@@ -218,12 +218,14 @@ async function run (nodeBin, runCfgPath, suiteName) {
     headed: process.env.SAUCE_VM ? true : false,
     output: path.join(projectPath, '__assets__'),
     reporter: 'junit,line',
-    config: path.join(projectPath, 'playwright.config.js'),
   };
 
-  // Copy our own playwright configuration to the project folder,
-  // as we currently don't support having a user provided playwright configuration yet.
-  fs.copyFileSync(path.join(__dirname, '..', 'playwright.config.js'), path.join(projectPath, 'playwright.config.js'));
+  if (process.env.SAUCE_VM) {
+    // Copy our own playwright configuration to the project folder (to enable video recording),
+    // as we currently don't support having a user provided playwright configuration yet.
+    fs.copyFileSync(path.join(__dirname, '..', 'playwright.config.js'), path.join(projectPath, 'playwright.config.js'));
+    defaultArgs.config = path.join(projectPath, 'playwright.config.js');
+  }
 
   const playwrightBin = path.join(__dirname, '..', 'node_modules', '@playwright', 'test', 'lib', 'cli', 'cli.js');
   const procArgs = [
