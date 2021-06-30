@@ -115,6 +115,21 @@ jobs:
           PLAYWRIGHT_VERSION=$(< package-lock.json jq -r '.dependencies["playwright"].version')
           echo "playwright_version=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
 
+      - name: Get Playwright chromium version
+        run: |
+          CHROMIUM_VERSION=$(< browsers.json jq -r '.chromium')
+          echo "chromium_version=$CHROMIUM_VERSION" >> $GITHUB_ENV
+
+      - name: Get Playwright firefox version
+        run: |
+          FIREFOX_VERSION=$(< browsers.json jq -r '.firefox')
+          echo "firefox_version=$FIREFOX_VERSION" >> $GITHUB_ENV
+
+      - name: Get Playwright webkit version
+        run: |
+          WEBKIT_VERSION=$(< browsers.json jq -r '.webkit')
+          echo "webkit_version=$WEBKIT_VERSION" >> $GITHUB_ENV
+
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
@@ -127,6 +142,10 @@ jobs:
           build-args: |
             BUILD_TAG=${{ steps.prep.outputs.version }}
             PLAYWRIGHT_VERSION=${{ env.playwright_version }}
+          labels: |
+            com.saucelabs.chromium-version=${{ env.chromium_version }}
+            com.saucelabs.firefox-version=${{ env.firefox_version }}
+            com.saucelabs.webkit-version=${{ env.webkit_version }}
 
   release-windows-bundle:
     runs-on: windows-latest

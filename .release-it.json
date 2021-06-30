@@ -1,9 +1,9 @@
 {
     "hooks": {
-        "after:bump": "./.github/helpers/update-saucectl-template.sh"
+        "after:bump": ["bash ./scripts/update-playwright-browsers.sh"]
     },
     "git": {
-        "commit": false,
+        "commit": true,
         "tag": true,
         "tagName": "v${version}"
     },
