@@ -3,7 +3,7 @@
         "after:bump": "bash ./scripts/bump-playwright-browser-versions.sh"
     },
     "git": {
-        "commit": true,
+        "commit": false,
         "tag": true,
         "tagName": "v${version}"
     },
