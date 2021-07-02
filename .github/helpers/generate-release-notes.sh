@@ -9,14 +9,10 @@ PLAYWRIGHT_TEST_VER=$(< package-lock.json jq -r '.dependencies["@playwright/test
 NODEJS_VER=$(grep NODE_VERSION= Dockerfile | cut -d '=' -f 2)
 
 ## Add Browser versions
-## Be based on release notes from playwright
 
-RELEASE_ID=$(curl -s -f -H "Authorization: token ${GITHUB_TOKEN}" https://api.github.com/repos/microsoft/playwright/releases | jq -r ".[] | select(.tag_name == \"v${PLAYWRIGHT_VER}\") | .id")
-TEXT=$(curl -s -f -H "Authorization: token ${GITHUB_TOKEN}" https://api.github.com/repos/microsoft/playwright/releases/${RELEASE_ID} | jq -r '.body' | sed "s/^M//")
-
-CHROMIUM_VER=`echo "${TEXT}" | grep -E '^- Chromium (.*)$'`
-FIREFOX_VER=`echo "${TEXT}" | grep -E '^- Mozilla Firefox (.*)$' | sed 's/Mozilla //'`
-WEBKIT_VER=`echo "${TEXT}" | grep -E '^- WebKit (.*)$'`
+CHROMIUM_VER=$(node ./scripts/print-browser-version.js 'chromium')
+FIREFOX_VER=$(node ./scripts/print-browser-version.js 'firefox')
+WEBKIT_VER=$(node ./scripts/print-browser-version.js 'webkit')
 
 ## Generate everything
 cat <<EOF
