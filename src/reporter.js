@@ -83,7 +83,7 @@ async function createJobReport (suiteName, metadata, api, passed, startTime, end
     passed,
     tags: metadata.tags,
     build: metadata.build,
-    browserName: args.param.browserName,
+    browserName: args.param.browser,
     browserVersion,
     platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG,
     saucectlVersion,

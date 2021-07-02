@@ -13,7 +13,7 @@ const fsExtra = require('fs-extra');
 const glob = require('glob');
 const convert = require('xml-js');
 
-const { shouldRecordVideo, getAbsolutePath, toHyphenated, getArgs, exec } = utils;
+const { getAbsolutePath, getArgs, exec } = utils;
 
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
@@ -173,6 +173,7 @@ function generateJunitfile (cwd, suiteName, browserName) {
   }
 }
 
+
 async function runReporter ({ suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion }) {
   let jobDetailsUrl, reportingSucceeded = false;
   try {
@@ -202,60 +203,10 @@ async function run (nodeBin, runCfgPath, suiteName) {
   const runCfg = await loadRunConfig(runCfgPath);
   runCfg.path = runCfgPath;
   const cwd = process.cwd();
-  let defaultArgs = {
-    param: {
-      headful: process.env.SAUCE_VM ? true : false,
-      video: shouldRecordVideo(),
-    },
-    reporter: 'junit,line',
-  };
-  let args = _.defaultsDeep(defaultArgs, {
-    output: path.join(cwd, '__assets__'),
-  });
 
   const suite = _.find(runCfg.suites, ({name}) => name === suiteName);
   if (!suite) {
     throw new Error(`Could not find suite named '${suiteName}'`);
-  }
-  let env = {
-    ...process.env,
-    ...suite.env,
-    FOLIO_JUNIT_OUTPUT_NAME: path.join(cwd, '__assets__', 'junit.xml')
-  };
-  args = _.defaultsDeep(suite, args);
-
-  const folioBin = path.join(__dirname, '..', 'node_modules', 'folio', 'cli');
-  const procArgs = [folioBin];
-  const excludeParams = ['name', 'platform-name', 'browser-name', 'playwright-version', 'env'];
-
-  // Converts the JSON values to command line arguments
-  // (CLI reference https://github.com/microsoft/playwright-test/blob/master/README.md#run-the-test)
-  for (let [key, value] of Object.entries(args)) {
-    key = toHyphenated(key);
-    if (excludeParams.includes(key.toLowerCase())) {
-      continue;
-    }
-
-    // The 'param' value is special. It works like this.
-    // Input (yml)
-    // =============
-    //
-    // param:
-    //    browserName: "webkit"
-    //    slowMo: 10000
-    //
-    // Output:
-    // =============
-    // folio ... --param browserName=webkit --param slowMo=10000
-    if (key === 'param' || key === 'params') {
-      for (let [paramName, paramValue] of Object.entries(value)) {
-        procArgs.push(`--param`);
-        procArgs.push(paramValue ? `${paramName}=${paramValue}` : paramName);
-      }
-    } else {
-      procArgs.push(`--${key}`);
-      procArgs.push(value);
-    }
   }
 
   const projectPath = path.dirname(runCfg.path);
@@ -263,15 +214,54 @@ async function run (nodeBin, runCfgPath, suiteName) {
     throw new Error(`Could not find projectPath directory: '${projectPath}'`);
   }
 
+  const defaultArgs = {
+    headed: process.env.SAUCE_VM ? true : false,
+    output: path.join(projectPath, '__assets__'),
+    reporter: 'junit,line',
+  };
+
+  if (!process.env.SAUCE_VM) {
+    // Copy our own playwright configuration to the project folder (to enable video recording),
+    // as we currently don't support having a user provided playwright configuration yet.
+    fs.copyFileSync(path.join(__dirname, '..', 'playwright.config.js'), path.join(projectPath, 'playwright.config.js'));
+    defaultArgs.config = path.join(projectPath, 'playwright.config.js');
+  }
+
+  const playwrightBin = path.join(__dirname, '..', 'node_modules', '@playwright', 'test', 'lib', 'cli', 'cli.js');
+  const procArgs = [
+    playwrightBin, 'test'
+  ];
+  let args = _.defaultsDeep(defaultArgs, utils.replaceLegacyKeys(suite.param));
+
+  const excludeParams = ['screenshot-on-failure', 'video', 'slow-mo'];
+
+  for (let [key, value] of Object.entries(args)) {
+    key = utils.toHyphenated(key);
+    if (excludeParams.includes(key.toLowerCase()) || value === false) {
+      continue;
+    }
+    procArgs.push(`--${key}`);
+    if (value !== true) {
+      procArgs.push(value);
+    }
+  }
+  args = _.defaultsDeep(suite, args);
+
+  let env = {
+    ...process.env,
+    ...suite.env,
+    PLAYWRIGHT_JUNIT_OUTPUT_NAME: path.join(cwd, '__assets__', 'junit.xml')
+  };
+
   // Install NPM dependencies
   let metrics = [];
   let npmMetrics = await prepareNpmEnv(runCfg);
   metrics.push(npmMetrics);
 
-  const folioProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd: projectPath, env});
+  const playwrightProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd: projectPath, env});
 
-  const folioPromise = new Promise((resolve) => {
-    folioProc.on('close', (code /*, ...args*/) => {
+  const playwrightPromise = new Promise((resolve) => {
+    playwrightProc.on('close', (code /*, ...args*/) => {
       const hasPassed = code === 0;
       resolve(hasPassed);
     });
@@ -280,7 +270,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
   let startTime, endTime, hasPassed = false;
   try {
     startTime = new Date().toISOString();
-    hasPassed = await folioPromise;
+    hasPassed = await playwrightPromise;
     endTime = new Date().toISOString();
   } catch (e) {
     console.error(`Could not complete job. Reason: ${e}`);
@@ -303,7 +293,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
   }
 
   const saucectlVersion = process.env.SAUCE_SAUCECTL_VERSION;
-  const region = runCfg.sauce.region || 'us-west-1';
+  const region = (runCfg.sauce && runCfg.sauce.region) || 'us-west-1';
   await runReporter({ suiteName, hasPassed, startTime, endTime, args, playwright: runCfg.playwright, metrics, region, metadata: runCfg.sauce.metadata, saucectlVersion});
   return hasPassed;
 }

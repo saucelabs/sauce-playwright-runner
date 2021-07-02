@@ -3,6 +3,7 @@
 ./*.json
 !package.json
 !package-lock.json
+!playwright.config.js
 node_modules
 .git
 Dockerfile.base

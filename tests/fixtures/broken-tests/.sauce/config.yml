@@ -12,7 +12,7 @@ docker:
   image: saucelabs/stt-playwright-node:local
 playwright:
   projectPath: ./tests/
-  version: 1.7.1
+  version: 1.12.3
 suites:
   - name: "default"
     testMatch: '**/*.spec.js'

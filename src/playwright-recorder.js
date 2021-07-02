@@ -4,7 +4,7 @@ const path = require('path');
 const stream = require('stream');
 const childProcess = require('child_process');
 
-function folioRecorder () {
+function playwrightRecorder () {
   // console.log is saved out of reportsDir since it is cleared on startup.
   const fd = fs.openSync(path.join(process.cwd(), 'console.log'), 'w+', 0o644);
   const ws = stream.Writable({
@@ -12,7 +12,7 @@ function folioRecorder () {
   });
 
   const [nodeBin] = process.argv;
-  const child = childProcess.spawn(nodeBin, [path.join(__dirname, 'folio-runner.js'), ...process.argv.slice(2)]);
+  const child = childProcess.spawn(nodeBin, [path.join(__dirname, 'playwright-runner.js'), ...process.argv.slice(2)]);
 
   child.stdout.pipe(process.stdout);
   child.stderr.pipe(process.stderr);
@@ -26,7 +26,7 @@ function folioRecorder () {
 }
 
 if (require.main === module) {
-  (async () => await folioRecorder())();
+  (async () => await playwrightRecorder())();
 }
 
-exports.folioRecorder = folioRecorder;
+exports.playwrightRecorder = playwrightRecorder;
