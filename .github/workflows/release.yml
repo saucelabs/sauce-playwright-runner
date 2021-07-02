@@ -138,7 +138,6 @@ jobs:
           node-version: 14.x
 
       - name: Install dependencies
-        if: ${{ steps.prep.outputs.tag_name == '' }}
         run: |
           npm ci
 
