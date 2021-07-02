@@ -115,18 +115,14 @@ jobs:
           PLAYWRIGHT_VERSION=$(< package-lock.json jq -r '.dependencies["playwright"].version')
           echo "playwright_version=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
 
-      - name: Get Playwright chromium version
+      - name: Get Playwright browser versions
         run: |
+          node ./scripts/print-versions.js > ./browsers.json
+
           CHROMIUM_VERSION=$(< browsers.json jq -r '.chromium')
           echo "chromium_version=$CHROMIUM_VERSION" >> $GITHUB_ENV
-
-      - name: Get Playwright firefox version
-        run: |
           FIREFOX_VERSION=$(< browsers.json jq -r '.firefox')
           echo "firefox_version=$FIREFOX_VERSION" >> $GITHUB_ENV
-
-      - name: Get Playwright webkit version
-        run: |
           WEBKIT_VERSION=$(< browsers.json jq -r '.webkit')
           echo "webkit_version=$WEBKIT_VERSION" >> $GITHUB_ENV
 

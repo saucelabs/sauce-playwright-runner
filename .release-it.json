@@ -1,7 +1,4 @@
 {
-    "hooks": {
-        "after:bump": "bash ./scripts/bump-playwright-browser-versions.sh"
-    },
     "git": {
         "commit": false,
         "tag": true,

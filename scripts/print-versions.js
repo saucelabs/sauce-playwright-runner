@@ -1,8 +1,5 @@
 /**
- * Prints the versions for the browsers that are included in the currently installed version of playwright
- *
- * Used by scripts/update-playwright-browsers.sh when a release is triggered by the release-it tool
- * as an `after:bump` hook
+ * Prints the versions for the browsers that are included in the currently installed version of playwright as a json string.
  */
 const playwright = require('playwright');
 
