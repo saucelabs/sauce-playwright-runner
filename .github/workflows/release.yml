@@ -117,8 +117,6 @@ jobs:
 
       - name: Get Playwright browser versions
         run: |
-          node ./scripts/print-versions.js > ./browsers.json
-
           CHROMIUM_VERSION=$(node ./scripts/print-browser-version.js 'chromium')
           echo "chromium_version=$CHROMIUM_VERSION" >> $GITHUB_ENV
           FIREFOX_VERSION=$(node ./scripts/print-browser-version.js 'firefox')
