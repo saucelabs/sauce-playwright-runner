@@ -115,6 +115,16 @@ jobs:
           PLAYWRIGHT_VERSION=$(< package-lock.json jq -r '.dependencies["playwright"].version')
           echo "playwright_version=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
 
+      - name: Setup Node version
+        if: ${{ steps.prep.outputs.tag_name == '' }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+
+      - name: Install dependencies
+        if: ${{ steps.prep.outputs.tag_name == '' }}
+        run: npm ci
+
       - name: Get Playwright browser versions
         run: |
           CHROMIUM_VERSION=$(node ./scripts/print-browser-version.js 'chromium')
