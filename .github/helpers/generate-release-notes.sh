@@ -26,9 +26,9 @@ ${CHANGELOG}
 - NodeJS ${NODEJS_VER}
 
 ## Browsers
-${CHROMIUM_VER}
-${FIREFOX_VER}
-${WEBKIT_VER}
+- Chromium ${CHROMIUM_VER}
+- Firefox ${FIREFOX_VER}
+- Webkit ${WEBKIT_VER}
 
 ### Build Info
 <details>
