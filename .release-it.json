@@ -1,7 +1,4 @@
 {
-    "hooks": {
-        "after:bump": "./.github/helpers/update-saucectl-template.sh"
-    },
     "git": {
         "commit": false,
         "tag": true,
