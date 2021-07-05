@@ -52,7 +52,24 @@ jobs:
 
       - name: Install dependencies
         if: ${{ steps.prep.outputs.tag_name == '' }}
-        run: npm ci
+        run: |
+          npm ci
+
+          # Dependencies to launch webkit to inspect its version
+          sudo apt-get update
+          sudo apt-get install libegl1\
+                               libopus0\
+                               libwoff1\
+                               libharfbuzz-icu0\
+                               gstreamer1.0-plugins-base\
+                               libgstreamer-gl1.0-0\
+                               gstreamer1.0-plugins-bad\
+                               libopenjp2-7\
+                               libwebpdemux2\
+                               libenchant1c2a\
+                               libhyphen0\
+                               libgles2\
+                               gstreamer1.0-libav
 
       - name: generate (pre-)release draft
         if: ${{ steps.prep.outputs.tag_name == '' }}
@@ -114,6 +131,31 @@ jobs:
         run: |
           PLAYWRIGHT_VERSION=$(< package-lock.json jq -r '.dependencies["playwright"].version')
           echo "playwright_version=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
+
+      - name: Setup Node version
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+
+      - name: Install dependencies
+        run: |
+          npm ci
+
+          # Dependencies to launch webkit to inspect its version
+          sudo apt-get update
+          sudo apt-get install libegl1\
+                               libopus0\
+                               libwoff1\
+                               libharfbuzz-icu0\
+                               gstreamer1.0-plugins-base\
+                               libgstreamer-gl1.0-0\
+                               gstreamer1.0-plugins-bad\
+                               libopenjp2-7\
+                               libwebpdemux2\
+                               libenchant1c2a\
+                               libhyphen0\
+                               libgles2\
+                               gstreamer1.0-libav
 
       - name: Get Playwright browser versions
         run: |
