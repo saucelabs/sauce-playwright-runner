@@ -10,7 +10,7 @@
               "headful": true,
               "slowMo": 10000
             },
-            "testMatch": "**/*.spec.ts"
+            "testMatch": ".*.spec.ts"
         }
     ]
 }
