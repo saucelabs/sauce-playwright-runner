@@ -20,4 +20,4 @@ suites:
       screenshotOnFailure: false
       slowMo: 1000
       headful: false
-    testMatch: ".*.spec.js"
+    testMatch: ".*.spec.ts"
