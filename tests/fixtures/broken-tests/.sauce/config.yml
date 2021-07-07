@@ -15,7 +15,7 @@ playwright:
   version: 1.12.3
 suites:
   - name: "default"
-    testMatch: '**/*.spec.js'
+    testMatch: '.*.spec.js'
     params:
       browserName: "firefox"
       slowMo: 1000
