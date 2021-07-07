@@ -245,6 +245,14 @@ async function run (nodeBin, runCfgPath, suiteName) {
       procArgs.push(value);
     }
   }
+
+  // Thread testMatch as arrays by default.
+  // Older versions saucectl are only providing a single value.
+  if (!Array.isArray(suite.testMatch)) {
+    suite.testMatch = [suite.testMatch];
+  }
+  procArgs.push(...suite.testMatch);
+
   args = _.defaultsDeep(suite, args);
 
   let env = {

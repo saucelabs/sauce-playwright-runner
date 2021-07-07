@@ -27,7 +27,7 @@ describe('playwright-runner', function () {
           headful: true,
           slowMo: 1000
         },
-        testMatch: '**/*.spec.js'
+        testMatch: ['**/*.spec.js', '**/*.test.js']
       }
     ]
   };
@@ -68,7 +68,6 @@ describe('playwright-runner', function () {
       glob.sync.mockReturnValueOnce([]);
       const [[nodeBin, procArgs, spawnArgs]] = spawnMock.mock.calls;
       procArgs[0] = path.basename(procArgs[0]);
-      procArgs[procArgs.length - 1] = path.basename(procArgs[procArgs.length - 1]);
       spawnArgs.cwd = path.basename(spawnArgs.cwd);
       spawnArgs.env.PLAYWRIGHT_JUNIT_OUTPUT_NAME = path.basename(spawnArgs.env.PLAYWRIGHT_JUNIT_OUTPUT_NAME);
       expect(nodeBin).toMatch('/fake/path/to/node');
@@ -82,6 +81,8 @@ describe('playwright-runner', function () {
         'junit,line',
         '--browser',
         'chromium',
+        '**/*.spec.js',
+        '**/*.test.js',
       ]);
       expect(spawnArgs).toMatchObject({
         'cwd': 'runner',
