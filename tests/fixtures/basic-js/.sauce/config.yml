@@ -15,6 +15,7 @@ playwright:
   version: 1.12.3 # Playwright-Test runner version
 suites:
   - name: "saucy test"
+    mode: docker
     platformName: "Windows 10"
     testMatch: '.*.js'
       # screenResolution: "1920x1080"

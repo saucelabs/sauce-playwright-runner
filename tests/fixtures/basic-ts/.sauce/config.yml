@@ -15,6 +15,7 @@ playwright:
   projectPath: ./tests/
 suites:
   - name: default
+    mode: docker
     params:
       browserName: webkit
       screenshotOnFailure: false

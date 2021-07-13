@@ -15,6 +15,7 @@ playwright:
   version: 1.12.3
 suites:
   - name: "default"
+    mode: docker
     testMatch: '.*.spec.js'
     params:
       browserName: "firefox"
