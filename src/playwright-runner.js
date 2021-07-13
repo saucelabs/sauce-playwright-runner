@@ -217,7 +217,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
   const defaultArgs = {
     headed: process.env.SAUCE_VM ? true : false,
     output: path.join(cwd, '__assets__'),
-    reporter: 'junit,line',
+    reporter: 'junit,list',
   };
 
   if (!process.env.SAUCE_VM) {
