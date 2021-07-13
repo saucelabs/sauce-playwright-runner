@@ -32,11 +32,12 @@ describe('playwright-runner', function () {
     ]
   };
   describe('.run', function () {
-    let spawnMock, playwrightProc, backupEnv, fsExistsMock;
+    let spawnMock, playwrightProc, backupEnv, fsExistsMock, cwdMock;
     beforeEach(function () {
       backupEnv = {};
       spawnMock = jest.spyOn(childProcess, 'spawn');
       fsExistsMock = jest.spyOn(fs, 'existsSync');
+      cwdMock = jest.spyOn(process, 'cwd');
       playwrightProc = new EventEmitter();
       SauceLabs.mockImplementation(() => ({
         uploadJobAssets () {
@@ -53,6 +54,7 @@ describe('playwright-runner', function () {
         return playwrightProc;
       });
       fsExistsMock.mockImplementation((url) => url.startsWith('/bad/path') ? false : true);
+      cwdMock.mockReturnValue('/fake/runner');
       process.env = {
         SAUCE_TAGS: 'tag-one,tag-two',
         HELLO: 'world',

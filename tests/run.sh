@@ -15,7 +15,7 @@ for i in ${tests[@]}; do
 
     echo "Running ${key}:"
     pushd ./tests/fixtures/${key}/ > /dev/null
-    ${SAUCECTL} run --test-env docker -c .sauce/config.yml > ${tmpfile} 2>&1
+    ${SAUCECTL} run -c .sauce/config.yml > ${tmpfile} 2>&1
     RETURN_CODE=${?}
     popd > /dev/null
 
