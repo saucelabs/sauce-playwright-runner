@@ -10,8 +10,8 @@ sauce:
 docker:
   fileTransfer: mount
   image: saucelabs/stt-playwright-node:local
+rootDir: .
 playwright:
-  projectPath: ./tests/
   version: 1.12.3
 suites:
   - name: "default"

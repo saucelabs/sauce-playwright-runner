@@ -10,9 +10,9 @@ sauce:
     build: Release $CI_COMMIT_SHORT_SHA
 docker:
   image: saucelabs/stt-playwright-node:local
+rootDir: .
 playwright:
   version: 1.12.3
-  projectPath: ./tests/
 suites:
   - name: default
     mode: docker
