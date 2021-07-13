@@ -80,7 +80,7 @@ describe('playwright-runner', function () {
         '--output',
         '/fake/runner/__assets__',
         '--reporter',
-        'junit,line',
+        'junit,list',
         '--browser',
         'chromium',
         '**/*.spec.js',
