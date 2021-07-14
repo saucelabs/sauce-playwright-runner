@@ -17,4 +17,4 @@ suites:
     platformName: "Windows 10"
     testMatch: ['.*.js']
     params:
-      browserName: "chrome"
+      browserName: "chromium"
