@@ -16,10 +16,6 @@ jobs:
       - run: make docker
         name: Make Docker
 
-      - uses: actions/setup-go@v2
-        with:
-          go-version: '1.16.0'
-
       # Install saucectl
       - uses: saucelabs/saucectl-run-action@v1
         with:

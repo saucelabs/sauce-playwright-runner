@@ -92,9 +92,6 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/home/seluser/.cache/ms-playwright
 
 COPY --chown=seluser:seluser . .
 
-# Workaround for permissions in CI if run with a different user
-RUN chmod 777 -R /home/seluser/
-
 ENV IMAGE_NAME=saucelabs/stt-playwright-node
 
 ARG BUILD_TAG
