@@ -57,8 +57,6 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
     }
   }
 
-  generateJunitfile(cwd, suiteName, args.param.browserName);
-
   let files = [
     path.join(cwd, 'console.log'),
     path.join(cwd, '__assets__', 'junit.xml'), // TOOD: Should add junit.xml.json as well
@@ -101,10 +99,17 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
 }
 
 function generateJunitfile (cwd, suiteName, browserName) {
+  const junitPath = path.join(cwd, '__assets__', `junit.xml`);
+  if (!fs.existsSync(junitPath)) {
+    return;
+  }
   let result;
   let opts = {compact: true, spaces: 4};
   try {
-    const xmlData = fs.readFileSync(path.join(cwd, '__assets__', `junit.xml`), 'utf8');
+    const xmlData = fs.readFileSync(junitPath, 'utf8');
+    if (!xmlData) {
+      return;
+    }
     result = convert.xml2js(xmlData, opts);
   } catch (err) {
     console.error(err);
@@ -118,6 +123,9 @@ function generateJunitfile (cwd, suiteName, browserName) {
   result.testsuites._attributes.name = suiteName;
   delete result.testsuites._attributes.id;
 
+  if (!Array.isArray(result.testsuites.testsuite)) {
+    result.testsuites.testsuite = [result.testsuites.testsuite];
+  }
   let testsuites = [];
   let totalTests = 0;
   let totalErrs = 0;
@@ -166,6 +174,15 @@ function generateJunitfile (cwd, suiteName, browserName) {
   };
 
   try {
+    opts.textFn = (val) => val.replace(/[<>&'"]/g, function (c) {
+      switch (c) {
+        case '<': return '&lt;';
+        case '>': return '&gt;';
+        case '&': return '&amp;';
+        case '\'': return '&apos;';
+        case '"': return '&quot;';
+      }
+    });
     let xmlResult = convert.js2xml(result, opts);
     fs.writeFileSync(path.join(cwd, '__assets__', 'junit.xml'), xmlResult);
   } catch (err) {
@@ -289,6 +306,8 @@ async function run (nodeBin, runCfgPath, suiteName) {
   for (const file of files) {
     fsExtra.moveSync(file, path.join(cwd, '__assets__', path.basename(file)));
   }
+
+  generateJunitfile(cwd, suiteName, args.param.browser);
 
   // If it's a VM, don't try to upload the assets
   if (process.env.SAUCE_VM) {
