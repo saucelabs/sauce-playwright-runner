@@ -4,7 +4,7 @@ const _ = require('lodash');
 const path = require('path');
 const utils = require('./utils');
 const { createJobReportV2, createJobReport } = require('./reporter');
-const { prepareNpmEnv, loadRunConfig } = require('sauce-testrunner-utils');
+const { prepareNpmEnv, loadRunConfig, escapeXML } = require('sauce-testrunner-utils');
 const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
 const SauceLabs = require('saucelabs').default;
 const { LOG_FILES } = require('./constants');
@@ -177,15 +177,7 @@ function generateJunitfile (cwd, suiteName, browserName, platformName) {
   };
 
   try {
-    opts.textFn = (val) => val.replace(/[<>&'"]/g, function (c) {
-      switch (c) {
-        case '<': return '&lt;';
-        case '>': return '&gt;';
-        case '&': return '&amp;';
-        case '\'': return '&apos;';
-        case '"': return '&quot;';
-      }
-    });
+    opts.textFn = escapeXML;
     let xmlResult = convert.js2xml(result, opts);
     fs.writeFileSync(path.join(cwd, '__assets__', 'junit.xml'), xmlResult);
   } catch (err) {
