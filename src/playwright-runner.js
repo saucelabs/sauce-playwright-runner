@@ -98,7 +98,7 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
   return sessionId;
 }
 
-function generateJunitfile (cwd, suiteName, browserName) {
+function generateJunitfile (cwd, suiteName, browserName, platformName) {
   const junitPath = path.join(cwd, '__assets__', `junit.xml`);
   if (!fs.existsSync(junitPath)) {
     return;
@@ -132,6 +132,9 @@ function generateJunitfile (cwd, suiteName, browserName) {
   let totalFailures = 0;
   let totalSkipped = 0;
   let totalTime = 0;
+  if (process.platform.toLowerCase() === 'linux') {
+    platformName = 'Linux';
+  }
   for (let i = 0; i < result.testsuites.testsuite.length; i++) {
     let testsuite = result.testsuites.testsuite[i];
     totalTests += +testsuite._attributes.tests || 0;
@@ -148,7 +151,7 @@ function generateJunitfile (cwd, suiteName, browserName) {
       {
         _attributes: {
           name: 'platformName',
-          value: process.platform,
+          value: platformName,
         }
       },
       {
@@ -307,7 +310,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
     fsExtra.moveSync(file, path.join(cwd, '__assets__', path.basename(file)));
   }
 
-  generateJunitfile(cwd, suiteName, args.param.browser);
+  generateJunitfile(cwd, suiteName, args.param.browser, args.platformName);
 
   // If it's a VM, don't try to upload the assets
   if (process.env.SAUCE_VM) {
