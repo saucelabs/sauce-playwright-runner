@@ -38,7 +38,7 @@
     "js-yaml": "3.14.0",
     "lodash": "^4.17.21",
     "playwright": "1.12.3",
-    "sauce-testrunner-utils": "0.4.4",
+    "sauce-testrunner-utils": "0.4.5",
     "saucelabs": "4.7.5",
     "shelljs": "^0.8.3",
     "webdriverio": "^5.21.0",

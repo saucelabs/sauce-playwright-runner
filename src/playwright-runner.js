@@ -4,7 +4,7 @@ const _ = require('lodash');
 const path = require('path');
 const utils = require('./utils');
 const { createJobReportV2, createJobReport } = require('./reporter');
-const { prepareNpmEnv, loadRunConfig } = require('sauce-testrunner-utils');
+const { prepareNpmEnv, loadRunConfig, escapeXML } = require('sauce-testrunner-utils');
 const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
 const SauceLabs = require('saucelabs').default;
 const { LOG_FILES } = require('./constants');
@@ -57,8 +57,6 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
     }
   }
 
-  generateJunitfile(cwd, suiteName, args.param.browserName);
-
   let files = [
     path.join(cwd, 'console.log'),
     path.join(cwd, '__assets__', 'junit.xml'), // TOOD: Should add junit.xml.json as well
@@ -100,11 +98,18 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
   return sessionId;
 }
 
-function generateJunitfile (cwd, suiteName, browserName) {
+function generateJunitfile (cwd, suiteName, browserName, platformName) {
+  const junitPath = path.join(cwd, '__assets__', `junit.xml`);
+  if (!fs.existsSync(junitPath)) {
+    return;
+  }
   let result;
   let opts = {compact: true, spaces: 4};
   try {
-    const xmlData = fs.readFileSync(path.join(cwd, '__assets__', `junit.xml`), 'utf8');
+    const xmlData = fs.readFileSync(junitPath, 'utf8');
+    if (!xmlData) {
+      return;
+    }
     result = convert.xml2js(xmlData, opts);
   } catch (err) {
     console.error(err);
@@ -118,12 +123,18 @@ function generateJunitfile (cwd, suiteName, browserName) {
   result.testsuites._attributes.name = suiteName;
   delete result.testsuites._attributes.id;
 
+  if (!Array.isArray(result.testsuites.testsuite)) {
+    result.testsuites.testsuite = [result.testsuites.testsuite];
+  }
   let testsuites = [];
   let totalTests = 0;
   let totalErrs = 0;
   let totalFailures = 0;
   let totalSkipped = 0;
   let totalTime = 0;
+  if (process.platform.toLowerCase() === 'linux') {
+    platformName = 'Linux';
+  }
   for (let i = 0; i < result.testsuites.testsuite.length; i++) {
     let testsuite = result.testsuites.testsuite[i];
     totalTests += +testsuite._attributes.tests || 0;
@@ -140,7 +151,7 @@ function generateJunitfile (cwd, suiteName, browserName) {
       {
         _attributes: {
           name: 'platformName',
-          value: process.platform,
+          value: platformName,
         }
       },
       {
@@ -166,6 +177,7 @@ function generateJunitfile (cwd, suiteName, browserName) {
   };
 
   try {
+    opts.textFn = escapeXML;
     let xmlResult = convert.js2xml(result, opts);
     fs.writeFileSync(path.join(cwd, '__assets__', 'junit.xml'), xmlResult);
   } catch (err) {
@@ -289,6 +301,8 @@ async function run (nodeBin, runCfgPath, suiteName) {
   for (const file of files) {
     fsExtra.moveSync(file, path.join(cwd, '__assets__', path.basename(file)));
   }
+
+  generateJunitfile(cwd, suiteName, args.param.browser, args.platformName);
 
   // If it's a VM, don't try to upload the assets
   if (process.env.SAUCE_VM) {
