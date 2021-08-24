@@ -14,7 +14,7 @@ const defaults = {
     video: process.env.SAUCE_VM ? 'off' : 'on',
   },
   reporter: [
-    ['line'],
+    ['list'],
     ['junit', { outputFile: 'junit.xml' }],
   ],
 };
