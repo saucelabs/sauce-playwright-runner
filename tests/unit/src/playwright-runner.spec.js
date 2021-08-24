@@ -71,18 +71,17 @@ describe('playwright-runner', function () {
       const [[nodeBin, procArgs, spawnArgs]] = spawnMock.mock.calls;
       procArgs[0] = path.basename(procArgs[0]);
       spawnArgs.cwd = path.basename(spawnArgs.cwd);
-      spawnArgs.env.PLAYWRIGHT_JUNIT_OUTPUT_NAME = path.basename(spawnArgs.env.PLAYWRIGHT_JUNIT_OUTPUT_NAME);
       expect(nodeBin).toMatch('/fake/path/to/node');
       expect(procArgs).toMatchObject([
         'cli.js',
         'test',
-        '--headed',
         '--output',
         '/fake/runner/__assets__',
-        '--reporter',
-        'junit,list',
+        '--config',
+        '/fake/runner/custom.config.js',
         '--browser',
         'chromium',
+        '--headed',
         '**/*.spec.js',
         '**/*.test.js',
       ]);
@@ -90,7 +89,6 @@ describe('playwright-runner', function () {
         'cwd': 'runner',
         'env': {
           'HELLO': 'world',
-          'PLAYWRIGHT_JUNIT_OUTPUT_NAME': 'junit.xml',
           'SAUCE_TAGS': 'tag-one,tag-two',
         },
         'stdio': 'inherit',
