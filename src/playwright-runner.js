@@ -237,18 +237,13 @@ async function run (nodeBin, runCfgPath, suiteName) {
     throw new Error(`Could not find projectPath directory: '${projectPath}'`);
   }
 
-  const defaultArgs = {
-    headed: process.env.SAUCE_VM ? true : false,
-    output: path.join(cwd, '__assets__'),
-    reporter: 'junit,list',
-  };
+  const configFile = path.join(projectPath, 'custom.config.js');
 
-  if (!process.env.SAUCE_VM) {
-    // Copy our own playwright configuration to the project folder (to enable video recording),
-    // as we currently don't support having a user provided playwright configuration yet.
-    fs.copyFileSync(path.join(__dirname, '..', 'playwright.config.js'), path.join(projectPath, 'playwright.config.js'));
-    defaultArgs.config = path.join(projectPath, 'playwright.config.js');
-  }
+  fs.copyFileSync(path.join(__dirname, '..', 'playwright.config.js'), configFile);
+  const defaultArgs = {
+    output: path.join(cwd, '__assets__'),
+    config: configFile,
+  };
 
   const playwrightBin = path.join(__dirname, '..', 'node_modules', '@playwright', 'test', 'lib', 'cli', 'cli.js');
   const procArgs = [
@@ -281,7 +276,6 @@ async function run (nodeBin, runCfgPath, suiteName) {
   let env = {
     ...process.env,
     ...suite.env,
-    PLAYWRIGHT_JUNIT_OUTPUT_NAME: path.join(cwd, '__assets__', 'junit.xml'),
     FORCE_COLOR: 0,
   };
 
@@ -309,10 +303,6 @@ async function run (nodeBin, runCfgPath, suiteName) {
   }
 
   // Move to __assets__
-  const files = glob.sync(path.join(projectPath, 'test-results', '*')) || [];
-  for (const file of files) {
-    fsExtra.moveSync(file, path.join(cwd, '__assets__', path.basename(file)));
-  }
 
   generateJunitfile(cwd, suiteName, args.param.browser, args.platformName);
 
