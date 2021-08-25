@@ -9,7 +9,6 @@ const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
 const SauceLabs = require('saucelabs').default;
 const { LOG_FILES } = require('./constants');
 const fs = require('fs');
-const fsExtra = require('fs-extra');
 const glob = require('glob');
 const convert = require('xml-js');
 
@@ -18,10 +17,7 @@ const { getAbsolutePath, getArgs, exec } = utils;
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 
-const ASSETS_DIR = path.join(process.cwd(), '__assets__');
-const JUNIT_FILE = path.join(ASSETS_DIR, 'junit.xml');
-
-async function createJob (suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion) {
+async function createJob (suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion, assetsDir) {
   const tld = region === 'staging' ? 'net' : 'com';
   const api = new SauceLabs({
     user: process.env.SAUCE_USERNAME,
@@ -48,10 +44,10 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
 
   // Take the 1st webm video we find and translate it video.mp4
   // TODO: We need to translate all .webm to .mp4 and combine them into one video.mp4
-  const webmFiles = glob.sync(path.join(ASSETS_DIR, '**', '*.webm'));
+  const webmFiles = glob.sync(path.join(assetsDir, '**', '*.webm'));
   let videoLocation;
   if (webmFiles.length > 0) {
-    videoLocation = path.join(ASSETS_DIR, 'video.mp4');
+    videoLocation = path.join(assetsDir, 'video.mp4');
     try {
       await exec(`ffmpeg -i ${webmFiles[0]} ${videoLocation}`, {suppressLogs: true});
     } catch (e) {
@@ -62,7 +58,7 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
 
   let files = [
     path.join(cwd, 'console.log'),
-    JUNIT_FILE,
+    path.join(assetsDir, 'junit.xml'),
     ...containerLogFiles
   ];
 
@@ -71,7 +67,7 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
     if (_.isEmpty(mt.data)) {
       continue;
     }
-    let mtFile = path.join(ASSETS_DIR, mt.name);
+    let mtFile = path.join(assetsDir, mt.name);
     fs.writeFileSync(mtFile, JSON.stringify(mt.data, ' ', 2));
     files.push(mtFile);
   }
@@ -101,14 +97,14 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
   return sessionId;
 }
 
-function generateJunitfile (suiteName, browserName, platformName) {
-  if (!fs.existsSync(JUNIT_FILE)) {
+function generateJunitfile (sourceFile, suiteName, browserName, platformName) {
+  if (!fs.existsSync(sourceFile)) {
     return;
   }
   let result;
   let opts = {compact: true, spaces: 4};
   try {
-    const xmlData = fs.readFileSync(JUNIT_FILE, 'utf8');
+    const xmlData = fs.readFileSync(sourceFile, 'utf8');
     if (!xmlData) {
       return;
     }
@@ -181,17 +177,17 @@ function generateJunitfile (suiteName, browserName, platformName) {
   try {
     opts.textFn = escapeXML;
     let xmlResult = convert.js2xml(result, opts);
-    fs.writeFileSync(JUNIT_FILE, xmlResult);
+    fs.writeFileSync(sourceFile, xmlResult);
   } catch (err) {
     console.error(err);
   }
 }
 
 
-async function runReporter ({ suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion }) {
+async function runReporter ({ suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion, assetsDir }) {
   let jobDetailsUrl, reportingSucceeded = false;
   try {
-    let sessionId = await createJob(suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion);
+    let sessionId = await createJob(suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion, assetsDir);
     let domain;
     const tld = region === 'staging' ? 'net' : 'com';
     switch (region) {
@@ -213,6 +209,9 @@ async function runReporter ({ suiteName, hasPassed, startTime, endTime, args, pl
 }
 
 async function run (nodeBin, runCfgPath, suiteName) {
+  const assetsDir = path.join(process.cwd(), '__assets__');
+  const junitFile = path.join(assetsDir, 'junit.xml');
+
   runCfgPath = getAbsolutePath(runCfgPath);
   const runCfg = await loadRunConfig(runCfgPath);
 
@@ -226,11 +225,13 @@ async function run (nodeBin, runCfgPath, suiteName) {
     throw new Error(`Could not find projectPath directory: '${projectPath}'`);
   }
 
+  // Copy our runner's playwright config to a custom location in order to
+  // preserve the customer's config which we may want to load in the future
   const configFile = path.join(projectPath, 'custom.config.js');
-
   fs.copyFileSync(path.join(__dirname, '..', 'playwright.config.js'), configFile);
+
   const defaultArgs = {
-    output: ASSETS_DIR,
+    output: assetsDir,
     config: configFile,
   };
 
@@ -265,7 +266,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
   let env = {
     ...process.env,
     ...suite.env,
-    PLAYWRIGHT_JUNIT_OUTPUT_NAME: JUNIT_FILE,
+    PLAYWRIGHT_JUNIT_OUTPUT_NAME: junitFile,
   };
 
   // Install NPM dependencies
@@ -294,7 +295,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
     console.error(`Could not complete job. Reason: ${e}`);
   }
 
-  generateJunitfile(suiteName, args.param.browser, args.platformName);
+  generateJunitfile(junitFile, suiteName, args.param.browser, args.platformName);
 
   // If it's a VM, don't try to upload the assets
   if (process.env.SAUCE_VM) {
@@ -308,7 +309,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
 
   const saucectlVersion = process.env.SAUCE_SAUCECTL_VERSION;
   const region = (runCfg.sauce && runCfg.sauce.region) || 'us-west-1';
-  await runReporter({ suiteName, hasPassed, startTime, endTime, args, playwright: runCfg.playwright, metrics, region, metadata: runCfg.sauce.metadata, saucectlVersion});
+  await runReporter({ suiteName, hasPassed, startTime, endTime, args, playwright: runCfg.playwright, metrics, region, metadata: runCfg.sauce.metadata, saucectlVersion, assetsDir});
   return hasPassed;
 }
 
