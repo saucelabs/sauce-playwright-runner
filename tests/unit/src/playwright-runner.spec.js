@@ -13,6 +13,8 @@ const fs = require('fs');
 const glob = require('glob');
 const testRunnerUtils = require('sauce-testrunner-utils');
 
+const MOCK_CWD = '/fake/runner';
+
 describe('playwright-runner', function () {
   const baseRunCfg = {
     playwright: {
@@ -54,7 +56,7 @@ describe('playwright-runner', function () {
         return playwrightProc;
       });
       fsExistsMock.mockImplementation((url) => url.startsWith('/bad/path') ? false : true);
-      cwdMock.mockReturnValue('/fake/runner');
+      cwdMock.mockReturnValue(MOCK_CWD);
       process.env = {
         SAUCE_TAGS: 'tag-one,tag-two',
         HELLO: 'world',
@@ -66,7 +68,7 @@ describe('playwright-runner', function () {
     it('should run playwright test as a spawn command in VM', async function () {
       process.env.SAUCE_VM = 'truthy';
       testRunnerUtils.loadRunConfig.mockReturnValue({...baseRunCfg});
-      await run('/fake/path/to/node', '/fake/runner/path', 'basic-js');
+      await run('/fake/path/to/node', path.join(MOCK_CWD, 'sauce-runner.json'), 'basic-js');
       glob.sync.mockReturnValueOnce([]);
       const [[nodeBin, procArgs, spawnArgs]] = spawnMock.mock.calls;
       procArgs[0] = path.basename(procArgs[0]);
@@ -76,9 +78,9 @@ describe('playwright-runner', function () {
         'cli.js',
         'test',
         '--output',
-        '/fake/runner/__assets__',
+        path.join(MOCK_CWD, '__assets__'),
         '--config',
-        '/fake/runner/custom.config.js',
+        path.join(MOCK_CWD, 'custom.config.js'),
         '--browser',
         'chromium',
         '--headed',
@@ -90,6 +92,7 @@ describe('playwright-runner', function () {
         'env': {
           'HELLO': 'world',
           'SAUCE_TAGS': 'tag-one,tag-two',
+          'PLAYWRIGHT_JUNIT_OUTPUT_NAME': path.join(MOCK_CWD, '__assets__', 'junit.xml'),
         },
         'stdio': 'inherit',
       });
