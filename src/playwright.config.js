@@ -18,6 +18,7 @@ if ('HTTP_PROXY' in process.env && process.env.HTTP_PROXY !== '') {
     proxy: {
       server: process.env.HTTP_PROXY,
     },
+    ignoreHTTPSErrors: true,
   };
 }
 
