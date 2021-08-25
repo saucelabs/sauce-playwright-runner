@@ -226,14 +226,13 @@ async function runReporter ({ suiteName, hasPassed, startTime, endTime, args, pl
 async function run (nodeBin, runCfgPath, suiteName) {
   runCfgPath = getAbsolutePath(runCfgPath);
   const runCfg = await loadRunConfig(runCfgPath);
-  runCfg.path = runCfgPath;
 
   const suite = _.find(runCfg.suites, ({name}) => name === suiteName);
   if (!suite) {
     throw new Error(`Could not find suite named '${suiteName}'`);
   }
 
-  const projectPath = path.dirname(runCfg.path);
+  const projectPath = path.dirname(runCfgPath);
   if (!fs.existsSync(projectPath)) {
     throw new Error(`Could not find projectPath directory: '${projectPath}'`);
   }
@@ -283,6 +282,9 @@ async function run (nodeBin, runCfgPath, suiteName) {
 
   // Install NPM dependencies
   let metrics = [];
+
+  // runCfg.path must be set for prepareNpmEnv to find node_modules. :(
+  runCfg.path = runCfgPath;
   let npmMetrics = await prepareNpmEnv(runCfg);
   metrics.push(npmMetrics);
 
