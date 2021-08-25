@@ -14,8 +14,10 @@ const defaults = {
 };
 
 if ('HTTP_PROXY' in process.env && process.env.HTTP_PROXY !== '') {
-  defaults.use.proxy = {
-    server: process.env.HTTP_PROXY,
+  defaults.use.contextOptions = {
+    proxy: {
+      server: process.env.HTTP_PROXY,
+    },
   };
 }
 
