@@ -228,7 +228,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
   // Copy our runner's playwright config to a custom location in order to
   // preserve the customer's config which we may want to load in the future
   const configFile = path.join(projectPath, 'custom.config.js');
-  fs.copyFileSync(path.join(__dirname, '..', 'playwright.config.js'), configFile);
+  fs.copyFileSync(path.join(__dirname, 'playwright.config.js'), configFile);
 
   const defaultArgs = {
     output: assetsDir,
