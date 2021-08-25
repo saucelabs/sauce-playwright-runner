@@ -1,4 +1,4 @@
-FROM saucelabs/testrunner-image:v0.1.1
+FROM saucelabs/testrunner-image:v0.3.0
 
 USER root
 
