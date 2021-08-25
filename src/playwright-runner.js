@@ -60,6 +60,7 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
   let files = [
     path.join(cwd, 'console.log'),
     path.join(cwd, '__assets__', 'junit.xml'), // TOOD: Should add junit.xml.json as well
+    path.join(cwd, '__assets__', 'junit2.xml'), // TOOD: Should add junit.xml.json as well
     ...containerLogFiles
   ];
 
@@ -345,4 +346,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { run };
+module.exports = { run, generateJunitfile };
