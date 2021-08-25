@@ -29,7 +29,7 @@
   "homepage": "https://github.com/saucelabs/testrunner-toolkit",
   "dependencies": {
     "@babel/core": "^7.14.6",
-    "@playwright/test": "1.12.3",
+    "@playwright/test": "1.14.1",
     "@wdio/logger": "^5.16.10",
     "find-process": "^1.4.3",
     "fs-extra": "^9.1.0",
@@ -37,7 +37,7 @@
     "got": "^11.0.2",
     "js-yaml": "3.14.0",
     "lodash": "^4.17.21",
-    "playwright": "1.12.3",
+    "playwright": "1.14.1",
     "sauce-testrunner-utils": "0.4.5",
     "saucelabs": "4.7.5",
     "shelljs": "^0.8.3",
