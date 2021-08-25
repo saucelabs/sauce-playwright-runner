@@ -18,6 +18,9 @@ const { getAbsolutePath, getArgs, exec } = utils;
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 
+const ASSETS_DIR = path.join(process.cwd(), '__assets__');
+const JUNIT_FILE = path.join(ASSETS_DIR, 'junit.xml');
+
 async function createJob (suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion) {
   const tld = region === 'staging' ? 'net' : 'com';
   const api = new SauceLabs({
@@ -59,7 +62,7 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
 
   let files = [
     path.join(cwd, 'console.log'),
-    path.join(cwd, '__assets__', 'junit.xml'), // TOOD: Should add junit.xml.json as well
+    JUNIT_FILE,
     ...containerLogFiles
   ];
 
@@ -98,15 +101,14 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
   return sessionId;
 }
 
-function generateJunitfile (cwd, suiteName, browserName, platformName) {
-  const junitPath = path.join(cwd, '__assets__', `junit.xml`);
-  if (!fs.existsSync(junitPath)) {
+function generateJunitfile (suiteName, browserName, platformName) {
+  if (!fs.existsSync(JUNIT_FILE)) {
     return;
   }
   let result;
   let opts = {compact: true, spaces: 4};
   try {
-    const xmlData = fs.readFileSync(junitPath, 'utf8');
+    const xmlData = fs.readFileSync(JUNIT_FILE, 'utf8');
     if (!xmlData) {
       return;
     }
@@ -190,7 +192,7 @@ function generateJunitfile (cwd, suiteName, browserName, platformName) {
   try {
     opts.textFn = escapeXML;
     let xmlResult = convert.js2xml(result, opts);
-    fs.writeFileSync(path.join(cwd, '__assets__', 'junit.xml'), xmlResult);
+    fs.writeFileSync(JUNIT_FILE, xmlResult);
   } catch (err) {
     console.error(err);
   }
@@ -276,6 +278,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
   let env = {
     ...process.env,
     ...suite.env,
+    PLAYWRIGHT_JUNIT_OUTPUT_NAME: JUNIT_FILE,
     FORCE_COLOR: 0,
   };
 
@@ -302,9 +305,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
     console.error(`Could not complete job. Reason: ${e}`);
   }
 
-  // Move to __assets__
-
-  generateJunitfile(cwd, suiteName, args.param.browser, args.platformName);
+  generateJunitfile(suiteName, args.param.browser, args.platformName);
 
   // If it's a VM, don't try to upload the assets
   if (process.env.SAUCE_VM) {
