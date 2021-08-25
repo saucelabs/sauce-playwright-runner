@@ -83,6 +83,7 @@ WORKDIR /home/seluser
 COPY package.json .
 COPY package-lock.json .
 RUN npm ci --production
+RUN npx playwright install
 
 
 # Playwright caches the downloaded browser by default in ~/.cache/ms-playwright
