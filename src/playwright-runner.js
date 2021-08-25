@@ -48,10 +48,10 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
 
   // Take the 1st webm video we find and translate it video.mp4
   // TODO: We need to translate all .webm to .mp4 and combine them into one video.mp4
-  const webmFiles = glob.sync(path.join(cwd, '__assets__', '**', '*.webm'));
+  const webmFiles = glob.sync(path.join(ASSETS_DIR, '**', '*.webm'));
   let videoLocation;
   if (webmFiles.length > 0) {
-    videoLocation = path.join(cwd, '__assets__', 'video.mp4');
+    videoLocation = path.join(ASSETS_DIR, 'video.mp4');
     try {
       await exec(`ffmpeg -i ${webmFiles[0]} ${videoLocation}`, {suppressLogs: true});
     } catch (e) {
@@ -71,7 +71,7 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
     if (_.isEmpty(mt.data)) {
       continue;
     }
-    let mtFile = path.join(cwd, '__assets__', mt.name);
+    let mtFile = path.join(ASSETS_DIR, mt.name);
     fs.writeFileSync(mtFile, JSON.stringify(mt.data, ' ', 2));
     files.push(mtFile);
   }
@@ -227,7 +227,6 @@ async function run (nodeBin, runCfgPath, suiteName) {
   runCfgPath = getAbsolutePath(runCfgPath);
   const runCfg = await loadRunConfig(runCfgPath);
   runCfg.path = runCfgPath;
-  const cwd = process.cwd();
 
   const suite = _.find(runCfg.suites, ({name}) => name === suiteName);
   if (!suite) {
@@ -243,7 +242,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
 
   fs.copyFileSync(path.join(__dirname, '..', 'playwright.config.js'), configFile);
   const defaultArgs = {
-    output: path.join(cwd, '__assets__'),
+    output: ASSETS_DIR,
     config: configFile,
   };
 
