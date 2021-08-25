@@ -116,3 +116,5 @@ tests/fixtures/basic-js/test-results/
 tests/fixtures/basic-js/__assets__/
 bundle/
 __assets__/
+
+!tests/unit/src/__assets__/

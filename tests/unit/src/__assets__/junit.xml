@@ -1,0 +1,25 @@
+<testsuites id="" name="" tests="1" failures="1" skipped="0" errors="0" time="5.535">
+<testsuite name="tests/example.test.js" timestamp="1629933296785" hostname="" tests="1" failures="1" skipped="0" time="4.143" errors="0">
+<testcase name="should verify title of the page" classname="tests/example.test.js:3:1 › [firefox] should verify title of the page" time="4.143">
+<failure message="example.test.js:3:1 should verify title of the page" type="FAILURE">
+  tests/example.test.js:3:1 › [firefox] should verify title of the page ============================
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "Swag Labs111"
+    Received: "Swag Labs"
+
+      3 | test('should verify title of the page', async ({ page }) => {
+      4 |     await page.goto('https://www.saucedemo.com/');
+    > 5 |     expect(await page.title()).toBe('Swag Labs111');
+        |                                ^
+      6 | });
+      7 |
+
+        at /home/seluser/__project__/tests/example.test.js:5:32
+        at WorkerRunner._runTestWithBeforeHooks (/home/seluser/node_modules/@playwright/test/lib/test/workerRunner.js:290:13)
+
+</failure>
+</testcase>
+</testsuite>
+</testsuites>

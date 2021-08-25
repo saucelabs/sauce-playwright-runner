@@ -143,6 +143,17 @@ function generateJunitfile (cwd, suiteName, browserName, platformName) {
     totalSkipped += +testsuite._attributes.skipped || 0;
     totalTime += +testsuite._attributes.time || 0;
 
+    if (!Array.isArray(testsuite.testcase)) {
+      testsuite.testcase = [testsuite.testcase];
+    }
+    for (let j = 0; j < testsuite.testcase.length; j++) {
+      const testcase = testsuite.testcase[j];
+      if (testcase.failure) {
+        testsuite.testcase[j].failure._cdata = testcase.failure._text || '';
+        delete testsuite.testcase[j].failure._text;
+      }
+    }
+
     testsuite._attributes.id = i;
     let timestamp = new Date(+testsuite._attributes.timestamp);
     testsuite._attributes.timestamp = timestamp.toISOString();
@@ -334,4 +345,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { run };
+module.exports = { run, generateJunitfile };

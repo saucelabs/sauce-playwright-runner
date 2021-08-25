@@ -5,7 +5,7 @@ jest.mock('glob');
 jest.mock('sauce-testrunner-utils');
 jest.mock('../../../src/reporter');
 const path = require('path');
-const { run } = require('../../../src/playwright-runner');
+const { run, generateJunitfile } = require('../../../src/playwright-runner');
 const childProcess = require('child_process');
 const { EventEmitter } = require('events');
 const SauceLabs = require('saucelabs').default;
@@ -96,5 +96,15 @@ describe('playwright-runner', function () {
         'stdio': 'inherit',
       });
     });
+  });
+  describe('.generateJunit', function () {
+    const junitPath = 'tests/unit/src/__assets__/junit.xml';
+    const backupContent = fs.readFileSync(junitPath, 'utf8');
+
+    generateJunitfile('tests/unit/src/', 'Firefox using global mode', 'firefox');
+
+    expect(fs.readFileSync(junitPath)).toEqual(fs.readFileSync('tests/unit/src/__assets__/expected_junit.xml'));
+
+    fs.writeFileSync(junitPath, backupContent);
   });
 });
