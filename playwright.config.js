@@ -15,7 +15,7 @@ const defaults = {
   },
   reporter: [
     ['list'],
-    ['junit', { outputFile: 'junit.xml' }],
+    ['junit'],
   ],
 };
 
