@@ -1,12 +1,4 @@
 const process = require('process');
-const _ = require('lodash');
-
-let custom = {};
-try {
-  // Import the user's config if it exists
-  custom = require('./playwright.config.js');
-} catch {
-}
 
 const defaults = {
   use: {
@@ -15,6 +7,8 @@ const defaults = {
   },
   reporter: [
     ['list'],
+    // outputFile is set by playwright-runner.js as an env variable. The runner needs to process it
+    // so better for it to set the output path
     ['junit'],
   ],
 };
@@ -25,4 +19,4 @@ if ('HTTP_PROXY' in process.env && process.env.HTTP_PROXY !== '') {
   };
 }
 
-module.exports = _.defaultsDeep(defaults, custom);
+module.exports = defaults;
