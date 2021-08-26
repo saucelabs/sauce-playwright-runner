@@ -19,6 +19,7 @@ if ('HTTP_PROXY' in process.env && process.env.HTTP_PROXY !== '') {
   };
 
   defaults.use.contextOptions = { proxy, ignoreHTTPSErrors: true };
+  // Need to set the browser launch option as well, it is a hard requirement when testing chromium + windows.
   defaults.use.launchOptions = { proxy, ignoreHTTPSErrors: true };
 }
 
