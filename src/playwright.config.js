@@ -14,12 +14,12 @@ const defaults = {
 };
 
 if ('HTTP_PROXY' in process.env && process.env.HTTP_PROXY !== '') {
-  defaults.use.contextOptions = {
-    proxy: {
-      server: process.env.HTTP_PROXY,
-    },
-    ignoreHTTPSErrors: true,
+  const proxy = {
+    server: process.env.HTTP_PROXY,
   };
+
+  defaults.use.contextOptions = { proxy, ignoreHTTPSErrors: true };
+  defaults.use.launchOptions = { proxy, ignoreHTTPSErrors: true };
 }
 
 module.exports = defaults;
