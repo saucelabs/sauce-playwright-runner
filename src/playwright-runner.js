@@ -281,7 +281,8 @@ async function run (nodeBin, runCfgPath, suiteName) {
   let env = {
     ...process.env,
     ...suite.env,
-    PLAYWRIGHT_JUNIT_OUTPUT_NAME: path.join(cwd, '__assets__', 'junit.xml')
+    PLAYWRIGHT_JUNIT_OUTPUT_NAME: path.join(cwd, '__assets__', 'junit.xml'),
+    FORCE_COLOR: 0,
   };
 
   // Install NPM dependencies
