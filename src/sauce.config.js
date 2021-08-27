@@ -1,6 +1,12 @@
 const process = require('process');
+const _ = require('lodash');
 
-const defaults = {
+let userConfig = {};
+try {
+  userConfig = require('./playwright.config.js');
+} catch {}
+
+const overrides = {
   use: {
     headed: process.env.SAUCE_VM ? true : false,
     video: process.env.SAUCE_VM ? 'off' : 'on',
@@ -18,9 +24,9 @@ if ('HTTP_PROXY' in process.env && process.env.HTTP_PROXY !== '') {
     server: process.env.HTTP_PROXY,
   };
 
-  defaults.use.contextOptions = { proxy, ignoreHTTPSErrors: true };
+  overrides.use.contextOptions = { proxy, ignoreHTTPSErrors: true };
   // Need to set the browser launch option as well, it is a hard requirement when testing chromium + windows.
-  defaults.use.launchOptions = { proxy, ignoreHTTPSErrors: true };
+  overrides.use.launchOptions = { proxy, ignoreHTTPSErrors: true };
 }
 
-module.exports = defaults;
+module.exports = _.merge(userConfig, overrides);
