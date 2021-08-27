@@ -8,7 +8,7 @@ try {
 
 const overrides = {
   use: {
-    headed: process.env.SAUCE_VM ? true : false,
+    headless: process.env.SAUCE_VM ? false : true,
     video: process.env.SAUCE_VM ? 'off' : 'on',
   },
   reporter: [

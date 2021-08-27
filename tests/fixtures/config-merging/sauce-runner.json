@@ -17,7 +17,6 @@
               "browserName": "chromium",
               "globalTimeout": 900000,
               "grep": ".*",
-              "headed": true,
               "repeatEach": 1,
               "retries": 0,
               "shard": "1/2",
