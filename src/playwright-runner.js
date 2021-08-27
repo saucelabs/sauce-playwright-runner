@@ -9,7 +9,6 @@ const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
 const SauceLabs = require('saucelabs').default;
 const { LOG_FILES } = require('./constants');
 const fs = require('fs');
-const fsExtra = require('fs-extra');
 const glob = require('glob');
 const convert = require('xml-js');
 
@@ -18,7 +17,7 @@ const { getAbsolutePath, getArgs, exec } = utils;
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 
-async function createJob (suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion) {
+async function createJob (suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion, assetsDir) {
   const tld = region === 'staging' ? 'net' : 'com';
   const api = new SauceLabs({
     user: process.env.SAUCE_USERNAME,
@@ -45,10 +44,10 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
 
   // Take the 1st webm video we find and translate it video.mp4
   // TODO: We need to translate all .webm to .mp4 and combine them into one video.mp4
-  const webmFiles = glob.sync(path.join(cwd, '__assets__', '**', '*.webm'));
+  const webmFiles = glob.sync(path.join(assetsDir, '**', '*.webm'));
   let videoLocation;
   if (webmFiles.length > 0) {
-    videoLocation = path.join(cwd, '__assets__', 'video.mp4');
+    videoLocation = path.join(assetsDir, 'video.mp4');
     try {
       await exec(`ffmpeg -i ${webmFiles[0]} ${videoLocation}`, {suppressLogs: true});
     } catch (e) {
@@ -59,7 +58,7 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
 
   let files = [
     path.join(cwd, 'console.log'),
-    path.join(cwd, '__assets__', 'junit.xml'), // TOOD: Should add junit.xml.json as well
+    path.join(assetsDir, 'junit.xml'),
     ...containerLogFiles
   ];
 
@@ -68,7 +67,7 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
     if (_.isEmpty(mt.data)) {
       continue;
     }
-    let mtFile = path.join(cwd, '__assets__', mt.name);
+    let mtFile = path.join(assetsDir, mt.name);
     fs.writeFileSync(mtFile, JSON.stringify(mt.data, ' ', 2));
     files.push(mtFile);
   }
@@ -98,15 +97,14 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
   return sessionId;
 }
 
-function generateJunitfile (cwd, suiteName, browserName, platformName) {
-  const junitPath = path.join(cwd, '__assets__', `junit.xml`);
-  if (!fs.existsSync(junitPath)) {
+function generateJunitfile (sourceFile, suiteName, browserName, platformName) {
+  if (!fs.existsSync(sourceFile)) {
     return;
   }
   let result;
   let opts = {compact: true, spaces: 4};
   try {
-    const xmlData = fs.readFileSync(junitPath, 'utf8');
+    const xmlData = fs.readFileSync(sourceFile, 'utf8');
     if (!xmlData) {
       return;
     }
@@ -190,17 +188,17 @@ function generateJunitfile (cwd, suiteName, browserName, platformName) {
   try {
     opts.textFn = escapeXML;
     let xmlResult = convert.js2xml(result, opts);
-    fs.writeFileSync(path.join(cwd, '__assets__', 'junit.xml'), xmlResult);
+    fs.writeFileSync(sourceFile, xmlResult);
   } catch (err) {
     console.error(err);
   }
 }
 
 
-async function runReporter ({ suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion }) {
+async function runReporter ({ suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion, assetsDir }) {
   let jobDetailsUrl, reportingSucceeded = false;
   try {
-    let sessionId = await createJob(suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion);
+    let sessionId = await createJob(suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion, assetsDir);
     let domain;
     const tld = region === 'staging' ? 'net' : 'com';
     switch (region) {
@@ -222,33 +220,31 @@ async function runReporter ({ suiteName, hasPassed, startTime, endTime, args, pl
 }
 
 async function run (nodeBin, runCfgPath, suiteName) {
+  const assetsDir = path.join(process.cwd(), '__assets__');
+  const junitFile = path.join(assetsDir, 'junit.xml');
+
   runCfgPath = getAbsolutePath(runCfgPath);
   const runCfg = await loadRunConfig(runCfgPath);
-  runCfg.path = runCfgPath;
-  const cwd = process.cwd();
 
   const suite = _.find(runCfg.suites, ({name}) => name === suiteName);
   if (!suite) {
     throw new Error(`Could not find suite named '${suiteName}'`);
   }
 
-  const projectPath = path.dirname(runCfg.path);
+  const projectPath = path.dirname(runCfgPath);
   if (!fs.existsSync(projectPath)) {
     throw new Error(`Could not find projectPath directory: '${projectPath}'`);
   }
 
-  const defaultArgs = {
-    headed: process.env.SAUCE_VM ? true : false,
-    output: path.join(cwd, '__assets__'),
-    reporter: 'junit,list',
-  };
+  // Copy our runner's playwright config to a custom location in order to
+  // preserve the customer's config which we may want to load in the future
+  const configFile = path.join(projectPath, 'custom.config.js');
+  fs.copyFileSync(path.join(__dirname, 'playwright.config.js'), configFile);
 
-  if (!process.env.SAUCE_VM) {
-    // Copy our own playwright configuration to the project folder (to enable video recording),
-    // as we currently don't support having a user provided playwright configuration yet.
-    fs.copyFileSync(path.join(__dirname, '..', 'playwright.config.js'), path.join(projectPath, 'playwright.config.js'));
-    defaultArgs.config = path.join(projectPath, 'playwright.config.js');
-  }
+  const defaultArgs = {
+    output: assetsDir,
+    config: configFile,
+  };
 
   const playwrightBin = path.join(__dirname, '..', 'node_modules', '@playwright', 'test', 'lib', 'cli', 'cli.js');
   const procArgs = [
@@ -281,12 +277,15 @@ async function run (nodeBin, runCfgPath, suiteName) {
   let env = {
     ...process.env,
     ...suite.env,
-    PLAYWRIGHT_JUNIT_OUTPUT_NAME: path.join(cwd, '__assets__', 'junit.xml'),
+    PLAYWRIGHT_JUNIT_OUTPUT_NAME: junitFile,
     FORCE_COLOR: 0,
   };
 
   // Install NPM dependencies
   let metrics = [];
+
+  // runCfg.path must be set for prepareNpmEnv to find node_modules. :(
+  runCfg.path = runCfgPath;
   let npmMetrics = await prepareNpmEnv(runCfg);
   metrics.push(npmMetrics);
 
@@ -308,13 +307,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
     console.error(`Could not complete job. Reason: ${e}`);
   }
 
-  // Move to __assets__
-  const files = glob.sync(path.join(projectPath, 'test-results', '*')) || [];
-  for (const file of files) {
-    fsExtra.moveSync(file, path.join(cwd, '__assets__', path.basename(file)));
-  }
-
-  generateJunitfile(cwd, suiteName, args.param.browser, args.platformName);
+  generateJunitfile(junitFile, suiteName, args.param.browser, args.platformName);
 
   // If it's a VM, don't try to upload the assets
   if (process.env.SAUCE_VM) {
@@ -328,7 +321,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
 
   const saucectlVersion = process.env.SAUCE_SAUCECTL_VERSION;
   const region = (runCfg.sauce && runCfg.sauce.region) || 'us-west-1';
-  await runReporter({ suiteName, hasPassed, startTime, endTime, args, playwright: runCfg.playwright, metrics, region, metadata: runCfg.sauce.metadata, saucectlVersion});
+  await runReporter({ suiteName, hasPassed, startTime, endTime, args, playwright: runCfg.playwright, metrics, region, metadata: runCfg.sauce.metadata, saucectlVersion, assetsDir});
   return hasPassed;
 }
 

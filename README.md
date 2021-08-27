@@ -16,22 +16,28 @@ To work on code the following dependencies are required:
 You can pull the latest version of this image via:
 
 ```sh
-$ docker pull saucelabs/stt-playwright-jest-node:latest
+$ docker pull saucelabs/stt-playwright-node:latest
 ```
 
 ## Run
 
-In order to test your changes, just build the image and run a test with an example file:
+In order to test your changes, just build the image, configure saucectl to run against that image, run saucectl.
+
 
 ```sh
 # build image
-$ docker build -t saucelabs/stt-playwright-jest-node:latest --cache-from saucelabs/stt-playwright-jest-node:latest .
-# start container
-$ docker run --env SAUCE_USERNAME --env SAUCE_ACCESS_KEY -d --name=testrunner saucelabs/stt-playwright-jest-node:latest
-# push file into container
-$ docker cp ./path/to/testfile.test.js testrunner:/home/seluser/tests
-# run test
-$ docker exec testrunner saucectl run /home/seluser/tests
-# stop container
-$ docker stop testrunner
+$ docker build -t saucelabs/stt-playwright-node:local --cache-from saucelabs/stt-playwright-node:latest .
+```
+
+Define `docker.image` in your saucectl config:
+
+```yaml
+docker:
+    image: saucelabs/stt-playwright-node:local
+```
+
+Run a saucectl suite in docker mode
+
+```
+$ saucectl run --select-suite "some suite configured for docker mode"
 ```
