@@ -80,7 +80,7 @@ describe('playwright-runner', function () {
         '--output',
         path.join(MOCK_CWD, '__assets__'),
         '--config',
-        path.join(MOCK_CWD, 'custom.config.js'),
+        path.join(MOCK_CWD, 'sauce.config.js'),
         '--browser',
         'chromium',
         '--headed',

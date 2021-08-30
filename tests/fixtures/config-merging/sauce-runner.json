@@ -1,0 +1,29 @@
+{
+    "sauce": {
+        "region": "us-west-1",
+        "metadata": {
+            "tags": ["tag1", "tag2"],
+            "build": "Local Test Build"
+        }
+    },
+    "playwright": {
+        "version": "1.12.3",
+        "projectPath": "./tests/fixtures/basic-js/"
+    },
+    "suites": [
+        {
+            "name": "config-merging",
+            "param": {
+              "browserName": "chromium",
+              "globalTimeout": 900000,
+              "grep": ".*",
+              "repeatEach": 1,
+              "retries": 0,
+              "shard": "1/2",
+              "timeout": 30000,
+              "maxFailures": 2
+            },
+            "testMatch": ".*.js"
+        }
+    ]
+}
