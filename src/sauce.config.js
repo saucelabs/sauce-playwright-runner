@@ -3,12 +3,14 @@ const { accessSync, constants } = require('fs');
 const _ = require('lodash');
 
 let userConfig = {};
-if (accessSync('./playwright.config.js', constants.F_OK)) {
+try {
+  accessSync('./playwright.config.js', constants.F_OK);
   userConfig = require('./playwright.config.js');
-} else if (accessSync('./playwright.config.ts', constants.F_OK)) {
+} catch {}
+try {
+  accessSync('./playwright.config.ts', constants.F_OK);
   userConfig = require('./playwright.config.ts');
-}
-
+} catch {}
 
 const overrides = {
   use: {
