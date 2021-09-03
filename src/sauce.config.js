@@ -1,10 +1,14 @@
 const process = require('process');
+const { accessSync, constants } = require('fs');
 const _ = require('lodash');
 
 let userConfig = {};
-try {
+if (accessSync('./playwright.config.js', constants.F_OK)) {
   userConfig = require('./playwright.config.js');
-} catch {}
+} else if (accessSync('./playwright.config.ts', constants.F_OK)) {
+  userConfig = require('./playwright.config.ts');
+}
+
 
 const overrides = {
   use: {
