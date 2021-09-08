@@ -1,5 +1,4 @@
 const process = require('process');
-const { accessSync, constants } = require('fs');
 const _ = require('lodash');
 
 let userConfig = {};
@@ -8,7 +7,6 @@ let userConfig = {};
 const defaultConfigFiles = ['./playwright.config.ts', './playwright.config.js'];
 for (const file of defaultConfigFiles) {
   try {
-    accessSync(file, constants.F_OK);
     userConfig = require(file);
     break;
   } catch {}
