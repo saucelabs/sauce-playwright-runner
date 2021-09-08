@@ -3,14 +3,16 @@ const { accessSync, constants } = require('fs');
 const _ = require('lodash');
 
 let userConfig = {};
-try {
-  accessSync('./playwright.config.js', constants.F_OK);
-  userConfig = require('./playwright.config.js');
-} catch {}
-try {
-  accessSync('./playwright.config.ts', constants.F_OK);
-  userConfig = require('./playwright.config.ts');
-} catch {}
+
+// Prefer ts over js to match default behaviour of playwright-test
+const defaultConfigFiles = ['./playwright.config.ts', './playwright.config.js'];
+for (const file of defaultConfigFiles) {
+  try {
+    accessSync(file, constants.F_OK);
+    userConfig = require(file);
+    break;
+  } catch {}
+}
 
 const overrides = {
   use: {
