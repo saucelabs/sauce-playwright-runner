@@ -10,7 +10,7 @@ env:
   SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
 
 jobs:
-  build-and-test-docker:
+  build_and_test_docker:
     runs-on: ubuntu-latest
     steps:
       -
@@ -46,7 +46,7 @@ jobs:
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
         name: Build Saucectl and run E2E tests
 
-  build-and-test-local:
+  build_and_test_local:
     runs-on: windows-latest
     steps:
       - name: Checkout
