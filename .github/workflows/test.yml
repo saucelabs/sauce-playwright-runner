@@ -13,15 +13,11 @@ jobs:
   build_and_test_docker:
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
 
-      - run: make docker
-        name: Make Docker
-
-      # Install saucectl
-      - uses: saucelabs/saucectl-run-action@v1
+      - name: Install saucectl
+        uses: saucelabs/saucectl-run-action@v1
         with:
           skip-run: true
 
