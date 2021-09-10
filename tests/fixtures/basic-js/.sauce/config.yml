@@ -36,7 +36,7 @@ suites:
       browserName: "firefox"
       headed: true
 
-  - name: "saucy test - webkit"
+  - name: "saucy test - chromium"
     mode: docker
     platformName: "Windows 10"
     testMatch:
@@ -44,5 +44,5 @@ suites:
     env:
       hello: world
     params:
-      browserName: "webkit"
+      browserName: "chromium"
       headed: true
