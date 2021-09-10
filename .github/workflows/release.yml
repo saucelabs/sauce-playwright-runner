@@ -50,12 +50,6 @@ jobs:
           git config --global user.name "devx-sauce-bot"
           git config --global user.email "devx.bot@saucelabs.com"
 
-      - name: Install dependencies
-        if: ${{ steps.prep.outputs.tag_name == '' }}
-        run: |
-          npm ci
-          npx playwright install-deps
-
       - name: generate (pre-)release draft
         if: ${{ steps.prep.outputs.tag_name == '' }}
         env:
@@ -69,6 +63,12 @@ jobs:
           if [ -n "${{ github.event.inputs.preReleaseFlavor }}" ];then
             PRE_RELEASE_ARGS="--preRelease=${{ github.event.inputs.preReleaseFlavor }} --github.preRelease"
           fi
+
+          npm ci
+
+          # Need to install browsers to query for browser versions for release notes
+          npx playwright install
+          npx playwright install-deps
 
           npx release-it ${{ github.event.inputs.releaseType }} ${PRE_RELEASE_ARGS}
 
