@@ -24,9 +24,9 @@
     "url": "https://github.com/saucelabs/sauce-playwright-runner.git"
   },
   "bugs": {
-    "url": "https://github.com/saucelabs/testrunner-toolkit/issues"
+    "url": "https://github.com/saucelabs/sauce-playwright-runner/issues"
   },
-  "homepage": "https://github.com/saucelabs/testrunner-toolkit",
+  "homepage": "https://github.com/saucelabs/sauce-playwright-runner",
   "dependencies": {
     "@babel/core": "^7.14.6",
     "@playwright/test": "1.14.1",
