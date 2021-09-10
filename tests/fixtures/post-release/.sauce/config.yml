@@ -2,7 +2,7 @@ apiVersion: v1alpha
 kind: playwright
 sauce:
   region: us-west-1
-  concurrency: 2
+  concurrency: 3
   metadata:
     tags:
       - e2e
@@ -18,3 +18,15 @@ suites:
     testMatch: ['.*.js']
     params:
       browserName: "chromium"
+
+  - name: "Post Release Test"
+    platformName: "Windows 10"
+    testMatch: ['.*.js']
+    params:
+      browserName: "webkit"
+
+  - name: "Post Release Test"
+    platformName: "Windows 10"
+    testMatch: ['.*.js']
+    params:
+      browserName: "firefox"
