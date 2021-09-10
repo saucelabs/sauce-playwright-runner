@@ -2,9 +2,15 @@ const process = require('process');
 const _ = require('lodash');
 
 let userConfig = {};
-try {
-  userConfig = require('./playwright.config.js');
-} catch {}
+
+// Prefer ts over js to match default behaviour of playwright-test
+const defaultConfigFiles = ['./playwright.config.ts', './playwright.config.js'];
+for (const file of defaultConfigFiles) {
+  try {
+    userConfig = require(file);
+    break;
+  } catch {}
+}
 
 const overrides = {
   use: {
