@@ -125,6 +125,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
+          npx playwright install
           npx playwright install-deps
 
       - name: Get Playwright browser versions
