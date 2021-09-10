@@ -54,22 +54,7 @@ jobs:
         if: ${{ steps.prep.outputs.tag_name == '' }}
         run: |
           npm ci
-
-          # Dependencies to launch webkit to inspect its version
-          sudo apt-get update
-          sudo apt-get install libegl1\
-                               libopus0\
-                               libwoff1\
-                               libharfbuzz-icu0\
-                               gstreamer1.0-plugins-base\
-                               libgstreamer-gl1.0-0\
-                               gstreamer1.0-plugins-bad\
-                               libopenjp2-7\
-                               libwebpdemux2\
-                               libenchant1c2a\
-                               libhyphen0\
-                               libgles2\
-                               gstreamer1.0-libav
+          npx playwright install-deps
 
       - name: generate (pre-)release draft
         if: ${{ steps.prep.outputs.tag_name == '' }}
@@ -140,22 +125,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-
-          # Dependencies to launch webkit to inspect its version
-          sudo apt-get update
-          sudo apt-get install libegl1\
-                               libopus0\
-                               libwoff1\
-                               libharfbuzz-icu0\
-                               gstreamer1.0-plugins-base\
-                               libgstreamer-gl1.0-0\
-                               gstreamer1.0-plugins-bad\
-                               libopenjp2-7\
-                               libwebpdemux2\
-                               libenchant1c2a\
-                               libhyphen0\
-                               libgles2\
-                               gstreamer1.0-libav
+          npx playwright install-deps
 
       - name: Get Playwright browser versions
         run: |
