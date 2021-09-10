@@ -6,7 +6,7 @@ echo "Build docker images"
 docker build -t saucelabs/stt-playwright-node:local . > /dev/null 2>&1
 
 # suite=result
-tests=(basic-js=success basic-ts=success broken-tests=failure)
+tests=(basic-js=success basic-ts=success broken-tests=failure config-merging=success)
 
 for i in ${tests[@]}; do
     key=$(echo ${i} | cut -d '=' -f 1)
