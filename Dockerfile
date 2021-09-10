@@ -90,6 +90,9 @@ RUN npm ci --production
 # That's why we let Playwright know where the location actually is.
 ENV PLAYWRIGHT_BROWSERS_PATH=/home/seluser/.cache/ms-playwright
 
+RUN npx playwright install
+RUN npx playwright install-deps
+
 COPY --chown=seluser:seluser . .
 
 ENV IMAGE_NAME=saucelabs/stt-playwright-node
