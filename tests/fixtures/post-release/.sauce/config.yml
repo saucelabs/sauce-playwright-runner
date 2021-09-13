@@ -13,19 +13,19 @@ playwright:
   # Then use --runner-version to specify the release you actually want to use.
   version: 1.11.1
 suites:
-  - name: "Post Release Test"
+  - name: "Post Release Test - chromium"
     platformName: "Windows 10"
     testMatch: ['.*.js']
     params:
       browserName: "chromium"
 
-  - name: "Post Release Test"
+  - name: "Post Release Test - webkit"
     platformName: "Windows 10"
     testMatch: ['.*.js']
     params:
       browserName: "webkit"
 
-  - name: "Post Release Test"
+  - name: "Post Release Test - firefox"
     platformName: "Windows 10"
     testMatch: ['.*.js']
     params:
