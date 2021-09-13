@@ -2,63 +2,6 @@ FROM saucelabs/testrunner-image:v0.3.0
 
 USER root
 
-# For reference: https://github.com/microsoft/playwright/blob/master/docs/docker/Dockerfile.bionic
-# ^ Microsoft's official playwright bionic docker container
-
-RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-
-#=============================
-# Install WebKit dependencies
-#=============================
-RUN sudo apt-get update && sudo apt-get install -y \
-    libwoff1 \
-    libopus0 \
-    libwebp6 \
-    libwebpdemux2 \
-    libenchant1c2a \
-    libgudev-1.0-0 \
-    libsecret-1-0 \
-    libhyphen0 \
-    libgdk-pixbuf2.0-0 \
-    libegl1 \
-    libnotify4 \
-    libxslt1.1 \
-    libevent-2.1-6 \
-    libgles2 \
-    libvpx5 \
-    libxcomposite1 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libepoxy0 \
-    libgtk-3-0 \
-    libharfbuzz-icu0
-
-# ==================================================================
-# Install gstreamer and plugins to support video playback in WebKit
-# ==================================================================
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgstreamer-gl1.0-0 \
-    libgstreamer-plugins-bad1.0-0 \
-    gstreamer1.0-plugins-good \
-    gstreamer1.0-libav
-
-#===============================
-# Install Chromium dependencies
-#===============================
-
-RUN apt-get install -y \
-    libnss3 \
-    libxss1 \
-    libasound2
-
-#==============================
-# Install Firefox dependencies
-#==============================
-
-RUN apt-get install -y \
-    libdbus-glib-1-2 \
-    libxt6
-
 # (Optional) Install XVFB if there's a need to run browsers in headful mode
 RUN apt-get update && apt-get install -y --no-install-recommends \
     xvfb
@@ -89,6 +32,9 @@ RUN npm ci --production
 # However, running the container in CI may result in a different active user and therefore home folder.
 # That's why we let Playwright know where the location actually is.
 ENV PLAYWRIGHT_BROWSERS_PATH=/home/seluser/.cache/ms-playwright
+
+RUN npx playwright install
+RUN npx playwright install-deps
 
 COPY --chown=seluser:seluser . .
 

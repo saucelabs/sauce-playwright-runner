@@ -13,15 +13,11 @@ jobs:
   build_and_test_docker:
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
 
-      - run: make docker
-        name: Make Docker
-
-      # Install saucectl
-      - uses: saucelabs/saucectl-run-action@v1
+      - name: Install saucectl
+        uses: saucelabs/saucectl-run-action@v1
         with:
           skip-run: true
 
@@ -52,8 +48,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - run: npm ci --production
-        name: Install dependencies
+      - name: Install dependencies
+        run: |
+          npm ci --production
+          npx playwright install
+          npx playwright install-deps
 
       - run: node . --suiteName basic-js --runCfgPath ./tests/fixtures/basic-js/sauce-runner.json
         env:
@@ -89,8 +88,6 @@ jobs:
 
       - name: Update Release version
         run: npm version --no-git-tag-version 1.0.0
-
-      - run: npm ci --production
 
       - name: Bundle Directory
         run: bash ./scripts/bundle.sh
