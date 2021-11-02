@@ -1,0 +1,22 @@
+apiVersion: v1alpha
+kind: playwright
+sauce:
+  metadata:
+    tags:
+      - sauce-connect
+    build: Pre-Release sauce-connect test
+  tunnel:
+    name: github-playwright-sc-check-tunnel
+  region: us-west-1
+defaults:
+  mode: sauce
+playwright:
+  version: 1.15.2
+
+suites:
+  - name: "Sauce with sauce-connect (windows)"
+    platformName: "Windows 10"
+    params:
+      browserName: "chromium"
+    testMatch:
+      - "tests/sauce-connect.test.js"
