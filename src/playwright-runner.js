@@ -250,6 +250,11 @@ async function run (nodeBin, runCfgPath, suiteName) {
   const procArgs = [
     playwrightBin, 'test'
   ];
+
+  // Default value for timeout (30min)
+  if (!suite.param.globalTimeout) {
+    suite.param.timeout = 1800000;
+  }
   let args = _.defaultsDeep(defaultArgs, utils.replaceLegacyKeys(suite.param));
 
   const excludeParams = ['screenshot-on-failure', 'video', 'slow-mo'];

@@ -81,6 +81,8 @@ describe('playwright-runner', function () {
         path.join(MOCK_CWD, '__assets__'),
         '--config',
         path.join(MOCK_CWD, 'sauce.config.js'),
+        '--timeout',
+        1800000,
         '--browser',
         'chromium',
         '--headed',
