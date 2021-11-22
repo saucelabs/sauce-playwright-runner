@@ -22,6 +22,14 @@ const overrides = {
     // outputFile is set by playwright-runner.js as an env variable. The runner needs to process it
     // so better for it to set the output path
     ['junit'],
+    // outputFile is set by playwright-runner.js as an env variable. The runner needs to process it
+    // so better for it to set the output path
+    ['@saucelabs/playwright-reporter',
+      {
+        // Disable asset and report upload in Sauce VM
+        upload: process.env.SAUCE_VM ? false : true,
+      },
+    ],
   ],
 };
 

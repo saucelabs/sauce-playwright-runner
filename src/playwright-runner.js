@@ -222,6 +222,7 @@ async function runReporter ({ suiteName, hasPassed, startTime, endTime, args, pl
 async function run (nodeBin, runCfgPath, suiteName) {
   const assetsDir = path.join(process.cwd(), '__assets__');
   const junitFile = path.join(assetsDir, 'junit.xml');
+  const sauceReportFile = path.join(assetsDir, 'sauce-test-report.json');
 
   runCfgPath = getAbsolutePath(runCfgPath);
   const runCfg = await loadRunConfig(runCfgPath);
@@ -283,6 +284,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
     ...process.env,
     ...suite.env,
     PLAYWRIGHT_JUNIT_OUTPUT_NAME: junitFile,
+    SAUCE_REPORT_OUTPUT_NAME: sauceReportFile,
     FORCE_COLOR: 0,
   };
 
