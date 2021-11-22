@@ -68,7 +68,7 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
-      - name: Use Node.js v14.x
+      - name: Use Node.js v16.x
         uses: actions/setup-node@v1
         with:
           node-version: 16.x

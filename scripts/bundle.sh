@@ -1,4 +1,5 @@
 set -e
+echo "Using: $(which node)"
 rm -rf ./bundle/
 mkdir ./bundle/
 export PLAYWRIGHT_BROWSERS_PATH=$PWD/bundle/Cache/
