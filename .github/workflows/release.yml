@@ -42,7 +42,7 @@ jobs:
         if: ${{ steps.prep.outputs.tag_name == '' }}
         uses: actions/setup-node@v1
         with:
-          node-version: 14.x
+          node-version: 16.x
 
       - name: Setup Git
         if: ${{ steps.prep.outputs.tag_name == '' }}
@@ -120,7 +120,7 @@ jobs:
       - name: Setup Node version
         uses: actions/setup-node@v1
         with:
-          node-version: 14.x
+          node-version: 16.x
 
       - name: Install dependencies
         run: |
@@ -206,7 +206,7 @@ jobs:
         if: ${{ steps.prep.outputs.asset_id == '' }}
         uses: actions/setup-node@v1
         with:
-          node-version: 12.x
+          node-version: 16.x
 
       - name: Update Release version
         if: ${{ steps.prep.outputs.asset_id == '' }}
