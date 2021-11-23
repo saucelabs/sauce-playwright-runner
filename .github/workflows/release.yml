@@ -206,7 +206,7 @@ jobs:
         if: ${{ steps.prep.outputs.asset_id == '' }}
         uses: actions/setup-node@v1
         with:
-          node-version: 12.x
+          node-version: 14.x
 
       - name: Update Release version
         if: ${{ steps.prep.outputs.asset_id == '' }}

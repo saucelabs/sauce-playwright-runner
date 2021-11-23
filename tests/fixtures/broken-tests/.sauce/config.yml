@@ -12,7 +12,7 @@ docker:
   image: saucelabs/stt-playwright-node:local
 rootDir: .
 playwright:
-  version: 1.12.3
+  version: 1.15.2
 suites:
   - name: "default"
     mode: docker
