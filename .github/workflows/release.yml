@@ -38,11 +38,11 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
-      - name: Setup Node version
+      - name: Setup Node
         if: ${{ steps.prep.outputs.tag_name == '' }}
         uses: actions/setup-node@v1
         with:
-          node-version: 14.x
+          node-version: 16.x
 
       - name: Setup Git
         if: ${{ steps.prep.outputs.tag_name == '' }}
@@ -117,10 +117,10 @@ jobs:
           PLAYWRIGHT_VERSION=$(< package-lock.json jq -r '.dependencies["playwright"].version')
           echo "playwright_version=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
 
-      - name: Setup Node version
+      - name: Setup Node
         uses: actions/setup-node@v1
         with:
-          node-version: 14.x
+          node-version: 16.x
 
       - name: Install dependencies
         run: |
@@ -202,11 +202,11 @@ jobs:
         with:
           ref: ${{ steps.prep.outputs.version }}
 
-      - name: Use Node.js v12.x
+      - name: Setup Node
         if: ${{ steps.prep.outputs.asset_id == '' }}
         uses: actions/setup-node@v1
         with:
-          node-version: 14.x
+          node-version: 16.x
 
       - name: Update Release version
         if: ${{ steps.prep.outputs.asset_id == '' }}
