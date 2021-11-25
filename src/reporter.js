@@ -89,19 +89,14 @@ async function createJobReport (suiteName, metadata, api, passed, startTime, end
     saucectlVersion,
   };
 
-  let sessionId;
-  await api.createJob(
-        body
-  ).then(
-        (resp) => {
-          sessionId = resp.ID;
-        },
-        (e) => {
-          console.error('Create job failed: ', e.stack);
-        }
-  );
+  let resp;
+  try {
+    resp = await api.createJob(body);
+  } catch (e) {
+    console.error('Create job failed: ', e.stack);
+  }
 
-  return sessionId || 0;
+  return resp?.ID || 0;
 }
 
 module.exports.createJobReportV2 = createJobReportV2;

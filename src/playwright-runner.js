@@ -57,24 +57,49 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
   }
 
   let files = [
-    path.join(cwd, 'console.log'),
-    path.join(assetsDir, 'junit.xml'),
-    path.join(assetsDir, 'sauce-test-report.json'),
-    ...containerLogFiles
+    {
+      filename: 'console.log',
+      data: fs.readFileSync(path.join(cwd, 'console.log')),
+    },
+    {
+      filename: 'junit.xml',
+      data: fs.readFileSync(path.join(assetsDir, 'junit.xml')),
+    },
+    {
+      filename: 'sauce-test-report.json',
+      data: fs.readFileSync(path.join(assetsDir, 'sauce-test-report.json')),
+    },
   ];
+
+  for (const f of containerLogFiles) {
+    files.push(
+      {
+        filename: path.basename(f),
+        data: fs.readFileSync(f),
+      },
+    );
+  }
 
   // Upload metrics
   for (let [, mt] of Object.entries(metrics)) {
     if (_.isEmpty(mt.data)) {
       continue;
     }
-    let mtFile = path.join(assetsDir, mt.name);
-    fs.writeFileSync(mtFile, JSON.stringify(mt.data, ' ', 2));
-    files.push(mtFile);
+    files.push(
+      {
+        filename: mt.name,
+        data: mt.data,
+      },
+    );
   }
 
   if (videoLocation) {
-    files.push(videoLocation);
+    files.push(
+      {
+        filename: path.basename(videoLocation),
+        data: fs.readFileSync(videoLocation),
+      }
+    );
   }
 
   await Promise.all([
