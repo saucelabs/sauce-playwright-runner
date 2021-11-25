@@ -26,8 +26,7 @@ const overrides = {
     // so better for it to set the output path
     ['@saucelabs/playwright-reporter',
       {
-        // Disable asset and report upload in Sauce VM
-        upload: process.env.SAUCE_VM ? false : true,
+        upload: false,
       },
     ],
   ],
