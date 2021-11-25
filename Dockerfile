@@ -17,7 +17,7 @@ USER seluser
 #=================
 # Install Node.JS
 #=================
-ENV NODE_VERSION=14.18.1
+ENV NODE_VERSION=16.13.0
 ENV NVM_VERSION=0.39.0
 RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/install.sh | bash \
   && export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")" \
