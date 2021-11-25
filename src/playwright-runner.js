@@ -59,6 +59,7 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
   let files = [
     path.join(cwd, 'console.log'),
     path.join(assetsDir, 'junit.xml'),
+    path.join(assetsDir, 'sauce-test-report.json'),
     ...containerLogFiles
   ];
 
