@@ -6,12 +6,8 @@
   "private": true,
   "main": "src/playwright-recorder.js",
   "scripts": {
-    "build": "docker build -t saucelabs/${npm_package_name}:latest --cache-from saucelabs/${npm_package_name}:latest .",
-    "docker:push": "docker push saucelabs/${npm_package_name}:latest",
-    "start": "docker run --env SAUCE_USERNAME --env SAUCE_ACCESS_KEY -d saucelabs/${npm_package_name}:latest",
-    "test": "./bin/wait_display && DISPLAY=\"$(cat DISPLAY)\" ./bin/playwright",
-    "test-integration": "bash tests/integration/integration-tests.sh",
     "lint": "eslint tests/ src/",
+    "test": "./bin/wait_display && DISPLAY=\"$(cat DISPLAY)\" ./bin/playwright",
     "unit-test": "jest --env node",
     "release": "release-it --github.release",
     "release:ci": "npm run release -- --ci --npm.skipChecks --no-git.requireCleanWorkingDir",

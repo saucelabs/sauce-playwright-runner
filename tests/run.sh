@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 
-SAUCECTL=$(realpath ${SAUCE_CTL_BINARY})
+SAUCECTL=${SAUCE_CTL_BINARY:-saucectl}
 # build image
 echo "Build docker images"
-docker build -t saucelabs/stt-playwright-node:local . > /dev/null 2>&1
+
+if [[ -ne "${CI}" ]]; then
+  docker build -t saucelabs/stt-playwright-node:local . > /dev/null 2>&1
+else
+  docker build -t saucelabs/stt-playwright-node:local .
+fi
 
 # suite=result
 tests=(basic-js=success basic-ts=success broken-tests=failure config-merging=success)
@@ -25,7 +30,7 @@ for i in ${tests[@]}; do
         cat ${tmpfile}
         rm -f ${tmpfile}
 
-        echo "TEST FAILURE: Result expected is ${result}, and exitCode is ${RETURN_CODE}" 
+        echo "TEST FAILURE: Result expected is ${result}, and exitCode is ${RETURN_CODE}"
         exit 1
     else
         # Display warning if there is some
