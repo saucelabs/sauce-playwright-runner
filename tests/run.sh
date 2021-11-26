@@ -4,7 +4,7 @@ SAUCECTL=${SAUCE_CTL_BINARY:-saucectl}
 # build image
 echo "Build docker images"
 
-if [[ -ne "${CI}" ]]; then
+if [[ -n "${CI}" ]]; then
   docker build -t saucelabs/stt-playwright-node:local . > /dev/null 2>&1
 else
   docker build -t saucelabs/stt-playwright-node:local .
