@@ -26,4 +26,4 @@ popd
 # The upgrade to playwright 1.8.0 does not fix the missing
 # DLL issue. As a workaround, we decided to ship it within
 # the bundle to avoid modifiying the system image.
-cp ./libs/vcruntime140_1.dll ${PLAYWRIGHT_BROWSERS_PATH}/firefox-*/firefox/
+cp -n ./libs/vcruntime140_1.dll ${PLAYWRIGHT_BROWSERS_PATH}/firefox-*/firefox/
