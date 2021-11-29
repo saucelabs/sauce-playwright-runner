@@ -14,6 +14,7 @@ for (const file of defaultConfigFiles) {
 
 const overrides = {
   use: {
+    browserName: process.env.browserName,
     headless: process.env.SAUCE_VM ? false : true,
     video: process.env.SAUCE_VM ? 'off' : 'on',
   },

@@ -42,17 +42,27 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
   const containerLogFiles = LOG_FILES.filter(
     (path) => fs.existsSync(path));
 
-  // Take the 1st webm video we find and translate it video.mp4
-  // TODO: We need to translate all .webm to .mp4 and combine them into one video.mp4
   const webmFiles = glob.sync(path.join(assetsDir, '**', '*.webm'));
   let videoLocation;
   if (webmFiles.length > 0) {
-    videoLocation = path.join(assetsDir, 'video.mp4');
+    let convertedVideo = [];
+    for (const i in webmFiles) {
+      const tmp = path.join(assetsDir, `${i}.mp4`);
+      try {
+        await exec(`ffmpeg -i ${webmFiles[i]} ${tmp}`, {suppressLogs: true});
+        convertedVideo.push(`file '${tmp}'`);
+      } catch (e) {
+        console.error(`Failed to convert ${webmFiles[i]} to mp4: '${e}'`);
+      }
+    }
     try {
-      await exec(`ffmpeg -i ${webmFiles[0]} ${videoLocation}`, {suppressLogs: true});
+      const videoList = path.join(assetsDir, 'video-list');
+      fs.writeFileSync(videoList, convertedVideo.join('\n'));
+      videoLocation = path.join(assetsDir, 'video.mp4');
+      await exec(`ffmpeg -f concat -safe 0 -i ${videoList} -c copy ${videoLocation}`, {suppressLogs: true});
     } catch (e) {
       videoLocation = null;
-      console.error(`Failed to convert ${webmFiles[0]} to mp4: '${e}'`);
+      console.error(`Failed to merge mp4 files: '${e}'`);
     }
   }
 
@@ -68,7 +78,7 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
       continue;
     }
     let mtFile = path.join(assetsDir, mt.name);
-    fs.writeFileSync(mtFile, JSON.stringify(mt.data, ' ', 2));
+    fs.writeFileSync(mtFile, JSON.stringify(mt.data, ' ', 2), { flag: 'w' });
     files.push(mtFile);
   }
 
@@ -231,6 +241,8 @@ async function run (nodeBin, runCfgPath, suiteName) {
     throw new Error(`Could not find suite named '${suiteName}'`);
   }
 
+  process.env.browserName = suite.param.browserName;
+
   const projectPath = path.dirname(runCfgPath);
   if (!fs.existsSync(projectPath)) {
     throw new Error(`Could not find projectPath directory: '${projectPath}'`);
@@ -259,7 +271,18 @@ async function run (nodeBin, runCfgPath, suiteName) {
 
   const excludeParams = ['screenshot-on-failure', 'video', 'slow-mo'];
 
+  let usePlaywrightCfg = false;
+  const defaultCfgFiles = ['./playwright.config.ts', './playwright.config.js'];
+  for (const file of defaultCfgFiles) {
+    if (fs.existsSync(path.join(projectPath, file)) === true) {
+      usePlaywrightCfg = true;
+    }
+  }
+
   for (let [key, value] of Object.entries(args)) {
+    if (key === 'browser' && usePlaywrightCfg) {
+      continue;
+    }
     key = utils.toHyphenated(key);
     if (excludeParams.includes(key.toLowerCase()) || value === false) {
       continue;
