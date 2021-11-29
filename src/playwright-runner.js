@@ -273,7 +273,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
     config: configFile,
   };
 
-  const playwrightBin = path.join(__dirname, '..', 'node_modules', '@playwright', 'test', 'lib', 'cli', 'cli.js');
+  const playwrightBin = path.join(__dirname, '..', 'node_modules', '@playwright', 'test', 'cli.js');
   const procArgs = [
     playwrightBin, 'test'
   ];

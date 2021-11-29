@@ -1,5 +1,0 @@
-rootDir: /home/seluser/
-targetDir: /home/seluser/tests
-execCommand:
-  - npm
-  - test
