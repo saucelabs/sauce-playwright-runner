@@ -286,7 +286,20 @@ async function run (nodeBin, runCfgPath, suiteName) {
 
   const excludeParams = ['screenshot-on-failure', 'video', 'slow-mo'];
 
+  let usePlaywrightCfg = false;
+  const defaultCfgFiles = ['./playwright.config.ts', './playwright.config.js'];
+  for (const file of defaultCfgFiles) {
+    if (fs.existsSync(path.join(projectPath, file)) === true) {
+      usePlaywrightCfg = true;
+    }
+  }
   for (let [key, value] of Object.entries(args)) {
+    // There is a conflict when playwright project and `browser` both existing.
+    // Skipping adding browser cli args here to avoid that.
+    if (usePlaywrightCfg && key === 'browser') {
+      continue;
+    }
+
     key = utils.toHyphenated(key);
     if (excludeParams.includes(key.toLowerCase()) || value === false) {
       continue;
