@@ -263,6 +263,13 @@ async function run (nodeBin, runCfgPath, suiteName) {
     throw new Error(`Could not find projectPath directory: '${projectPath}'`);
   }
 
+  process.env.playwrightCfgFile = runCfg.playwright.configFile;
+  process.env.browserName = suite.param.browserName;
+
+  if (suite.param.project) {
+    process.env.project = suite.param.project;
+  }
+
   // Copy our runner's playwright config to a custom location in order to
   // preserve the customer's config which we may want to load in the future
   const configFile = path.join(projectPath, 'sauce.config.js');
@@ -294,8 +301,8 @@ async function run (nodeBin, runCfgPath, suiteName) {
     }
   }
   for (let [key, value] of Object.entries(args)) {
-    // There is a conflict when playwright project and `browser` both existing.
-    // Skipping adding browser cli args here to avoid that.
+    // There is a conflict if the playwright project has a `browser` defined,
+    // since the job is launched with the browser set by saucectl, which is now set as the job's metadata.
     if (usePlaywrightCfg && key === 'browser') {
       continue;
     }

@@ -4,10 +4,15 @@ const _ = require('lodash');
 let userConfig = {};
 
 // Prefer ts over js to match default behaviour of playwright-test
-const defaultConfigFiles = ['./playwright.config.ts', './playwright.config.js'];
-for (const file of defaultConfigFiles) {
+const configFiles = process.env.playwrightCfgFile ?
+  [process.env.playwrightCfgFile] :
+  ['./playwright.config.ts', './playwright.config.js'];
+for (const file of configFiles) {
   try {
     userConfig = require(file);
+    if (userConfig.default) {
+      userConfig = userConfig.default;
+    }
     break;
   } catch {}
 }
