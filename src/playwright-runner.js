@@ -220,7 +220,6 @@ function generateJunitfile (sourceFile, suiteName, browserName, platformName) {
   }
 }
 
-
 async function runReporter ({ suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion, assetsDir }) {
   let jobDetailsUrl, reportingSucceeded = false;
   try {
@@ -263,8 +262,8 @@ async function run (nodeBin, runCfgPath, suiteName) {
     throw new Error(`Could not find projectPath directory: '${projectPath}'`);
   }
 
-  process.env.playwrightCfgFile = runCfg.playwright.configFile || '';
-  process.env.browserName = suite.param.browserName;
+  process.env.PLAYWRIGHT_CFG_FILE = runCfg.playwright.configFile || '';
+  process.env.BROWSER_NAME = suite.param.browserName;
 
   if (suite.param.project) {
     process.env.project = suite.param.project;
@@ -291,22 +290,16 @@ async function run (nodeBin, runCfgPath, suiteName) {
   }
   let args = _.defaultsDeep(defaultArgs, utils.replaceLegacyKeys(suite.param));
 
-  const excludeParams = ['screenshot-on-failure', 'video', 'slow-mo'];
+  let excludeParams = ['screenshot-on-failure', 'video', 'slow-mo'];
 
-  let usePlaywrightCfg = false;
-  const defaultCfgFiles = ['./playwright.config.ts', './playwright.config.js'];
-  for (const file of defaultCfgFiles) {
-    if (fs.existsSync(path.join(projectPath, file)) === true) {
-      usePlaywrightCfg = true;
-    }
+  // There is a conflict if the playwright project has a `browser` defined,
+  // since the job is launched with the browser set by saucectl, which is now set as the job's metadata.
+  const isRunProject = Object.keys(args).find((k) => k === 'project');
+  if (isRunProject) {
+    excludeParams.push('browser');
   }
-  for (let [key, value] of Object.entries(args)) {
-    // There is a conflict if the playwright project has a `browser` defined,
-    // since the job is launched with the browser set by saucectl, which is now set as the job's metadata.
-    if (usePlaywrightCfg && key === 'browser') {
-      continue;
-    }
 
+  for (let [key, value] of Object.entries(args)) {
     key = utils.toHyphenated(key);
     if (excludeParams.includes(key.toLowerCase()) || value === false) {
       continue;
