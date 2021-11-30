@@ -263,7 +263,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
     throw new Error(`Could not find projectPath directory: '${projectPath}'`);
   }
 
-  process.env.playwrightCfgFile = runCfg.playwright.configFile;
+  process.env.playwrightCfgFile = runCfg.playwright.configFile || '';
   process.env.browserName = suite.param.browserName;
 
   if (suite.param.project) {
