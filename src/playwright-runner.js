@@ -220,7 +220,6 @@ function generateJunitfile (sourceFile, suiteName, browserName, platformName) {
   }
 }
 
-
 async function runReporter ({ suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion, assetsDir }) {
   let jobDetailsUrl, reportingSucceeded = false;
   try {
@@ -263,6 +262,13 @@ async function run (nodeBin, runCfgPath, suiteName) {
     throw new Error(`Could not find projectPath directory: '${projectPath}'`);
   }
 
+  process.env.PLAYWRIGHT_CFG_FILE = runCfg.playwright.configFile || '';
+  process.env.BROWSER_NAME = suite.param.browserName;
+
+  if (suite.param.project) {
+    process.env.project = suite.param.project;
+  }
+
   // Copy our runner's playwright config to a custom location in order to
   // preserve the customer's config which we may want to load in the future
   const configFile = path.join(projectPath, 'sauce.config.js');
@@ -284,7 +290,14 @@ async function run (nodeBin, runCfgPath, suiteName) {
   }
   let args = _.defaultsDeep(defaultArgs, utils.replaceLegacyKeys(suite.param));
 
-  const excludeParams = ['screenshot-on-failure', 'video', 'slow-mo'];
+  let excludeParams = ['screenshot-on-failure', 'video', 'slow-mo'];
+
+  // There is a conflict if the playwright project has a `browser` defined,
+  // since the job is launched with the browser set by saucectl, which is now set as the job's metadata.
+  const isRunProject = Object.keys(args).find((k) => k === 'project');
+  if (isRunProject) {
+    excludeParams.push('browser');
+  }
 
   for (let [key, value] of Object.entries(args)) {
     key = utils.toHyphenated(key);
