@@ -35,11 +35,10 @@ describe('playwright-runner', function () {
   };
 
   describe('.run', function () {
-    let spawnMock, spawnMock2, playwrightProc, backupEnv, fsExistsMock, cwdMock;
+    let spawnMock, playwrightProc, backupEnv, fsExistsMock, cwdMock;
     beforeEach(function () {
       backupEnv = {};
       spawnMock = jest.spyOn(childProcess, 'spawn');
-      spawnMock2 = jest.spyOn(childProcess, 'spawn');
       fsExistsMock = jest.spyOn(fs, 'existsSync');
       cwdMock = jest.spyOn(process, 'cwd');
       playwrightProc = new EventEmitter();
@@ -52,12 +51,6 @@ describe('playwright-runner', function () {
         },
       }));
       spawnMock.mockImplementation(() => {
-        setTimeout(() => {
-          playwrightProc.emit('close', 0);
-        }, 10);
-        return playwrightProc;
-      });
-      spawnMock2.mockImplementation(() => {
         setTimeout(() => {
           playwrightProc.emit('close', 0);
         }, 10);
