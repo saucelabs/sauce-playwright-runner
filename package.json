@@ -33,7 +33,7 @@
     "playwright": "1.17.1",
     "sauce-testrunner-utils": "0.5.0",
     "saucelabs": "^7.0.4",
-    "shelljs": "^0.8.3",
+    "shelljs": "^0.8.5",
     "xml-js": "1.6.11",
     "yargs": "^16.1.1"
   },
