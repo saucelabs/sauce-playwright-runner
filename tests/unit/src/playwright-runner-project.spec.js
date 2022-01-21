@@ -68,7 +68,6 @@ describe('playwright-runner for playwright project', function () {
       process.env = {
         SAUCE_TAGS: 'tag-one,tag-two',
         HELLO: 'world',
-        'HEADLESS': false,
       };
     });
 
@@ -105,42 +104,6 @@ describe('playwright-runner for playwright project', function () {
           'HELLO': 'world',
           'SAUCE_TAGS': 'tag-one,tag-two',
           'PLAYWRIGHT_JUNIT_OUTPUT_NAME': path.join(MOCK_CWD, '__assets__', 'junit.xml'),
-        },
-        'stdio': 'inherit',
-      });
-    });
-
-    it('should run playwright headless test', async function () {
-      process.env.SAUCE_VM = 'truthy';
-      baseRunCfg.suites[0].param.headless = true;
-      testRunnerUtils.loadRunConfig.mockReturnValue({...baseRunCfg});
-      await run('/fake/path/to/node', path.join(MOCK_CWD, 'sauce-runner.json'), 'basic-js');
-      glob.sync.mockReturnValueOnce([]);
-      const [[nodeBin, procArgs, spawnArgs]] = spawnMock.mock.calls;
-      procArgs[0] = path.basename(procArgs[0]);
-      spawnArgs.cwd = path.basename(spawnArgs.cwd);
-      expect(nodeBin).toMatch('/fake/path/to/node');
-      expect(procArgs).toMatchObject([
-        'cli.js',
-        'test',
-        '--output',
-        path.join(MOCK_CWD, '__assets__'),
-        '--config',
-        path.join(MOCK_CWD, 'sauce.config.js'),
-        '--project',
-        'project1',
-        '--timeout',
-        1800000,
-        '**/*.spec.js',
-        '**/*.test.js',
-      ]);
-      expect(spawnArgs).toMatchObject({
-        'cwd': 'runner',
-        'env': {
-          'HELLO': 'world',
-          'SAUCE_TAGS': 'tag-one,tag-two',
-          'PLAYWRIGHT_JUNIT_OUTPUT_NAME': path.join(MOCK_CWD, '__assets__', 'junit.xml'),
-          'HEADLESS': true,
         },
         'stdio': 'inherit',
       });

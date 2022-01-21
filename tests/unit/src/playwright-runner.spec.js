@@ -26,7 +26,6 @@ describe('playwright-runner', function () {
         name: 'basic-js',
         param: {
           browserName: 'chromium',
-          headful: true,
           slowMo: 1000
         },
         testMatch: ['**/*.spec.js', '**/*.test.js']
@@ -66,6 +65,7 @@ describe('playwright-runner', function () {
 
     afterEach(function () {
       process.env = backupEnv;
+      baseRunCfg.suites[0].param.headless = false;
     });
 
     it('should run playwright test as a spawn command in VM', async function () {
@@ -97,6 +97,42 @@ describe('playwright-runner', function () {
           'HELLO': 'world',
           'SAUCE_TAGS': 'tag-one,tag-two',
           'PLAYWRIGHT_JUNIT_OUTPUT_NAME': path.join(MOCK_CWD, '__assets__', 'junit.xml'),
+        },
+        'stdio': 'inherit',
+      });
+    });
+
+    it('should run playwright headless test', async function () {
+      process.env.SAUCE_VM = 'truthy';
+      baseRunCfg.suites[0].param.headless = true;
+      testRunnerUtils.loadRunConfig.mockReturnValue({...baseRunCfg});
+      await run('/fake/path/to/node', path.join(MOCK_CWD, 'sauce-runner.json'), 'basic-js');
+      glob.sync.mockReturnValueOnce([]);
+      const [[nodeBin, procArgs, spawnArgs]] = spawnMock.mock.calls;
+      procArgs[0] = path.basename(procArgs[0]);
+      spawnArgs.cwd = path.basename(spawnArgs.cwd);
+      expect(nodeBin).toMatch('/fake/path/to/node');
+      expect(procArgs).toMatchObject([
+        'cli.js',
+        'test',
+        '--output',
+        path.join(MOCK_CWD, '__assets__'),
+        '--config',
+        path.join(MOCK_CWD, 'sauce.config.js'),
+        '--timeout',
+        1800000,
+        '--browser',
+        'chromium',
+        '**/*.spec.js',
+        '**/*.test.js',
+      ]);
+      expect(spawnArgs).toMatchObject({
+        'cwd': 'runner',
+        'env': {
+          'HELLO': 'world',
+          'SAUCE_TAGS': 'tag-one,tag-two',
+          'PLAYWRIGHT_JUNIT_OUTPUT_NAME': path.join(MOCK_CWD, '__assets__', 'junit.xml'),
+          'HEADLESS': true,
         },
         'stdio': 'inherit',
       });

@@ -23,7 +23,7 @@ for (const file of configFiles) {
 const overrides = {
   use: {
     browserName: process.env.BROWSER_NAME, // override browserName with suite browserName
-    headless: process.env.HEADLESS === 'true',
+    headless: process.env.SAUCE_VM ? process.env.HEADLESS === 'true' : true,
     video: process.env.SAUCE_VM ? 'off' : 'on',
   },
   reporter: [
