@@ -264,6 +264,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
 
   process.env.PLAYWRIGHT_CFG_FILE = runCfg.playwright.configFile || '';
   process.env.BROWSER_NAME = suite.param.browserName;
+  process.env.HEADLESS = !suite.param.headed || false;
 
   if (suite.param.project) {
     process.env.project = suite.param.project;
