@@ -88,7 +88,6 @@ describe('playwright-runner', function () {
         1800000,
         '--browser',
         'chromium',
-        '--headed',
         '**/*.spec.js',
         '**/*.test.js',
       ]);
