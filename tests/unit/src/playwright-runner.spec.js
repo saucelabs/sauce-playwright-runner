@@ -132,7 +132,6 @@ describe('playwright-runner', function () {
           'HELLO': 'world',
           'SAUCE_TAGS': 'tag-one,tag-two',
           'PLAYWRIGHT_JUNIT_OUTPUT_NAME': path.join(MOCK_CWD, '__assets__', 'junit.xml'),
-          'HEADLESS': true,
         },
         'stdio': 'inherit',
       });
