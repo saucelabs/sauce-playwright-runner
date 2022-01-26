@@ -264,6 +264,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
 
   process.env.PLAYWRIGHT_CFG_FILE = runCfg.playwright.configFile || '';
   process.env.BROWSER_NAME = suite.param.browserName;
+  process.env.HEADLESS = suite.param.headless;
 
   if (suite.param.project) {
     process.env.project = suite.param.project;
@@ -290,7 +291,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
   }
   let args = _.defaultsDeep(defaultArgs, utils.replaceLegacyKeys(suite.param));
 
-  let excludeParams = ['screenshot-on-failure', 'video', 'slow-mo'];
+  let excludeParams = ['screenshot-on-failure', 'video', 'slow-mo', 'headless', 'headed'];
 
   // There is a conflict if the playwright project has a `browser` defined,
   // since the job is launched with the browser set by saucectl, which is now set as the job's metadata.

@@ -26,7 +26,6 @@ describe('playwright-runner for playwright project', function () {
         name: 'basic-js',
         param: {
           browserName: 'chromium',
-          headful: true,
           slowMo: 1000,
           project: 'project1'
         },
@@ -96,7 +95,6 @@ describe('playwright-runner for playwright project', function () {
         'project1',
         '--timeout',
         1800000,
-        '--headed',
         '**/*.spec.js',
         '**/*.test.js',
       ]);
