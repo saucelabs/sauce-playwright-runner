@@ -20,3 +20,10 @@ suites:
       browserName: "chromium"
     testMatch:
       - "tests/sauce-connect.test.js"
+
+  - name: "Sauce with sauce-connect (macOS)"
+    platformName: "macOS 11.00"
+    params:
+      browserName: "chromium"
+    testMatch:
+      - "tests/sauce-connect.test.js"
