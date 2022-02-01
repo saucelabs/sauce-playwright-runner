@@ -291,34 +291,4 @@ jobs:
         env:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
         run: |
-          npx saucectl run --runner-version "github-release: ${{ steps.parse_version.outputs.version }}"
-
-      - name: Notify slack on failure
-        uses: 8398a7/action-slack@v3
-        if: failure()
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          RELEASE: ${{ steps.parse_version.outputs.version }}
-        with:
-          status: custom
-          fields: commit,workflow,job
-          custom_payload: |
-            {
-              attachments: [{
-                mrkdwn_in: ['text'],
-                title: `${{ github.repository }}@${process.env.RELEASE}`,
-                title_link: `https://github.com/${{ github.repository }}/releases/${process.env.RELEASE}`,
-                text: `${process.env.AS_JOB} job failed  :homer_back_away:`,
-                color: 'danger',
-                fields: [{
-                  title: 'Commit',
-                  value: `${process.env.AS_COMMIT}`,
-                  short: true
-                },
-                {
-                  title: 'Workflow',
-                  value: `${process.env.AS_WORKFLOW}`,
-                  short: true
-                }]
-              }]
-            }
+          npx saucectl run --runner-version "github-release: ${{ steps.parse_version.outputs.version }}" --config .sauce/config_win.yml

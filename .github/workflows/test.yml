@@ -142,5 +142,5 @@ jobs:
 
       - name: run saucectl (Windows)
         run: |
-          saucectl run --config .sauce/config.yml --select-suite "Sauce with sauce-connect (windows)" --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip"
+          saucectl run --config .sauce/config_win.yml --select-suite "Sauce with sauce-connect (windows)" --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip"
         working-directory: ./tests/integration/sauce-connect/
