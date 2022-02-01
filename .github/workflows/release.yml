@@ -365,6 +365,24 @@ jobs:
         run: |
           npx saucectl run --runner-version "github-release: ${{ steps.parse_version.outputs.version }}" --config .sauce/config_win.yml
 
+  post-release-macos-tests:
+    runs-on: ubuntu-latest
+    needs: publish-release
+    env:
+      SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
+      SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
+    steps:
+      - uses: actions/checkout@master
+      - name: Install Deps
+        run: npm ci
+      - name: Parse release version
+        id: parse_version
+        run: |
+          VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
+          echo ::set-output name=version::${VERSION}
+
       - name: cloud tests (MacOS)
         working-directory: ./tests/fixtures/post-release
         env:
