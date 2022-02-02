@@ -244,9 +244,81 @@ jobs:
           asset_name: sauce-playwright-runner.zip
           asset_content_type: application/zip
 
+  release-macos-bundle:
+    runs-on: macos-latest
+    needs: [create-release-draft]
+    steps:
+      - name: Find matching draft tag
+        id: prep
+        run: |
+          VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.draft == true) | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
+          RELEASE_ID=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.draft == true) | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .id")
+
+          if [ "${VERSION}" = "" ];then
+              echo "No draft version found"
+              exit 1
+          fi
+
+          ASSET_ID=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .assets | .[] | select(.name == \"sauce-testcafe-macos.zip\") | .id | select(. != null)")
+
+          echo ::set-output name=version::${VERSION}
+          echo ::set-output name=release_id::${RELEASE_ID}
+          echo ::set-output name=asset_id::${ASSET_ID}
+
+      - run: echo "${{ steps.prep.outputs.release_id }} - ${{ steps.prep.outputs.version }} - ${{ steps.prep.outputs.asset_id }}"
+
+      - uses: actions/checkout@v2
+        if: ${{ steps.prep.outputs.asset_id == '' }}
+        with:
+          ref: ${{ steps.prep.outputs.version }}
+
+      - name: Use Node.js v14.x
+        if: ${{ steps.prep.outputs.asset_id == '' }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+
+      - name: Update Release version
+        if: ${{ steps.prep.outputs.asset_id == '' }}
+        run: |
+          npm version --no-git-tag-version ${{  steps.prep.outputs.version }}
+
+      - run: npm ci --production
+        if: ${{ steps.prep.outputs.asset_id == '' }}
+
+      - name: Bundle Directory
+        if: ${{ steps.prep.outputs.asset_id == '' }}
+        run: bash ./scripts/bundle.sh
+
+      - name: List bundle contents
+        if: ${{ steps.prep.outputs.asset_id == '' }}
+        run: ls -R bundle/
+
+      - name: Archive bundle
+        if: ${{ steps.prep.outputs.asset_id == '' }}
+        run: zip -r sauce-playwright-macos.zip bundle/
+
+      - name: Upload Release Asset
+        if: ${{ steps.prep.outputs.asset_id == '' }}
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-playwright-macos.zip
+          asset_path: ./sauce-playwright-macos.zip
+          asset_name: sauce-playwright-macos.zip
+          asset_content_type: application/zip
+
   publish-release:
     runs-on: ubuntu-latest
-    needs: [release-docker, release-windows-bundle]
+    needs: [release-docker, release-windows-bundle, release-macos-bundle]
     steps:
       - name: Find matching draft tag
         id: prep
@@ -286,39 +358,34 @@ jobs:
                       jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
           echo ::set-output name=version::${VERSION}
 
-      - name: cloud tests
+      - name: cloud tests (Windows)
         working-directory: ./tests/fixtures/post-release
         env:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
         run: |
-          npx saucectl run --runner-version "github-release: ${{ steps.parse_version.outputs.version }}"
+          npx saucectl run --runner-version "github-release: ${{ steps.parse_version.outputs.version }}" --config .sauce/config_win.yml
 
-      - name: Notify slack on failure
-        uses: 8398a7/action-slack@v3
-        if: failure()
+  post-release-macos-tests:
+    runs-on: ubuntu-latest
+    needs: publish-release
+    env:
+      SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
+      SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
+    steps:
+      - uses: actions/checkout@master
+      - name: Install Deps
+        run: npm ci
+      - name: Parse release version
+        id: parse_version
+        run: |
+          VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
+          echo ::set-output name=version::${VERSION}
+
+      - name: cloud tests (MacOS)
+        working-directory: ./tests/fixtures/post-release
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          RELEASE: ${{ steps.parse_version.outputs.version }}
-        with:
-          status: custom
-          fields: commit,workflow,job
-          custom_payload: |
-            {
-              attachments: [{
-                mrkdwn_in: ['text'],
-                title: `${{ github.repository }}@${process.env.RELEASE}`,
-                title_link: `https://github.com/${{ github.repository }}/releases/${process.env.RELEASE}`,
-                text: `${process.env.AS_JOB} job failed  :homer_back_away:`,
-                color: 'danger',
-                fields: [{
-                  title: 'Commit',
-                  value: `${process.env.AS_COMMIT}`,
-                  short: true
-                },
-                {
-                  title: 'Workflow',
-                  value: `${process.env.AS_WORKFLOW}`,
-                  short: true
-                }]
-              }]
-            }
+          BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
+        run: |
+          npx saucectl run --runner-version "github-release: ${{ steps.parse_version.outputs.version }}" --config .sauce/config_mac.yml
