@@ -19,7 +19,8 @@ describe('playwright-runner for playwright project', function () {
   const baseRunCfg = {
     playwright: {
       version: '1.12.2',
-      projectPath: 'path/to/project'
+      projectPath: 'path/to/project',
+      configFile: 'path/to/config',
     },
     suites: [
       {

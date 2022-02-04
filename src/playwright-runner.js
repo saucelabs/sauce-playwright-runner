@@ -262,7 +262,13 @@ async function run (nodeBin, runCfgPath, suiteName) {
     throw new Error(`Could not find projectPath directory: '${projectPath}'`);
   }
 
-  process.env.PLAYWRIGHT_CFG_FILE = runCfg.playwright.configFile || '';
+  const playwrightCfgFile = path.join(projectPath, runCfg.playwright.configFile);
+  if (fs.existsSync(playwrightCfgFile)) {
+    process.env.PLAYWRIGHT_CFG_FILE = playwrightCfgFile;
+  } else {
+    throw new Error(`Could not find playwright config file: '${playwrightCfgFile}'`);
+  }
+
   process.env.BROWSER_NAME = suite.param.browserName;
   process.env.HEADLESS = suite.param.headless;
 
