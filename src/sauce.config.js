@@ -4,7 +4,7 @@ const _ = require('lodash');
 let userConfig = {};
 
 // Prefer ts over js to match default behaviour of playwright-test
-const configFiles = process.env.PLAYWRIGHT_CFG_FILE !== '' ?
+const configFiles = process.env.PLAYWRIGHT_CFG_FILE ?
   [process.env.PLAYWRIGHT_CFG_FILE] :
   ['./playwright.config.ts', './playwright.config.js'];
 
