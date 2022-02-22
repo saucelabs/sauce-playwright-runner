@@ -302,7 +302,7 @@ jobs:
 
       - name: Archive bundle
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        run: zip -r sauce-playwright-macos.zip bundle/
+        run: zip --symlinks -r sauce-playwright-macos.zip bundle/
 
       - name: Upload Release Asset
         if: ${{ steps.prep.outputs.asset_id == '' }}
