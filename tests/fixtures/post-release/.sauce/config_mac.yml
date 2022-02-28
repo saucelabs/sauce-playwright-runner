@@ -6,12 +6,11 @@ sauce:
   metadata:
     tags:
       - e2e
-    build: "$BUILD_ID"
 rootDir: .
 playwright:
   # CAUTION: This has to be an already deployed framework version in the cloud. Not necessarily the one you want to test.
   # Then use --runner-version to specify the release you actually want to use.
-  version: 1.15.2
+  version: 1.18.1
 suites:
   - name: "Post Release Test (macOS) - chromium"
     platformName: "macOS 11.00"
