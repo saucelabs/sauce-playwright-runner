@@ -142,16 +142,16 @@ jobs:
         run: bash ./scripts/bundle.sh
 
       - name: Archive bundle
-        run: zip -r sauce-playwright-macos.zip bundle/
+        run: zip --symlinks -r sauce-playwright-macos.zip bundle/
 
       - name: Upload to GCS
         run: |
           gsutil cp ./sauce-playwright-macos.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip
 
-#      - name: Test on Sauce
-#        working-directory: ./tests/fixtures/post-release
-#        run: |
-#          npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip" --config .sauce/config_mac.yml
+      - name: Test on Sauce
+        working-directory: ./tests/fixtures/post-release
+        run: |
+          npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip" --config .sauce/config_mac.yml
 
   run-bundle-with-sauce-connect:
     runs-on: ubuntu-latest
@@ -190,7 +190,7 @@ jobs:
           saucectl run --select-suite "Sauce with sauce-connect (windows)" --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip"
         working-directory: ./tests/integration/sauce-connect/
 
-#      - name: run saucectl (MacOS)
-#        run: |
-#          saucectl run --select-suite "Sauce with sauce-connect (macOS)" --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip"
-#        working-directory: ./tests/integration/sauce-connect/
+      - name: run saucectl (MacOS)
+        run: |
+          saucectl run --select-suite "Sauce with sauce-connect (macOS)" --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip"
+        working-directory: ./tests/integration/sauce-connect/
