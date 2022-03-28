@@ -244,6 +244,12 @@ async function runReporter ({ suiteName, hasPassed, startTime, endTime, args, pl
   }
 }
 
+function setEnvironmentVariables (envVars = {}) {
+  for (const [key, value] of Object.entries(envVars)) {
+    process.env[key] = value;
+  }
+}
+
 async function run (nodeBin, runCfgPath, suiteName) {
   const assetsDir = path.join(process.cwd(), '__assets__');
   const junitFile = path.join(assetsDir, 'junit.xml');
@@ -334,6 +340,8 @@ async function run (nodeBin, runCfgPath, suiteName) {
     SAUCE_REPORT_OUTPUT_NAME: sauceReportFile,
     FORCE_COLOR: 0,
   };
+
+  setEnvironmentVariables(suite.env);
 
   // Install NPM dependencies
   let metrics = [];
