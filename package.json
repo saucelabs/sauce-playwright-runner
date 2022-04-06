@@ -25,7 +25,7 @@
   "homepage": "https://github.com/saucelabs/sauce-playwright-runner",
   "dependencies": {
     "@babel/core": "^7.14.6",
-    "@playwright/test": "1.18.1",
+    "@playwright/test": "1.20.2",
     "@saucelabs/playwright-reporter": "^0.0.2",
     "@wdio/logger": "^5.16.10",
     "glob": "^7.1.6",
