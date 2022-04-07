@@ -229,18 +229,28 @@ jobs:
         uses: azure/powershell@v1
         with:
           inlineScript: |
-            Compress-Archive bundle/ sauce-playwright-runner.zip
+            Compress-Archive bundle/ sauce-playwright-runner-win-amd64.zip
           azPSVersion: '3.1.0'
 
       - name: Upload Release Asset
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-playwright-runner-win-amd64.zip
+          asset_path: ./sauce-playwright-runner-win-amd64.zip
+          asset_name: sauce-playwright-runner-win-amd64.zip
+          asset_content_type: application/zip
+
+      - name: Upload Release Asset Legacy
+        if: ${{ steps.prep.outputs.asset_id == '' }}
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-playwright-runner.zip
-          asset_path: ./sauce-playwright-runner.zip
+          asset_path: ./sauce-playwright-runner-win-amd64.zip
           asset_name: sauce-playwright-runner.zip
           asset_content_type: application/zip
 
@@ -302,17 +312,27 @@ jobs:
 
       - name: Archive bundle
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        run: zip --symlinks -r sauce-playwright-macos.zip bundle/
+        run: zip --symlinks -r sauce-playwright-macos-amd64.zip bundle/
 
       - name: Upload Release Asset
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-playwright-macos-amd64.zip
+          asset_path: ./sauce-playwright-macos-amd64.zip
+          asset_name: sauce-playwright-macos-amd64.zip
+          asset_content_type: application/zip
+
+      - name: Upload Release Asset Legacy
+        if: ${{ steps.prep.outputs.asset_id == '' }}
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-playwright-macos.zip
-          asset_path: ./sauce-playwright-macos.zip
+          asset_path: ./sauce-playwright-macos-amd64.zip
           asset_name: sauce-playwright-macos.zip
           asset_content_type: application/zip
 
