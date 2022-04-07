@@ -131,91 +131,87 @@ function generateJunitfile (sourceFile, suiteName, browserName, platformName) {
   let result;
   let opts = {compact: true, spaces: 4};
 
-  try {
-    const xmlData = fs.readFileSync(sourceFile, 'utf8');
-    if (!xmlData) {
-      return;
-    }
-    result = convert.xml2js(xmlData, opts);
-    result._declaration = {
-      _attributes: {
-        version: '1.0',
-        encoding: 'utf-8'
-      }
-    };
-    result.testsuites._attributes.name = suiteName;
-    delete result.testsuites._attributes.id;
-
-    if (!Array.isArray(result.testsuites.testsuite)) {
-      result.testsuites.testsuite = [result.testsuites.testsuite];
-    }
-    let testsuites = [];
-    let totalTests = 0;
-    let totalErrs = 0;
-    let totalFailures = 0;
-    let totalSkipped = 0;
-    let totalTime = 0;
-    if (process.platform.toLowerCase() === 'linux') {
-      platformName = 'Linux';
-    }
-    for (let i = 0; i < result.testsuites.testsuite.length; i++) {
-      let testsuite = result.testsuites.testsuite[i];
-      totalTests += +testsuite._attributes.tests || 0;
-      totalFailures += +testsuite._attributes.failures || 0;
-      totalErrs += +testsuite._attributes.errors || 0;
-      totalSkipped += +testsuite._attributes.skipped || 0;
-      totalTime += +testsuite._attributes.time || 0;
-
-      if (!Array.isArray(testsuite.testcase)) {
-        testsuite.testcase = [testsuite.testcase];
-      }
-      for (let j = 0; j < testsuite.testcase.length; j++) {
-        const testcase = testsuite.testcase[j];
-        if (testcase.failure) {
-          testsuite.testcase[j].failure._cdata = testcase.failure._text || '';
-          delete testsuite.testcase[j].failure._text;
-        }
-      }
-
-      testsuite._attributes.id = i;
-      let timestamp = new Date(+testsuite._attributes.timestamp);
-      testsuite._attributes.timestamp = timestamp.toISOString();
-      testsuite.properties = {};
-      testsuite.properties.property = [
-        {
-          _attributes: {
-            name: 'platformName',
-            value: platformName,
-          }
-        },
-        {
-          _attributes: {
-            name: 'browserName',
-            value: browserName,
-          }
-        }
-      ];
-      testsuites.push(testsuite);
-    }
-    delete result.testsuites;
-    result.testsuites = {
-      _attributes: {
-        name: suiteName,
-        tests: totalTests,
-        failures: totalFailures,
-        skipped: totalSkipped,
-        errors: totalErrs,
-        time: totalTime,
-      },
-      testsuite: testsuites,
-    };
-
-    opts.textFn = escapeXML;
-    let xmlResult = convert.js2xml(result, opts);
-    fs.writeFileSync(sourceFile, xmlResult);
-  } catch (err) {
-    console.error('failed to generate junit file:', err);
+  const xmlData = fs.readFileSync(sourceFile, 'utf8');
+  if (!xmlData) {
+    return;
   }
+  result = convert.xml2js(xmlData, opts);
+  result._declaration = {
+    _attributes: {
+      version: '1.0',
+      encoding: 'utf-8'
+    }
+  };
+  result.testsuites._attributes.name = suiteName;
+  delete result.testsuites._attributes.id;
+
+  if (!Array.isArray(result.testsuites.testsuite)) {
+    result.testsuites.testsuite = [result.testsuites.testsuite];
+  }
+  let testsuites = [];
+  let totalTests = 0;
+  let totalErrs = 0;
+  let totalFailures = 0;
+  let totalSkipped = 0;
+  let totalTime = 0;
+  if (process.platform.toLowerCase() === 'linux') {
+    platformName = 'Linux';
+  }
+  for (let i = 0; i < result.testsuites.testsuite.length; i++) {
+    let testsuite = result.testsuites.testsuite[i];
+    totalTests += +testsuite._attributes.tests || 0;
+    totalFailures += +testsuite._attributes.failures || 0;
+    totalErrs += +testsuite._attributes.errors || 0;
+    totalSkipped += +testsuite._attributes.skipped || 0;
+    totalTime += +testsuite._attributes.time || 0;
+
+    if (!Array.isArray(testsuite.testcase)) {
+      testsuite.testcase = [testsuite.testcase];
+    }
+    for (let j = 0; j < testsuite.testcase.length; j++) {
+      const testcase = testsuite.testcase[j];
+      if (testcase.failure) {
+        testsuite.testcase[j].failure._cdata = testcase.failure._text || '';
+        delete testsuite.testcase[j].failure._text;
+      }
+    }
+
+    testsuite._attributes.id = i;
+    let timestamp = new Date(+testsuite._attributes.timestamp);
+    testsuite._attributes.timestamp = timestamp.toISOString();
+    testsuite.properties = {};
+    testsuite.properties.property = [
+      {
+        _attributes: {
+          name: 'platformName',
+          value: platformName,
+        }
+      },
+      {
+        _attributes: {
+          name: 'browserName',
+          value: browserName,
+        }
+      }
+    ];
+    testsuites.push(testsuite);
+  }
+  delete result.testsuites;
+  result.testsuites = {
+    _attributes: {
+      name: suiteName,
+      tests: totalTests,
+      failures: totalFailures,
+      skipped: totalSkipped,
+      errors: totalErrs,
+      time: totalTime,
+    },
+    testsuite: testsuites,
+  };
+
+  opts.textFn = escapeXML;
+  let xmlResult = convert.js2xml(result, opts);
+  fs.writeFileSync(sourceFile, xmlResult);
 }
 
 async function runReporter ({ suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion, assetsDir }) {
@@ -367,7 +363,11 @@ async function run (nodeBin, runCfgPath, suiteName) {
     console.error(`Could not complete job. Reason: ${e}`);
   }
 
-  generateJunitfile(junitFile, suiteName, args.param.browser, args.platformName);
+  try {
+    generateJunitfile(junitFile, suiteName, args.param.browser, args.platformName);
+  } catch (err) {
+    console.error(`Failed to generate junit file: ${err}`);
+  }
 
   // If it's a VM, don't try to upload the assets
   if (process.env.SAUCE_VM) {
