@@ -7,7 +7,7 @@
         }
     },
     "playwright": {
-        "version": "1.12.3",
+        "version": "1.18.1",
         "projectPath": "./tests/fixtures/basic-js/"
     },
     "suites": [
