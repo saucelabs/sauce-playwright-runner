@@ -4,7 +4,7 @@ const _ = require('lodash');
 const path = require('path');
 const utils = require('./utils');
 const { createJobReportV2, createJobReport } = require('./reporter');
-const { prepareNpmEnv, loadRunConfig, escapeXML } = require('sauce-testrunner-utils');
+const { prepareNpmEnv, loadRunConfig, escapeXML, preExec } = require('sauce-testrunner-utils');
 const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
 const SauceLabs = require('saucelabs').default;
 const { LOG_FILES } = require('./constants');
@@ -251,6 +251,7 @@ function setEnvironmentVariables (envVars = {}) {
 }
 
 async function run (nodeBin, runCfgPath, suiteName) {
+  const preExecTimeout = 300;
   const assetsDir = path.join(process.cwd(), '__assets__');
   const junitFile = path.join(assetsDir, 'junit.xml');
   const sauceReportFile = path.join(assetsDir, 'sauce-test-report.json');
@@ -350,6 +351,11 @@ async function run (nodeBin, runCfgPath, suiteName) {
   runCfg.path = runCfgPath;
   let npmMetrics = await prepareNpmEnv(runCfg);
   metrics.push(npmMetrics);
+
+  // Run suite preExecs
+  if (!await preExec.run(suite, preExecTimeout)) {
+    return false;
+  }
 
   const playwrightProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd: projectPath, env});
 

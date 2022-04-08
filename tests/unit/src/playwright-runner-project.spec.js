@@ -44,6 +44,9 @@ describe('playwright-runner for playwright project', function () {
       fsExistsMock = jest.spyOn(fs, 'existsSync');
       cwdMock = jest.spyOn(process, 'cwd');
       playwrightProc = new EventEmitter();
+      testRunnerUtils.preExec.run = () => new Promise((resolve) => {
+        resolve(true);
+      });
       SauceLabs.mockImplementation(() => ({
         uploadJobAssets () {
           return {};
