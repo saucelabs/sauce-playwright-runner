@@ -30,6 +30,7 @@
     "@wdio/logger": "^5.16.10",
     "glob": "^7.1.6",
     "lodash": "^4.17.21",
+    "playwright": "1.20.2",
     "sauce-testrunner-utils": "0.6.1",
     "saucelabs": "^7.0.4",
     "shelljs": "^0.8.5",
