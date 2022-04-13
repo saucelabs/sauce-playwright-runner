@@ -39,6 +39,7 @@ const overrides = {
       },
     ],
   ],
+  testIgnore: process.env.TEST_IGNORE,
 };
 
 if ('HTTP_PROXY' in process.env && process.env.HTTP_PROXY !== '') {
