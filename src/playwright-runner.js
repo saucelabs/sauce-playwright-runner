@@ -350,6 +350,9 @@ async function run (nodeBin, runCfgPath, suiteName) {
   procArgs.push(...suite.testMatch);
 
   args = _.defaultsDeep(suite, args);
+  if (args.testIgnore && args.testIgnore.length > 0) {
+    process.env.TEST_IGNORE = args.testIgnore;
+  }
 
   let env = {
     ...process.env,
