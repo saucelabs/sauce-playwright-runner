@@ -7,7 +7,7 @@ Releasing a new version of the runner requires a Github Action to be triggered.
 The workflow is named [Release New Version](../../actions/workflows/release.yml).\
 It has to be manually trigger, *without* creating a tag before or a release, everything will be taken care of.
 
-A new release can be made either from `master`, or any other branch.
+A new release can be made either from `main`, or any other branch.
 
 Two settings are available:
 - `Release type - major, minor or patch`

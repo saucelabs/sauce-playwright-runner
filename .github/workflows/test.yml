@@ -3,7 +3,7 @@ name: Test Image
 on:
   pull_request:
     branches:
-      - master
+      - main
 
 env:
   SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
