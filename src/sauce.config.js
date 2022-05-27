@@ -1,5 +1,6 @@
 const process = require('process');
 const _ = require('lodash');
+const fs = require('fs');
 
 let userConfig = {};
 
@@ -9,15 +10,19 @@ const configFiles = process.env.PLAYWRIGHT_CFG_FILE ?
   ['./playwright.config.ts', './playwright.config.js'];
 
 for (const file of configFiles) {
-  try {
-    userConfig = require(file);
-    // it should put config just under root level to get it work with playwright.config.ts
-    // there is no such issue with playwright.config.js
-    if (userConfig.default) {
-      userConfig = userConfig.default;
+  if (fs.existsSync(file)) {
+    try {
+      userConfig = require(file);
+      // it should put config just under root level to get it work with playwright.config.ts
+      // there is no such issue with playwright.config.js
+      if (userConfig.default) {
+        userConfig = userConfig.default;
+      }
+      break;
+    } catch (e) {
+      console.error(e);
     }
-    break;
-  } catch {}
+  }
 }
 
 const overrides = {
