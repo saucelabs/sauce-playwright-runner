@@ -1,4 +1,4 @@
-FROM saucelabs/testrunner-image:v0.3.0
+FROM saucelabs/testrunner-image:v0.4.0
 
 USER root
 
@@ -8,8 +8,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Remove DST Root as it has expired
 # https://bugs.launchpad.net/ubuntu/+source/ca-certificates/+bug/1944481
+RUN apt install --reinstall ca-certificates
 RUN sed -i 's/mozilla\/DST_Root_CA_X3.crt/!mozilla\/DST_Root_CA_X3.crt/g' /etc/ca-certificates.conf
 RUN update-ca-certificates
+
 
 
 USER seluser
