@@ -55,6 +55,7 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
       console.error(`Failed to convert ${webmFiles[0]} to mp4: '${e}'`);
     }
   }
+  const screenshots = glob.sync(path.join(assetsDir, '**', '*.{png,jpg,jpeg}'));
 
   let files = [
     {
@@ -72,6 +73,15 @@ async function createJob (suiteName, hasPassed, startTime, endTime, args, playwr
   ];
 
   for (const f of containerLogFiles) {
+    files.push(
+      {
+        filename: path.basename(f),
+        data: fs.readFileSync(f),
+      },
+    );
+  }
+
+  for (const f of screenshots) {
     files.push(
       {
         filename: path.basename(f),
