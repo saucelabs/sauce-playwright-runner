@@ -306,6 +306,12 @@ async function run (nodeBin, runCfgPath, suiteName) {
   }
   process.env.BROWSER_NAME = suite.param.browserName;
   process.env.HEADLESS = suite.param.headless;
+  process.env.SAUCE_SUITE_NAME = suite.name;
+
+
+  if (runCfg.artifacts?.download?.directory) {
+    process.env.SAUCE_ARTIFACTS_DIRECTORY = runCfg.artifacts.download.directory;
+  }
 
   if (suite.param.project) {
     process.env.project = suite.param.project;
