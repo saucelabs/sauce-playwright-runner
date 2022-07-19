@@ -279,10 +279,6 @@ function setEnvironmentVariables (envVars = {}) {
 
 async function run (nodeBin, runCfgPath, suiteName) {
   const preExecTimeout = 300;
-  const assetsDir = path.join(process.cwd(), '__assets__');
-  const junitFile = path.join(assetsDir, 'junit.xml');
-  const sauceReportFile = path.join(assetsDir, 'sauce-test-report.json');
-
   runCfgPath = getAbsolutePath(runCfgPath);
   const runCfg = await loadRunConfig(runCfgPath);
 
@@ -295,6 +291,9 @@ async function run (nodeBin, runCfgPath, suiteName) {
   if (!fs.existsSync(projectPath)) {
     throw new Error(`Could not find projectPath directory: '${projectPath}'`);
   }
+  const assetsDir = path.join(projectPath, '__assets__');
+  const junitFile = path.join(assetsDir, 'junit.xml');
+  const sauceReportFile = path.join(assetsDir, 'sauce-test-report.json');
 
   if (runCfg.playwright.configFile) {
     const playwrightCfgFile = path.join(projectPath, runCfg.playwright.configFile);
@@ -306,6 +305,8 @@ async function run (nodeBin, runCfgPath, suiteName) {
   }
   process.env.BROWSER_NAME = suite.param.browserName;
   process.env.HEADLESS = suite.param.headless;
+  process.env.SAUCE_SUITE_NAME = suite.name;
+  process.env.SAUCE_ARTIFACTS_DIRECTORY = assetsDir;
 
   if (suite.param.project) {
     process.env.project = suite.param.project;
