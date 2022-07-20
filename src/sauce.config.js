@@ -57,4 +57,10 @@ if ('HTTP_PROXY' in process.env && process.env.HTTP_PROXY !== '') {
   overrides.use.launchOptions = { proxy, ignoreHTTPSErrors: true };
 }
 
-module.exports = _.merge(userConfig, overrides);
+function arrMerger (objValue, srcValue) {
+  if (_.isArray(objValue)) {
+    return objValue.concat(srcValue);
+  }
+}
+
+module.exports = _.mergeWith(userConfig, overrides, arrMerger);
