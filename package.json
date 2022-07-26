@@ -26,13 +26,13 @@
   "dependencies": {
     "@babel/core": "^7.14.6",
     "@babel/plugin-proposal-class-properties": "^7.17.12",
-    "@playwright/test": "1.22.2",
+    "@playwright/test": "1.24.1",
     "@saucelabs/playwright-reporter": "0.1.0",
     "@wdio/logger": "^5.16.10",
     "dotenv": "16.0.1",
     "glob": "^7.1.6",
     "lodash": "4.17.21",
-    "playwright": "1.22.2",
+    "playwright": "1.24.1",
     "sauce-testrunner-utils": "0.6.1",
     "saucelabs": "^7.0.4",
     "shelljs": "^0.8.5",
@@ -54,7 +54,6 @@
     "jest-cli": "^26.4.2",
     "mocha": "^8.1.3",
     "release-it": "^14.4.1",
-    "saucectl": "0.65.0",
     "typescript": "^3.9.7"
   },
   "husky": {
