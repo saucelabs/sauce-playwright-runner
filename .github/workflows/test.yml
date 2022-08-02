@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install saucectl
         uses: saucelabs/saucectl-run-action@v1
@@ -46,7 +46,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install dependencies
         run: |
@@ -59,17 +59,17 @@ jobs:
           SAUCE_VM: true
         name: Run test locally
 
-  build-windows-bundle-and-test:
+  build-windows-bundle:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
       - name: Setup nodejs
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: 16.x
 
@@ -103,22 +103,40 @@ jobs:
         run: |
           gsutil cp ./sauce-playwright-runner.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip
 
-      - name: Test on Sauce
-        working-directory: ./tests/fixtures/post-release
-        run: |
-          npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip" --config .sauce/config_win.yml
-
-  build-macos-bundle-and-test:
-    runs-on: macos-latest
+  windows-bundle-test:
+    needs: [build-windows-bundle]
+    runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
       - name: Setup nodejs
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Install saucectl
+        run: npm install -g saucectl
+
+      - name: Test on Sauce
+        working-directory: ./tests/fixtures/post-release
+        run: |
+          npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip" --config .sauce/config_win.yml
+
+  build-macos-bundle:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Setup nodejs
+        uses: actions/setup-node@v3
         with:
           node-version: 16.x
 
@@ -148,6 +166,24 @@ jobs:
         run: |
           gsutil cp ./sauce-playwright-macos.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip
 
+  macos-bundle-test:
+    needs: [build-macos-bundle]
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Setup nodejs
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Install saucectl
+        run: npm install -g saucectl
+
       - name: Test on Sauce
         working-directory: ./tests/fixtures/post-release
         run: |
@@ -155,17 +191,17 @@ jobs:
 
   run-bundle-with-sauce-connect:
     runs-on: ubuntu-latest
-    needs: [build-windows-bundle-and-test, build-macos-bundle-and-test]
+    needs: [build-windows-bundle, build-macos-bundle]
     steps:
       - name: Checkout runner
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - uses: actions/setup-python@v2
         with:
           python-version: '3.x'
 
       - name: Setup nodejs
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: 16.x
 
