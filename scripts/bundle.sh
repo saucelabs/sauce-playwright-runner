@@ -12,7 +12,7 @@ cp "$(which node)" bundle/
 
 pushd bundle/
 npm cache clean --force
-npm ci --production
+npm ci --production --prefer-dedupe
 npx playwright install
 npx playwright install-deps
 npx playwright --version
