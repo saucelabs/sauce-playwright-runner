@@ -26,6 +26,7 @@
   "dependencies": {
     "@babel/core": "^7.14.6",
     "@babel/plugin-proposal-class-properties": "^7.17.12",
+    "@cucumber/cucumber": "8.5.1",
     "@playwright/test": "1.24.1",
     "@saucelabs/playwright-reporter": "0.1.0",
     "@wdio/logger": "^5.16.10",

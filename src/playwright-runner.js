@@ -277,17 +277,47 @@ function setEnvironmentVariables (envVars = {}) {
   }
 }
 
+async function runCucumber (nodeBin, projectPath) {
+  const cucumberBin = path.join(__dirname, '..', 'node_modules', '@cucumber', 'cucumber', 'bin', 'cucumber-js');
+  const procArgs = [
+    cucumberBin
+  ];
+
+  const proc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd: projectPath, env: process.env});
+
+  const procPromise = new Promise((resolve) => {
+    proc.on('close', (code /*, ...args*/) => {
+      const passed = code === 0;
+      resolve(passed);
+    });
+  });
+
+  let passed = false;
+  try {
+    passed = await procPromise;
+  } catch (e) {
+    console.error(`Could not complete job. Reason: ${e}`);
+  }
+
+  return passed;
+}
+
 async function run (nodeBin, runCfgPath, suiteName) {
   const preExecTimeout = 300;
   runCfgPath = getAbsolutePath(runCfgPath);
   const runCfg = await loadRunConfig(runCfgPath);
+  const projectPath = path.dirname(runCfgPath);
+
+  // hack for running a cucumberjs process
+  if (suiteName.startsWith('ccjs')) {
+    return await runCucumber(nodeBin, projectPath);
+  }
 
   const suite = _.find(runCfg.suites, ({name}) => name === suiteName);
   if (!suite) {
     throw new Error(`Could not find suite named '${suiteName}'`);
   }
 
-  const projectPath = path.dirname(runCfgPath);
   if (!fs.existsSync(projectPath)) {
     throw new Error(`Could not find projectPath directory: '${projectPath}'`);
   }
