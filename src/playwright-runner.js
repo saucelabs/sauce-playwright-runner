@@ -278,10 +278,13 @@ function setEnvironmentVariables (envVars = {}) {
 }
 
 async function runCucumber (nodeBin, projectPath) {
+  const assetsDir = path.join(projectPath, '__assets__');
   const cucumberBin = path.join(__dirname, '..', 'node_modules', '@cucumber', 'cucumber', 'bin', 'cucumber-js');
   const procArgs = [
     cucumberBin,
-    '--publish-quiet'
+    '--publish-quiet',
+    '--format', 'json' + path.join(assetsDir, 'cucumber-report.html'),
+    '--format', 'html' + path.join(assetsDir, 'cucumber-report.json')
   ];
 
   const proc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd: projectPath, env: process.env});
