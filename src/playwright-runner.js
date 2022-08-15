@@ -283,8 +283,8 @@ async function runCucumber (nodeBin, projectPath) {
   const procArgs = [
     cucumberBin,
     '--publish-quiet',
-    '--format', 'json:' + path.join(assetsDir, 'cucumber-report.html'),
-    '--format', 'html:' + path.join(assetsDir, 'cucumber-report.json')
+    '--format', 'json:' + path.join(assetsDir, 'cucumber-report.json'),
+    '--format', 'html:' + path.join(assetsDir, 'cucumber-report.html')
   ];
 
   const proc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd: projectPath, env: process.env});
