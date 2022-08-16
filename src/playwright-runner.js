@@ -277,9 +277,12 @@ function setEnvironmentVariables (envVars = {}) {
   }
 }
 
-async function runCucumber (nodeBin, projectPath) {
+async function runCucumber (nodeBin, projectPath, userProvided) {
   const assetsDir = path.join(projectPath, '__assets__');
-  const cucumberBin = path.join(__dirname, '..', 'node_modules', '@cucumber', 'cucumber', 'bin', 'cucumber-js');
+  let cucumberBin = path.join(__dirname, '..', 'node_modules', '@cucumber', 'cucumber', 'bin', 'cucumber-js');
+  if (userProvided) {
+    cucumberBin = path.join(projectPath, 'node_modules', '@cucumber', 'cucumber', 'bin', 'cucumber-js');
+  }
   const procArgs = [
     cucumberBin,
     '--publish-quiet',
@@ -314,7 +317,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
 
   // hack for running a cucumberjs process
   if (suiteName.startsWith('ccjs')) {
-    return await runCucumber(nodeBin, projectPath);
+    return await runCucumber(nodeBin, projectPath, suiteName.startsWith('ccjs user provided'));
   }
 
   const suite = _.find(runCfg.suites, ({name}) => name === suiteName);
