@@ -15,7 +15,8 @@
  */
 const { test, expect } = require('@playwright/test');
 
-test('timezone is being set from config', async ({ page }) => {
-  await page.goto('https://whatismytimezone.com/');
-  await expect(page.locator('article').first()).toContainText('Korean Standard Time');
+test('locale is being set from config', async ({ page }) => {
+  await page.goto('https://duckduckgo.com/?q=saucelabs');
+  await expect(page.locator('text=모두')).toBeVisible();
+  await expect(page.locator('text=이미지')).toBeVisible();
 });
