@@ -1,9 +1,10 @@
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 module.exports = {
   use: {
-    'headed': false,
-    'video': false,
-    'timezoneId': 'Asia/Seoul',
+    headless: true,
+    video: false,
+    timezoneId: 'Asia/Seoul',
+    locale: 'ko-KR',
     reporter: [['dot']],
   },
 };
