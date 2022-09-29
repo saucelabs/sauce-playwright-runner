@@ -19,3 +19,5 @@ exports.LOG_FILES = [
 ];
 
 exports.DESIRED_BROWSER = process.env.BROWSER_NAME || 'chromium';
+
+exports.CUCUMBER_FRAMEWORK = 'cucumber';

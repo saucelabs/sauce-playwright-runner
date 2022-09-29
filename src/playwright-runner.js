@@ -7,24 +7,18 @@ const { createJobReportV2, createJobReport } = require('./reporter');
 const { prepareNpmEnv, loadRunConfig, escapeXML, preExec } = require('sauce-testrunner-utils');
 const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
 const SauceLabs = require('saucelabs').default;
-const { LOG_FILES } = require('./constants');
+const { LOG_FILES, CUCUMBER_FRAMEWORK } = require('./constants');
 const fs = require('fs');
 const glob = require('glob');
 const convert = require('xml-js');
+const { runCucumber, createCucumberJob } = require('./cucumber-runner');
 
 const { getAbsolutePath, getArgs, exec } = utils;
 
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 
-async function createJob (suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion, assetsDir) {
-  const tld = region === 'staging' ? 'net' : 'com';
-  const api = new SauceLabs({
-    user: process.env.SAUCE_USERNAME,
-    key: process.env.SAUCE_ACCESS_KEY,
-    region,
-    tld
-  });
+async function createJob (api, suiteName, hasPassed, startTime, endTime, args, playwright, metrics, metadata, saucectlVersion, assetsDir) {
   const cwd = process.cwd();
 
   let sessionId;
@@ -247,10 +241,25 @@ function generateJunitfile (sourceFile, suiteName, browserName, platformName) {
   fs.writeFileSync(sourceFile, xmlResult);
 }
 
-async function runReporter ({ suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion, assetsDir }) {
+async function runReporter ({ runCfg, suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion, assetsDir }) {
   let jobDetailsUrl, reportingSucceeded = false;
+  const tld = region === 'staging' ? 'net' : 'com';
+  const api = new SauceLabs({
+    user: process.env.SAUCE_USERNAME,
+    key: process.env.SAUCE_ACCESS_KEY,
+    region,
+    tld
+  });
   try {
-    let sessionId = await createJob(suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion, assetsDir);
+    let sessionId;
+    if (runCfg.Kind === CUCUMBER_FRAMEWORK) {
+      sessionId = await createCucumberJob(api, runCfg, {startTime, endTime, hasPassed});
+    } else {
+      sessionId = await createJob(api, suiteName, hasPassed, startTime, endTime, args, playwright, metrics, metadata, saucectlVersion, assetsDir);
+    }
+    if (!sessionId) {
+      throw ('Failed to create job');
+    }
     let domain;
     const tld = region === 'staging' ? 'net' : 'com';
     switch (region) {
@@ -271,14 +280,7 @@ async function runReporter ({ suiteName, hasPassed, startTime, endTime, args, pl
   }
 }
 
-function setEnvironmentVariables (envVars = {}) {
-  for (const [key, value] of Object.entries(envVars)) {
-    process.env[key] = value;
-  }
-}
-
-async function run (nodeBin, runCfgPath, suiteName) {
-  const preExecTimeout = 300;
+async function getCfg (runCfgPath, suiteName) {
   runCfgPath = getAbsolutePath(runCfgPath);
   const runCfg = await loadRunConfig(runCfgPath);
 
@@ -286,27 +288,83 @@ async function run (nodeBin, runCfgPath, suiteName) {
   if (!suite) {
     throw new Error(`Could not find suite named '${suiteName}'`);
   }
+  runCfg.suite = suite;
 
   const projectPath = path.dirname(runCfgPath);
   if (!fs.existsSync(projectPath)) {
     throw new Error(`Could not find projectPath directory: '${projectPath}'`);
   }
-  const assetsDir = path.join(projectPath, '__assets__');
-  const junitFile = path.join(assetsDir, 'junit.xml');
-  const sauceReportFile = path.join(assetsDir, 'sauce-test-report.json');
+  runCfg.assetsDir = path.join(projectPath, '__assets__');
+  if (!fs.existsSync(runCfg.assetsDir)) {
+    fs.mkdirSync(runCfg.assetsDir);
+  }
+  runCfg.junitFile = path.join(runCfg.assetsDir, 'junit.xml');
+  runCfg.sauceReportFile = path.join(runCfg.assetsDir, 'sauce-test-report.json');
+  runCfg.preExecTimeout = 300;
+  runCfg.path = runCfgPath;
+  runCfg.projectPath = projectPath;
+
+  return runCfg;
+}
+
+async function run (nodeBin, runCfgPath, suiteName) {
+  const runCfg = await getCfg(runCfgPath, suiteName);
+
+  let result;
+  if (runCfg.Kind === CUCUMBER_FRAMEWORK) {
+    result = await runCucumber(nodeBin, runCfg);
+  } else {
+    result = await runPlaywright(nodeBin, runCfg);
+    try {
+      generateJunitfile(runCfg.junitFile, runCfg.suite.name, runCfg.suite.param.browser, runCfg.suite.platformName);
+    } catch (err) {
+      console.error(`Failed to generate junit file: ${err}`);
+    }
+  }
+
+  // If it's a VM, don't try to upload the assets
+  if (process.env.SAUCE_VM) {
+    return result.hasPassed;
+  }
+
+  if (!(process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY)) {
+    console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY');
+    return result.hasPassed;
+  }
+
+  const saucectlVersion = process.env.SAUCE_SAUCECTL_VERSION;
+  const region = (runCfg.sauce && runCfg.sauce.region) || 'us-west-1';
+  await runReporter({
+    runCfg,
+    suiteName: runCfg.suite.name,
+    hasPassed: result.hasPassed,
+    startTime: result.startTime,
+    endTime: result.endTime,
+    args: runCfg.args,
+    playwright: runCfg.playwright,
+    metrics: result.metrics,
+    region,
+    metadata: runCfg.sauce.metadata,
+    saucectlVersion,
+    assestsDir: runCfg.assetsDir
+  });
+  return result.hasPassed;
+}
+
+async function runPlaywright (nodeBin, runCfg) {
+  process.env.BROWSER_NAME = runCfg.suite.param.browserName;
+  process.env.HEADLESS = runCfg.suite.param.headless;
+  process.env.SAUCE_SUITE_NAME = runCfg.suite.name;
+  process.env.SAUCE_ARTIFACTS_DIRECTORY = runCfg.assetsDir;
 
   if (runCfg.playwright.configFile) {
-    const playwrightCfgFile = path.join(projectPath, runCfg.playwright.configFile);
+    const playwrightCfgFile = path.join(runCfg.projectPath, runCfg.playwright.configFile);
     if (fs.existsSync(playwrightCfgFile)) {
       process.env.PLAYWRIGHT_CFG_FILE = playwrightCfgFile;
     } else {
       throw new Error(`Could not find playwright config file: '${playwrightCfgFile}'`);
     }
   }
-  process.env.BROWSER_NAME = suite.param.browserName;
-  process.env.HEADLESS = suite.param.headless;
-  process.env.SAUCE_SUITE_NAME = suite.name;
-  process.env.SAUCE_ARTIFACTS_DIRECTORY = assetsDir;
 
   if (suite.param.project) {
     process.env.project = suite.param.project;
@@ -314,11 +372,11 @@ async function run (nodeBin, runCfgPath, suiteName) {
 
   // Copy our runner's playwright config to a custom location in order to
   // preserve the customer's config which we may want to load in the future
-  const configFile = path.join(projectPath, 'sauce.config.js');
+  const configFile = path.join(runCfg.projectPath, 'sauce.config.js');
   fs.copyFileSync(path.join(__dirname, 'sauce.config.js'), configFile);
 
   const defaultArgs = {
-    output: assetsDir,
+    output: runCfg.assetsDir,
     config: configFile,
   };
 
@@ -365,30 +423,31 @@ async function run (nodeBin, runCfgPath, suiteName) {
     process.env.TEST_IGNORE = args.testIgnore;
   }
 
+  runCfg.args = args;
+
   let env = {
     ...process.env,
     ...suite.env,
-    PLAYWRIGHT_JUNIT_OUTPUT_NAME: junitFile,
-    SAUCE_REPORT_OUTPUT_NAME: sauceReportFile,
+    PLAYWRIGHT_JUNIT_OUTPUT_NAME: runCfg.junitFile,
+    SAUCE_REPORT_OUTPUT_NAME: runCfg.sauceReportFile,
     FORCE_COLOR: 0,
   };
 
-  setEnvironmentVariables(suite.env);
+  utils.setEnvironmentVariables(suite.env);
 
   // Install NPM dependencies
   let metrics = [];
 
   // runCfg.path must be set for prepareNpmEnv to find node_modules. :(
-  runCfg.path = runCfgPath;
   let npmMetrics = await prepareNpmEnv(runCfg);
   metrics.push(npmMetrics);
 
   // Run suite preExecs
-  if (!await preExec.run(suite, preExecTimeout)) {
+  if (!await preExec.run(suite, runCfg.preExecTimeout)) {
     return false;
   }
 
-  const playwrightProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd: projectPath, env});
+  const playwrightProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd: runCfg.projectPath, env});
 
   const playwrightPromise = new Promise((resolve) => {
     playwrightProc.on('close', (code /*, ...args*/) => {
@@ -405,27 +464,12 @@ async function run (nodeBin, runCfgPath, suiteName) {
   } catch (e) {
     console.error(`Could not complete job. Reason: ${e}`);
   }
-
-  try {
-    generateJunitfile(junitFile, suiteName, args.param.browser, args.platformName);
-  } catch (err) {
-    console.error(`Failed to generate junit file: ${err}`);
-  }
-
-  // If it's a VM, don't try to upload the assets
-  if (process.env.SAUCE_VM) {
-    return hasPassed;
-  }
-
-  if (!(process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY)) {
-    console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY');
-    return hasPassed;
-  }
-
-  const saucectlVersion = process.env.SAUCE_SAUCECTL_VERSION;
-  const region = (runCfg.sauce && runCfg.sauce.region) || 'us-west-1';
-  await runReporter({ suiteName, hasPassed, startTime, endTime, args, playwright: runCfg.playwright, metrics, region, metadata: runCfg.sauce.metadata, saucectlVersion, assetsDir});
-  return hasPassed;
+  return {
+    startTime,
+    endTime,
+    hasPassed,
+    metrics,
+  };
 }
 
 if (require.main === module) {
@@ -442,4 +486,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { run, generateJunitfile };
+module.exports = { run, generateJunitfile, getCfg };

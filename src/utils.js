@@ -86,6 +86,12 @@ function replaceLegacyKeys (args) {
   return args;
 }
 
+function setEnvironmentVariables (envVars = {}) {
+  for (const [key, value] of Object.entries(envVars)) {
+    process.env[key] = value;
+  }
+}
+
 module.exports = {
   exec, getAbsolutePath, toHyphenated,
-  getArgs, replaceLegacyKeys };
+  getArgs, replaceLegacyKeys, setEnvironmentVariables };
