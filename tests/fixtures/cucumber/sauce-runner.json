@@ -16,8 +16,8 @@
       "browserName": "chromium",
 			"browserVersion": "101",
       "options": {
-         "paths": ["tests/fixtures/cucumber/features/**/*.feature"],
-         "require": ["tests/fixtures/cucumber/features/support/*.js"]
+         "paths": ["features/**/*.feature"],
+         "require": ["features/support/*.js"]
       }
     }
   ]

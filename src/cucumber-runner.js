@@ -7,10 +7,9 @@ const { DESIRED_BROWSER, CUCUMBER_FRAMEWORK } = require('./constants');
 const utils = require('./utils');
 
 function buildArgs (runCfg, cucumberBin) {
-  const cwd = process.cwd();
   let paths = [];
   runCfg.suite.options.paths.forEach((p) => {
-    paths.push(path.join(cwd, p));
+    paths.push(path.join(runCfg.projectPath, p));
   });
   const procArgs = [
     cucumberBin,
@@ -22,7 +21,7 @@ function buildArgs (runCfg, cucumberBin) {
   ];
   if (runCfg.cucumber.config) {
     procArgs.push('-c');
-    procArgs.push(path.join(cwd, runCfg.cucumber.config));
+    procArgs.push(path.join(runCfg.projectPath, runCfg.cucumber.config));
   }
   if (runCfg.suite.options.name) {
     procArgs.push('--name');
@@ -34,11 +33,11 @@ function buildArgs (runCfg, cucumberBin) {
   }
   runCfg.suite.options.require?.forEach((req) => {
     procArgs.push('-r');
-    procArgs.push(path.join(cwd, req));
+    procArgs.push(path.join(runCfg.projectPath, req));
   });
   runCfg.suite.options.import?.forEach((im) => {
     procArgs.push('-i');
-    procArgs.push(path.join(cwd, im));
+    procArgs.push(path.join(runCfg.projectPath, im));
   });
   runCfg.suite.options.tags?.forEach((tag) => {
     procArgs.push('-t');
