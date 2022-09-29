@@ -1,0 +1,30 @@
+apiVersion: v1alpha
+kind: cucumber
+sauce:
+  region: us-west-1
+  concurrency: 10
+  metadata:
+    tags:
+      - e2e
+    build: "$BUILD_ID"
+defaults:
+  timeout: 5m
+docker:
+  image: playwright
+  fileTransfer: copy
+cucumber:
+  version: 233
+rootDir: ./
+suites:
+  - name: mycucuc
+    mode: docker
+    browserName: chromium
+    options:
+      paths:
+        - "features/**/*.feature"
+      require:
+        - "features/support/*.js"
+      format:
+        - "json:my-cucumber.json"
+npm:
+  packages:

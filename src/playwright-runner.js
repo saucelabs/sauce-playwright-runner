@@ -365,6 +365,7 @@ async function runPlaywright (nodeBin, runCfg) {
       throw new Error(`Could not find playwright config file: '${playwrightCfgFile}'`);
     }
   }
+  const suite = runCfg.suite;
 
   if (suite.param.project) {
     process.env.project = suite.param.project;
