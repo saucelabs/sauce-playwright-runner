@@ -67,6 +67,9 @@ async function runCucumber (nodeBin, runCfg) {
   metrics.push(npmMetrics);
 
   let cucumberBin = path.join(__dirname, '..', 'node_modules', '@cucumber', 'cucumber', 'bin', 'cucumber-js');
+  if (runCfg.cucumber.version === 'package.json') {
+    cucumberBin = path.join(runCfg.projectPath, 'node_modules', '@cucumber', 'cucumber', 'bin', 'cucumber-js');
+  }
 
   const procArgs = buildArgs(runCfg, cucumberBin);
   const startTime = new Date().toISOString();
