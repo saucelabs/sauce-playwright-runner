@@ -7,9 +7,10 @@ const { DESIRED_BROWSER, CUCUMBER_FRAMEWORK } = require('./constants');
 const utils = require('./utils');
 
 function buildArgs (runCfg, cucumberBin) {
+  const cwd = process.cwd();
   let paths = [];
   runCfg.suite.options.paths.forEach((p) => {
-    paths.push(path.join('__project__', p));
+    paths.push(path.join(cwd, p));
   });
   const procArgs = [
     cucumberBin,
@@ -21,7 +22,7 @@ function buildArgs (runCfg, cucumberBin) {
   ];
   if (runCfg.cucumber.config) {
     procArgs.push('-c');
-    procArgs.push(path.join('__project__', runCfg.cucumber.config));
+    procArgs.push(path.join(cwd, runCfg.cucumber.config));
   }
   if (runCfg.suite.options.name) {
     procArgs.push('--name');
@@ -33,11 +34,11 @@ function buildArgs (runCfg, cucumberBin) {
   }
   runCfg.suite.options.require?.forEach((req) => {
     procArgs.push('-r');
-    procArgs.push(path.join('__project__', req));
+    procArgs.push(path.join(cwd, req));
   });
   runCfg.suite.options.import?.forEach((im) => {
     procArgs.push('-i');
-    procArgs.push(path.join('__project__', im));
+    procArgs.push(path.join(cwd, im));
   });
   runCfg.suite.options.tags?.forEach((tag) => {
     procArgs.push('-t');
@@ -148,7 +149,9 @@ async function createCucumberJob (api, runCfg, result) {
   if (!process.env.SAUCE_USERNAME || !process.env.SAUCE_ACCESS_KEY) {
     return;
   }
-  let browserVersion = DESIRED_BROWSER.toLowerCase() === 'firefox' ? process.env.FF_VER : process.env.CHROME_VER;
+
+  let browserVersion = runCfg.suite.browserVersion ||
+    (DESIRED_BROWSER.toLowerCase() === 'firefox' ? process.env.FF_VER : process.env.CHROME_VER);
 
   const body = {
     name: runCfg.suite.name,

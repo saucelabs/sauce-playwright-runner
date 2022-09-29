@@ -1,0 +1,24 @@
+{
+  "Kind": "cucumber",
+  "sauce": {
+    "region": "us-west-1",
+    "metadata": {
+      "tags": ["tag1", "tag2"],
+      "build": "Local Test Build"
+    }
+  },
+  "cucumber": {
+    "version": "8.5.0"
+  },
+  "suites": [
+    {
+      "name": "cucumber local test",
+      "browserName": "chromium",
+			"browserVersion": "101",
+      "options": {
+         "paths": ["tests/fixtures/cucumber/features/**/*.feature"],
+         "require": ["tests/fixtures/cucumber/features/support/*.js"]
+      }
+    }
+  ]
+}

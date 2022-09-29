@@ -17,8 +17,8 @@ cucumber:
 rootDir: ./
 suites:
   - name: mycucuc
-    mode: docker
     browserName: chromium
+    platformName: "Windows 11"
     options:
       paths:
         - "features/**/*.feature"
@@ -26,5 +26,8 @@ suites:
         - "features/support/*.js"
       format:
         - "json:my-cucumber.json"
-npm:
-  packages:
+
+notifications:
+  slack:
+    channels: ["devx"]
+    send: fail
