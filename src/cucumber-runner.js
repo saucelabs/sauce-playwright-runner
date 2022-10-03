@@ -58,7 +58,6 @@ function buildArgs (runCfg, cucumberBin) {
 
 async function runCucumber (nodeBin, runCfg) {
   utils.setEnvironmentVariables(runCfg.suite.env || {});
-  process.env.BROWSER_NAME = runCfg.suite.browserName;
   process.env.BROWSER_OPTIONS = runCfg.suite.browserOptions;
 
   // Install NPM dependencies
@@ -152,7 +151,7 @@ async function createCucumberJob (api, runCfg, result) {
     return;
   }
 
-  let browserVersion = runCfg.suite.browserVersion ||
+  const browserVersion = runCfg.suite.browserVersion ||
     (DESIRED_BROWSER.toLowerCase() === 'firefox' ? process.env.FF_VER : process.env.CHROME_VER);
 
   const body = {
@@ -168,7 +167,7 @@ async function createCucumberJob (api, runCfg, result) {
     passed: result.hasPassed,
     tags: runCfg.sauce.metadata?.tags,
     build: runCfg.sauce.metadata?.build,
-    browserName: runCfg.suite.browserName,
+    browserName: process.env.BROWSER_NAME || 'cucumber',
     browserVersion,
     platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG,
     saucectlVersion: process.env.SAUCE_SAUCECTL_VERSION,
