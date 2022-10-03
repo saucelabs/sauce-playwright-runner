@@ -1,5 +1,5 @@
 {
-  "Kind": "cucumber",
+  "Kind": "playwright-cucumberjs",
   "sauce": {
     "region": "us-west-1",
     "metadata": {
@@ -7,15 +7,13 @@
       "build": "Local Test Build"
     }
   },
-  "cucumber": {
-    "version": "8.5.0"
+  "playwright": {
+    "version": "1.25.1"
   },
   "suites": [
     {
       "name": "cucumber local test",
-      "env": {
-        "BROWSER_NAME": "chromium"
-      },
+      "browserName": "chromium",
       "browserVersion": "101",
       "options": {
          "paths": ["features/**/*.feature"],

@@ -7,7 +7,7 @@ const { createJobReportV2, createJobReport } = require('./reporter');
 const { prepareNpmEnv, loadRunConfig, escapeXML, preExec } = require('sauce-testrunner-utils');
 const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
 const SauceLabs = require('saucelabs').default;
-const { LOG_FILES, CUCUMBER_FRAMEWORK } = require('./constants');
+const { LOG_FILES } = require('./constants');
 const fs = require('fs');
 const glob = require('glob');
 const convert = require('xml-js');
@@ -252,7 +252,7 @@ async function runReporter ({ runCfg, suiteName, hasPassed, startTime, endTime, 
   });
   try {
     let sessionId;
-    if (runCfg.Kind === CUCUMBER_FRAMEWORK) {
+    if (runCfg.Kind === 'playwright-cucumberjs') {
       sessionId = await createCucumberJob(api, runCfg, {startTime, endTime, hasPassed});
     } else {
       sessionId = await createJob(api, suiteName, hasPassed, startTime, endTime, args, playwright, metrics, metadata, saucectlVersion, assetsDir);
@@ -311,7 +311,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
   const runCfg = await getCfg(runCfgPath, suiteName);
 
   let result;
-  if (runCfg.Kind === CUCUMBER_FRAMEWORK) {
+  if (runCfg.Kind === 'playwright-cucumberjs') {
     result = await runCucumber(nodeBin, runCfg);
   } else {
     result = await runPlaywright(nodeBin, runCfg);
@@ -434,7 +434,7 @@ async function runPlaywright (nodeBin, runCfg) {
     FORCE_COLOR: 0,
   };
 
-  utils.setEnvironmentVariables(suite.env);
+  utils.setEnvironmentVariables(env);
 
   // Install NPM dependencies
   let metrics = [];

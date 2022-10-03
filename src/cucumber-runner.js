@@ -2,8 +2,8 @@ const fs = require('fs');
 const glob = require('glob');
 const { spawn } = require('child_process');
 const path = require('path');
-const { prepareNpmEnv } = require('sauce-testrunner-utils');
-const { DESIRED_BROWSER, CUCUMBER_FRAMEWORK } = require('./constants');
+const { prepareNpmEnv, preExec } = require('sauce-testrunner-utils');
+const { DESIRED_BROWSER } = require('./constants');
 const utils = require('./utils');
 
 function buildArgs (runCfg, cucumberBin) {
@@ -19,9 +19,9 @@ function buildArgs (runCfg, cucumberBin) {
     '--format', '@saucelabs/cucumber-reporter',
     '--format-options', JSON.stringify(buildFormatOption(runCfg)),
   ];
-  if (runCfg.cucumber.config) {
+  if (runCfg.suite.options.config) {
     procArgs.push('-c');
-    procArgs.push(path.join(runCfg.projectPath, runCfg.cucumber.config));
+    procArgs.push(path.join(runCfg.projectPath, runCfg.suite.options.config));
   }
   if (runCfg.suite.options.name) {
     procArgs.push('--name');
@@ -57,21 +57,35 @@ function buildArgs (runCfg, cucumberBin) {
 }
 
 async function runCucumber (nodeBin, runCfg) {
-  utils.setEnvironmentVariables(runCfg.suite.env || {});
+  process.env.BROWSER_NAME = runCfg.suite.browserName;
   process.env.BROWSER_OPTIONS = runCfg.suite.browserOptions;
+  process.env.SAUCE_SUITE_NAME = runCfg.suite.name;
+  process.env.SAUCE_ARTIFACTS_DIRECTORY = runCfg.assetsDir;
+  utils.setEnvironmentVariables({
+    ...process.env,
+    ...runCfg.suite.env,
+    SAUCE_REPORT_OUTPUT_NAME: runCfg.sauceReportFile,
+  });
 
   // Install NPM dependencies
   let metrics = [];
   let npmMetrics = await prepareNpmEnv(runCfg);
   metrics.push(npmMetrics);
 
-  let cucumberBin = path.join(__dirname, '..', 'node_modules', '@cucumber', 'cucumber', 'bin', 'cucumber-js');
-  if (runCfg.cucumber.version === 'package.json') {
-    cucumberBin = path.join(runCfg.projectPath, 'node_modules', '@cucumber', 'cucumber', 'bin', 'cucumber-js');
+  const startTime = new Date().toISOString();
+  // Run suite preExecs
+  if (!await preExec.run(runCfg.suite, runCfg.preExecTimeout)) {
+    return {
+      startTime,
+      endTime: new Date().toISOString(),
+      hasPassed: false,
+      metrics,
+    };
   }
 
+  const cucumberBin = path.join(__dirname, '..', 'node_modules', '@cucumber', 'cucumber', 'bin', 'cucumber-js');
+
   const procArgs = buildArgs(runCfg, cucumberBin);
-  const startTime = new Date().toISOString();
   const proc = spawn(nodeBin, procArgs, {stdio: 'inherit', env: process.env});
 
   let passed = false;
@@ -159,15 +173,15 @@ async function createCucumberJob (api, runCfg, result) {
     user: process.env.SAUCE_USERNAME,
     startTime: result.startTime,
     endTime: result.endTime,
-    framework: CUCUMBER_FRAMEWORK,
-    frameworkVersion: runCfg.cucumber.version,
+    framework: 'cucumber',
+    frameworkVersion: runCfg.playwright.version,
     status: 'complete',
     suite: runCfg.suite.name,
     errors: [],
     passed: result.hasPassed,
     tags: runCfg.sauce.metadata?.tags,
     build: runCfg.sauce.metadata?.build,
-    browserName: process.env.BROWSER_NAME || 'cucumber',
+    browserName: runCfg.suite.browserName,
     browserVersion,
     platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG,
     saucectlVersion: process.env.SAUCE_SAUCECTL_VERSION,

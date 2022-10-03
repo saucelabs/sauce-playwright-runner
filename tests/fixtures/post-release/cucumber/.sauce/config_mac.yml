@@ -1,5 +1,5 @@
 apiVersion: v1alpha
-kind: cucumber
+kind: playwright-cucumberjs
 sauce:
   region: us-west-1
   concurrency: 10
@@ -12,13 +12,12 @@ defaults:
 docker:
   image: playwright
   fileTransfer: copy
-cucumber:
-  version: 233
+playwright:
+  version: 1.25.1
 rootDir: ./
 suites:
   - name: mycucuc
-    env:
-      BROWSER_NAME: "chrome"
+    browserName: "chrome"
     platformName: "macOS 12"
     options:
       paths:
