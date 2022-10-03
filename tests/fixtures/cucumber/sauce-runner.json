@@ -13,8 +13,10 @@
   "suites": [
     {
       "name": "cucumber local test",
-      "browserName": "chromium",
-			"browserVersion": "101",
+      "env": {
+        "BROWSER_NAME": "chromium"
+      },
+      "browserVersion": "101",
       "options": {
          "paths": ["features/**/*.feature"],
          "require": ["features/support/*.js"]

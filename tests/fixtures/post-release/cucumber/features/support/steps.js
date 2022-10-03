@@ -22,12 +22,12 @@ Before(async function () {
   this.page = await context.newPage();
 });
 
-When('I open {string} with firefox', async function (string) {
+When('I open {string} with chrome', async function (string) {
   await this.page.goto(string);
   await new Promise((resolve) => setTimeout(resolve, 1000));
 });
 
-Then('Close firefox', async function () {
+Then('Close chrome', async function () {
   await this.browser.close();
 });
 

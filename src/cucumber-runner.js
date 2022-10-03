@@ -114,7 +114,7 @@ async function uploadJobAssets (api, runCfg, jobId) {
   let assets = [
     {
       filename: 'console.log',
-      data: fs.readFileSync(process.env.CONSOLE_LOG),
+      data: fs.readFileSync(path.join(process.cwd(), 'console.log')),
     },
     {
       filename: 'sauce-test-report.json',

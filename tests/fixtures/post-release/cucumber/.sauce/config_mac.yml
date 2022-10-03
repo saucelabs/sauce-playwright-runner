@@ -17,7 +17,8 @@ cucumber:
 rootDir: ./
 suites:
   - name: mycucuc
-    browserName: chromium
+    env:
+      BROWSER_NAME: "chrome"
     platformName: "macOS 12"
     options:
       paths:
