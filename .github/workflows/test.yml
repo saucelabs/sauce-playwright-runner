@@ -245,7 +245,7 @@ jobs:
 
       - name: Run test locally
         working-directory: tests/fixtures/cucumber/
-        run: node ../../../ --suiteName "cucumber local test" --runCfgPath ./sauce-runner.json
+        run: npm i; node ../../../ --suiteName "cucumber local test" --runCfgPath ./sauce-runner.json
         env:
           SAUCE_VM: true
 

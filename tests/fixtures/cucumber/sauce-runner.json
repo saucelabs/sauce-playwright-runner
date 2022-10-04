@@ -23,9 +23,9 @@
     }
   ],
   "npm": {
-    "packages": {
-      "@cucumber/cucumber": "8.6.0",
-      "@saucelabs/cucumber-reporter": "0.2.0"
-    }
+    "dependencies": [
+      "@cucumber/cucumber",
+      "@saucelabs/cucumber-reporter"
+    ]
   }
 }
