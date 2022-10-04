@@ -116,7 +116,7 @@ function buildFormatOption (cfg) {
     upload: false,
     suiteName: cfg.suite.name,
     build: cfg.sauce.metadata?.build,
-    tag: cfg.sauce.metadata?.tags,
+    tags: cfg.sauce.metadata?.tags,
     outputFile: path.join(cfg.assetsDir, 'sauce-test-report.json'),
   };
 }

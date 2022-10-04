@@ -244,8 +244,9 @@ function generateJunitfile (sourceFile, suiteName, browserName, platformName) {
   fs.writeFileSync(sourceFile, xmlResult);
 }
 
-async function runReporter ({ runCfg, hasPassed, startTime, endTime, metrics, region, saucectlVersion }) {
+async function runReporter ({ runCfg, hasPassed, startTime, endTime, metrics, saucectlVersion }) {
   let jobDetailsUrl, reportingSucceeded = false;
+  const region = runCfg.sauce.region;
   const tld = region === 'staging' ? 'net' : 'com';
   const api = new SauceLabs({
     user: process.env.SAUCE_USERNAME,
@@ -301,6 +302,10 @@ async function getCfg (runCfgPath, suiteName) {
   runCfg.preExecTimeout = 300;
   runCfg.path = runCfgPath;
   runCfg.projectPath = projectPath;
+  if (!runCfg.sauce) {
+    runCfg.sauce = {};
+  }
+  runCfg.sauce.region = runCfg.sauce.region || 'us-west-1';
 
   return runCfg;
 }
@@ -331,20 +336,13 @@ async function run (nodeBin, runCfgPath, suiteName) {
   }
 
   const saucectlVersion = process.env.SAUCE_SAUCECTL_VERSION;
-  const region = (runCfg.sauce && runCfg.sauce.region) || 'us-west-1';
   await runReporter({
     runCfg,
-    suiteName: runCfg.suite.name,
     hasPassed: result.hasPassed,
     startTime: result.startTime,
     endTime: result.endTime,
-    args: runCfg.args,
-    playwright: runCfg.playwright,
     metrics: result.metrics,
-    region,
-    metadata: runCfg.sauce.metadata,
     saucectlVersion,
-    assestsDir: runCfg.assetsDir
   });
   return result.hasPassed;
 }
