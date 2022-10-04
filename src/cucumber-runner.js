@@ -80,7 +80,7 @@ async function runCucumber (nodeBin, runCfg) {
     };
   }
 
-  const cucumberBin = path.join(process.cwd(), 'node_modules', '@cucumber', 'cucumber', 'bin', 'cucumber-js');
+  const cucumberBin = path.join(runCfg.projectPath, 'node_modules', '@cucumber', 'cucumber', 'bin', 'cucumber-js');
   const procArgs = buildArgs(runCfg, cucumberBin);
   const proc = spawn(nodeBin, procArgs, {stdio: 'inherit', env: process.env});
 

@@ -27,7 +27,6 @@
     "@babel/core": "^7.14.6",
     "@babel/plugin-proposal-class-properties": "^7.17.12",
     "@playwright/test": "1.25.1",
-    "@saucelabs/cucumber-reporter": "^0.2.0",
     "@saucelabs/playwright-reporter": "0.2.0",
     "@wdio/logger": "^5.16.10",
     "dotenv": "16.0.2",
