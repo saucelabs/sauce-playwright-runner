@@ -50,6 +50,7 @@ function buildArgs (runCfg, cucumberBin) {
     }
   });
 
+  console.log('procArgs: ', procArgs.join(' '));
   return procArgs;
 }
 
