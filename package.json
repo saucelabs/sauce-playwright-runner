@@ -30,17 +30,15 @@
     "@saucelabs/playwright-reporter": "0.2.0",
     "@wdio/logger": "^5.16.10",
     "dotenv": "16.0.2",
-    "glob": "^8.0.3",
+    "glob": "^7.1.6",
     "lodash": "4.17.21",
-    "npm": "^8.19.2",
     "playwright": "1.25.1",
     "query-string": "^7.1.1",
     "sauce-testrunner-utils": "0.6.1",
-    "saucelabs": "^7.2.0",
+    "saucelabs": "^7.0.4",
     "shelljs": "^0.8.5",
-    "ts-node": "^10.9.1",
     "xml-js": "1.6.11",
-    "yargs": "^17.5.1"
+    "yargs": "^16.1.1"
   },
   "devDependencies": {
     "@types/jest": "^26.0.13",
