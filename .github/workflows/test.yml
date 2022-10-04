@@ -243,10 +243,11 @@ jobs:
           npx playwright install
           npx playwright install-deps
 
-      - run: node . --suiteName "cucumber local test" --runCfgPath ./tests/fixtures/cucumber/sauce-runner.json
+      - name: Run test locally
+        working-directory: tests/fixtures/cucumber/
+        run: node ../../../ --suiteName "cucumber local test" --runCfgPath ./sauce-runner.json
         env:
           SAUCE_VM: true
-        name: Run test locally
 
 # TODO: enable tests when saucectl is ready
 #  cucumber_windows-bundle-test:
