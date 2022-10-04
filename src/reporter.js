@@ -64,7 +64,7 @@ async function createJobReport (runCfg, api, passed, startTime, endTime, saucect
   if (!process.env.SAUCE_USERNAME || !process.env.SAUCE_ACCESS_KEY) {
     return;
   }
-  const browserName = runCfg.Kind === 'playwright' ? runCfg.suite.param.browser : runCfg.suite.browserName;
+  const browserName = runCfg.Kind === 'playwright' ? runCfg.args.param.browser : runCfg.suite.browserName;
   let browserVersion = DESIRED_BROWSER.toLowerCase() === 'firefox' ? process.env.FF_VER : process.env.CHROME_VER;
   if (!browserVersion) {
     browserVersion = runCfg.playwright.version;
@@ -81,8 +81,8 @@ async function createJobReport (runCfg, api, passed, startTime, endTime, saucect
     suite: runCfg.suite.name,
     errors: [],
     passed,
-    tags: runCfg.sauce.metadata.tags,
-    build: runCfg.sauce.metadata.build,
+    tags: runCfg.sauce.metadata?.tags,
+    build: runCfg.sauce.metadata?.build,
     browserName,
     browserVersion,
     platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG,
