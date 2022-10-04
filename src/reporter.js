@@ -57,33 +57,33 @@ const createJobReportV2 = async (suiteName, metadata, api) => {
 
 // TODO Tian: this method is a temporary solution for creating jobs via test-composer.
 // Once the global data store is ready, this method will be deprecated.
-async function createJobReport (suiteName, metadata, api, passed, startTime, endTime, args, playwright, saucectlVersion) {
+async function createJobReport (runCfg, api, passed, startTime, endTime, saucectlVersion) {
   /**
      * don't try to create a job if no credentials are set
      */
   if (!process.env.SAUCE_USERNAME || !process.env.SAUCE_ACCESS_KEY) {
     return;
   }
-
+  const browserName = runCfg.Kind === 'playwright' ? runCfg.suite.param.browser : runCfg.suite.browserName;
   let browserVersion = DESIRED_BROWSER.toLowerCase() === 'firefox' ? process.env.FF_VER : process.env.CHROME_VER;
   if (!browserVersion) {
-    browserVersion = playwright.version;
+    browserVersion = runCfg.playwright.version;
   }
 
   const body = {
-    name: suiteName,
+    name: runCfg.suite.name,
     user: process.env.SAUCE_USERNAME,
     startTime,
     endTime,
     framework: 'playwright',
     frameworkVersion: process.env.PLAYWRIGHT_VERSION,
     status: 'complete',
-    suite: suiteName,
+    suite: runCfg.suite.name,
     errors: [],
     passed,
-    tags: metadata.tags,
-    build: metadata.build,
-    browserName: args.param.browser,
+    tags: runCfg.sauce.metadata.tags,
+    build: runCfg.sauce.metadata.build,
+    browserName,
     browserVersion,
     platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG,
     saucectlVersion,

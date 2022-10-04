@@ -1,9 +1,6 @@
-const fs = require('fs');
-const glob = require('glob');
 const { spawn } = require('child_process');
 const path = require('path');
 const { prepareNpmEnv, preExec } = require('sauce-testrunner-utils');
-const { DESIRED_BROWSER } = require('./constants');
 const utils = require('./utils');
 
 function buildArgs (runCfg, cucumberBin) {
@@ -83,8 +80,7 @@ async function runCucumber (nodeBin, runCfg) {
     };
   }
 
-  const cucumberBin = path.join(__dirname, '..', 'node_modules', '@cucumber', 'cucumber', 'bin', 'cucumber-js');
-
+  const cucumberBin = path.join(process.cwd(), 'node_modules', '@cucumber', 'cucumber', 'bin', 'cucumber-js');
   const procArgs = buildArgs(runCfg, cucumberBin);
   const proc = spawn(nodeBin, procArgs, {stdio: 'inherit', env: process.env});
 
@@ -121,82 +117,8 @@ function buildFormatOption (cfg) {
     suiteName: cfg.suite.name,
     build: cfg.sauce.metadata?.build,
     tag: cfg.sauce.metadata?.tags,
+    outputFile: path.join(cfg.assetsDir, 'sauce-test-report.json'),
   };
 }
 
-async function uploadJobAssets (api, runCfg, jobId) {
-  let assets = [
-    {
-      filename: 'console.log',
-      data: fs.readFileSync(path.join(process.cwd(), 'console.log')),
-    },
-    {
-      filename: 'sauce-test-report.json',
-      data: fs.readFileSync(path.join(process.cwd(), 'sauce-test-report.json')),
-    },
-  ];
-  const attachments = glob.sync(path.join(runCfg.assetsDir, '**/*'));
-  attachments.forEach((f) => {
-    assets.push(
-      {
-        filename: path.basename(f),
-        data: fs.readFileSync(f),
-      },
-    );
-  });
-
-  await Promise.all([
-    // Casting assets as string[] to fit the definition for files. Will refine this later.
-    api?.uploadJobAssets(jobId, { files: assets }).then(
-      (resp) => {
-        if (resp.errors) {
-          for (const err of resp.errors) {
-            console.error(err);
-          }
-        }
-      },
-      (e) => console.log('Upload failed:', e.stack)
-    )
-  ]);
-}
-
-async function createCucumberJob (api, runCfg, result) {
-  if (!process.env.SAUCE_USERNAME || !process.env.SAUCE_ACCESS_KEY) {
-    return;
-  }
-
-  const browserVersion = runCfg.suite.browserVersion ||
-    (DESIRED_BROWSER.toLowerCase() === 'firefox' ? process.env.FF_VER : process.env.CHROME_VER);
-
-  const body = {
-    name: runCfg.suite.name,
-    user: process.env.SAUCE_USERNAME,
-    startTime: result.startTime,
-    endTime: result.endTime,
-    framework: 'cucumber',
-    frameworkVersion: runCfg.playwright.version,
-    status: 'complete',
-    suite: runCfg.suite.name,
-    errors: [],
-    passed: result.hasPassed,
-    tags: runCfg.sauce.metadata?.tags,
-    build: runCfg.sauce.metadata?.build,
-    browserName: runCfg.suite.browserName,
-    browserVersion,
-    platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG,
-    saucectlVersion: process.env.SAUCE_SAUCECTL_VERSION,
-  };
-
-  try {
-    const resp = await api.createJob(body);
-    const sessionId = resp.ID;
-    if (sessionId) {
-      await uploadJobAssets(api, runCfg, sessionId);
-    }
-    return sessionId;
-  } catch (e) {
-    console.error('Create job failed: ', e.stack);
-  }
-}
-
-module.exports = { runCucumber, createCucumberJob };
+module.exports = { runCucumber };

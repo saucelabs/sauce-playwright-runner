@@ -10,6 +10,7 @@
   "playwright": {
     "version": "1.25.1"
   },
+  "rootDir": "./",
   "suites": [
     {
       "name": "cucumber local test",
@@ -20,5 +21,10 @@
          "require": ["features/support/*.js"]
       }
     }
-  ]
+  ],
+  "npm": {
+    "packages": {
+      "@cucumber/cucumber": "8.6.0"
+    }
+  }
 }

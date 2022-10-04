@@ -11,22 +11,22 @@ const { LOG_FILES } = require('./constants');
 const fs = require('fs');
 const glob = require('glob');
 const convert = require('xml-js');
-const { runCucumber, createCucumberJob } = require('./cucumber-runner');
+const { runCucumber } = require('./cucumber-runner');
 
 const { getAbsolutePath, getArgs, exec } = utils;
 
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 
-async function createJob (api, suiteName, hasPassed, startTime, endTime, args, playwright, metrics, metadata, saucectlVersion, assetsDir) {
+async function createJob (runCfg, api, hasPassed, startTime, endTime, metrics, saucectlVersion) {
   const cwd = process.cwd();
 
   let sessionId;
   if (process.env.ENABLE_DATA_STORE) {
     // TODO: When we enable this make sure it's getting the proper parameters
-    sessionId = await createJobReportV2(suiteName, metadata, api);
+    sessionId = await createJobReportV2(runCfg.suite.name, runCfg.sauce.metadata, api);
   } else {
-    sessionId = await createJobReport(suiteName, metadata, api, hasPassed, startTime, endTime, args, playwright, saucectlVersion);
+    sessionId = await createJobReport(runCfg, api, hasPassed, startTime, endTime, saucectlVersion);
   }
 
   if (!sessionId) {
@@ -38,10 +38,10 @@ async function createJob (api, suiteName, hasPassed, startTime, endTime, args, p
 
   // Take the 1st webm video we find and translate it video.mp4
   // TODO: We need to translate all .webm to .mp4 and combine them into one video.mp4
-  const webmFiles = glob.sync(path.join(assetsDir, '**', '*.webm'));
+  const webmFiles = glob.sync(path.join(runCfg.assetsDir, '**', '*.webm'));
   let videoLocation;
   if (webmFiles.length > 0) {
-    videoLocation = path.join(assetsDir, 'video.mp4');
+    videoLocation = path.join(runCfg.assetsDir, 'video.mp4');
     try {
       await exec(`ffmpeg -i ${webmFiles[0]} ${videoLocation}`, {suppressLogs: true});
     } catch (e) {
@@ -49,7 +49,7 @@ async function createJob (api, suiteName, hasPassed, startTime, endTime, args, p
       console.error(`Failed to convert ${webmFiles[0]} to mp4: '${e}'`);
     }
   }
-  const screenshots = glob.sync(path.join(assetsDir, '**', '*.{png,jpg,jpeg}'));
+  const screenshots = glob.sync(path.join(runCfg.assetsDir, '**', '*.{png,jpg,jpeg}'));
 
   let files = [
     {
@@ -57,14 +57,17 @@ async function createJob (api, suiteName, hasPassed, startTime, endTime, args, p
       data: fs.readFileSync(path.join(cwd, 'console.log')),
     },
     {
-      filename: 'junit.xml',
-      data: fs.readFileSync(path.join(assetsDir, 'junit.xml')),
-    },
-    {
       filename: 'sauce-test-report.json',
-      data: fs.readFileSync(path.join(assetsDir, 'sauce-test-report.json')),
+      data: fs.readFileSync(path.join(runCfg.assetsDir, 'sauce-test-report.json')),
     },
   ];
+
+  if (fs.existsSync(path.join(runCfg.assetsDir, 'junit.xml'))) {
+    files.push({
+      filename: 'junit.xml',
+      data: fs.readFileSync(path.join(runCfg.assetsDir, 'junit.xml')),
+    });
+  }
 
   for (const f of containerLogFiles) {
     files.push(
@@ -119,7 +122,7 @@ async function createJob (api, suiteName, hasPassed, startTime, endTime, args, p
         (e) => console.error('upload failed:', e.stack)
       ),
     api.updateJob(process.env.SAUCE_USERNAME, sessionId, {
-      name: suiteName,
+      name: runCfg.suite.name,
       passed: hasPassed
     })
   ]);
@@ -241,7 +244,7 @@ function generateJunitfile (sourceFile, suiteName, browserName, platformName) {
   fs.writeFileSync(sourceFile, xmlResult);
 }
 
-async function runReporter ({ runCfg, suiteName, hasPassed, startTime, endTime, args, playwright, metrics, region, metadata, saucectlVersion, assetsDir }) {
+async function runReporter ({ runCfg, hasPassed, startTime, endTime, metrics, region, saucectlVersion }) {
   let jobDetailsUrl, reportingSucceeded = false;
   const tld = region === 'staging' ? 'net' : 'com';
   const api = new SauceLabs({
@@ -251,12 +254,7 @@ async function runReporter ({ runCfg, suiteName, hasPassed, startTime, endTime, 
     tld
   });
   try {
-    let sessionId;
-    if (runCfg.Kind === 'playwright-cucumberjs') {
-      sessionId = await createCucumberJob(api, runCfg, {startTime, endTime, hasPassed});
-    } else {
-      sessionId = await createJob(api, suiteName, hasPassed, startTime, endTime, args, playwright, metrics, metadata, saucectlVersion, assetsDir);
-    }
+    const sessionId = await createJob(runCfg, api, hasPassed, startTime, endTime, metrics, saucectlVersion);
     if (!sessionId) {
       throw ('Failed to create job');
     }
