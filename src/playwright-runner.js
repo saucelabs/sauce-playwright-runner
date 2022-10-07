@@ -49,7 +49,7 @@ async function createJob (runCfg, api, hasPassed, startTime, endTime, metrics, s
       console.error(`Failed to convert ${webmFiles[0]} to mp4: '${e}'`);
     }
   }
-  const assets = glob.sync(path.join(runCfg.assetsDir, '**', '*'));
+  const assets = glob.sync(path.join(runCfg.assetsDir, '**', '*.*'));
 
   let files = [
     {
@@ -306,6 +306,7 @@ async function getCfg (runCfgPath, suiteName) {
     runCfg.sauce = {};
   }
   runCfg.sauce.region = runCfg.sauce.region || 'us-west-1';
+  runCfg.playwrightOutputFolder = path.join(runCfg.assetsDir, 'test-results');
 
   return runCfg;
 }
@@ -373,7 +374,7 @@ async function runPlaywright (nodeBin, runCfg) {
   fs.copyFileSync(path.join(__dirname, 'sauce.config.js'), configFile);
 
   const defaultArgs = {
-    output: runCfg.assetsDir,
+    output: runCfg.playwrightOutputFolder,
     config: configFile,
   };
 
