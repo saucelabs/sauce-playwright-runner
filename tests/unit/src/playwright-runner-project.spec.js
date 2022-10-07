@@ -92,7 +92,7 @@ describe('playwright-runner for playwright project', function () {
         'cli.js',
         'test',
         '--output',
-        path.join(MOCK_CWD, '__assets__'),
+        path.join(MOCK_CWD, '__assets__/test-results'),
         '--config',
         path.join(MOCK_CWD, 'sauce.config.js'),
         '--project',
