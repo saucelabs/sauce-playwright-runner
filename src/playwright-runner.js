@@ -31,7 +31,7 @@ async function createJob (runCfg, api, hasPassed, startTime, endTime, metrics, s
     (path) => fs.existsSync(path));
 
   // Take the 1st webm video we find and translate it video.mp4
-  // TODO: We need to translate all .webm to .mp4 and combine them into one video.mp4
+  // We need to translate all .webm to .mp4 and combine them into one video.mp4 due to platform expectations.
   const webmFiles = glob.sync(path.join(runCfg.assetsDir, '**', '*.webm'));
   let videoLocation;
   if (webmFiles.length > 0) {
