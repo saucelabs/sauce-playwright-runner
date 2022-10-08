@@ -3,7 +3,7 @@ const { spawn } = require('child_process');
 const _ = require('lodash');
 const path = require('path');
 const utils = require('./utils');
-const { createJobReportV2, createJobReport } = require('./reporter');
+const { createJobReport } = require('./reporter');
 const { prepareNpmEnv, loadRunConfig, escapeXML, preExec } = require('sauce-testrunner-utils');
 const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
 const SauceLabs = require('saucelabs').default;
@@ -21,13 +21,7 @@ const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 async function createJob (runCfg, api, hasPassed, startTime, endTime, metrics, saucectlVersion) {
   const cwd = process.cwd();
 
-  let sessionId;
-  if (process.env.ENABLE_DATA_STORE) {
-    // TODO: When we enable this make sure it's getting the proper parameters
-    sessionId = await createJobReportV2(runCfg.suite.name, runCfg.sauce.metadata, api);
-  } else {
-    sessionId = await createJobReport(runCfg, api, hasPassed, startTime, endTime, saucectlVersion);
-  }
+  const sessionId = await createJobReport(runCfg, api, hasPassed, startTime, endTime, saucectlVersion);
 
   if (!sessionId) {
     throw new Error('Unable to retrieve test entry. Assets won\'t be uploaded.');
