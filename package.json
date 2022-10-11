@@ -44,7 +44,6 @@
     "@types/jest": "^26.0.13",
     "@types/mocha": "^8.0.3",
     "@types/node": "^14.10.1",
-    "axios": "^0.21.1",
     "bluebird": "^3.7.2",
     "eslint": "^7.9.0",
     "eslint-config-appium": "^4.5.0",
