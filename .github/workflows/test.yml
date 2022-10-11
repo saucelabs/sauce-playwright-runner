@@ -273,48 +273,49 @@ jobs:
         env:
           SAUCE_VM: true
 
-  cucumber_windows-bundle-test:
-    needs: [build-windows-bundle]
-    runs-on: windows-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.ref }}
-          fetch-depth: 0
-
-      - name: Setup nodejs
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16.x
-
-      - name: Install saucectl
-        run: npm install -g saucectl
-
-      - name: Test on Sauce
-        working-directory: ./tests/fixtures/post-release/cucumber
-        run: |
-          npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip" --config .sauce/config_win.yml
-
-  cucumber-macos-bundle-test:
-    needs: [build-macos-bundle]
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.ref }}
-          fetch-depth: 0
-
-      - name: Setup nodejs
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16.x
-
-      - name: Install saucectl
-        run: npm install -g saucectl
-
-      - name: Test on Sauce
-        working-directory: ./tests/fixtures/post-release/cucumber
-        run: |
-          npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip" --config .sauce/config_mac.yml
+# TODO: enable tests when saucectl is ready
+#  cucumber_windows-bundle-test:
+#    needs: [build-windows-bundle]
+#    runs-on: windows-latest
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v3
+#        with:
+#          ref: ${{ github.ref }}
+#          fetch-depth: 0
+#
+#      - name: Setup nodejs
+#        uses: actions/setup-node@v3
+#        with:
+#          node-version: 16.x
+#
+#      - name: Install saucectl
+#        run: npm install -g saucectl
+#
+#      - name: Test on Sauce
+#        working-directory: ./tests/fixtures/post-release/cucumber
+#        run: |
+#          npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip" --config .sauce/config_win.yml
+#
+#  cucumber-macos-bundle-test:
+#    needs: [build-macos-bundle]
+#    runs-on: macos-latest
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v3
+#        with:
+#          ref: ${{ github.ref }}
+#          fetch-depth: 0
+#
+#      - name: Setup nodejs
+#        uses: actions/setup-node@v3
+#        with:
+#          node-version: 16.x
+#
+#      - name: Install saucectl
+#        run: npm install -g saucectl
+#
+#      - name: Test on Sauce
+#        working-directory: ./tests/fixtures/post-release/cucumber
+#        run: |
+#          npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip" --config .sauce/config_mac.yml
