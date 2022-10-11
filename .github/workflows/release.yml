@@ -288,11 +288,11 @@ jobs:
         with:
           ref: ${{ steps.prep.outputs.version }}
 
-      - name: Use Node.js v14.x
+      - name: Setup Node.js
         if: ${{ steps.prep.outputs.asset_id == '' }}
         uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16
 
       - name: Update Release version
         if: ${{ steps.prep.outputs.asset_id == '' }}
