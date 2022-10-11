@@ -1,4 +1,4 @@
-name: Test Image
+name: Test
 
 on:
   pull_request:
@@ -10,8 +10,22 @@ env:
   SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run unit-test
+      - run: npm run lint
+
   build_and_test_docker:
     runs-on: ubuntu-latest
+    needs: [test]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -44,9 +58,16 @@ jobs:
 
   build_and_test_local:
     runs-on: windows-latest
+    needs: [test]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'npm'
 
       - name: Install dependencies
         run: |
@@ -61,6 +82,7 @@ jobs:
 
   build-windows-bundle:
     runs-on: windows-latest
+    needs: [test]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -128,6 +150,7 @@ jobs:
 
   build-macos-bundle:
     runs-on: macos-latest
+    needs: [test]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -233,6 +256,7 @@ jobs:
 
   cucumber_build_and_test_local:
     runs-on: windows-latest
+    needs: [test]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
