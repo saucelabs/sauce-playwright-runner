@@ -251,7 +251,7 @@ async function runReporter({runCfg, hasPassed, startTime, endTime, metrics}) {
     region: runCfg.sauce.region,
     username: process.env.SAUCE_USERNAME,
     accessKey: process.env.SAUCE_ACCESS_KEY,
-    headers: {'User-Agent': `cypress-reporter/${pkgVersion}`}
+    headers: {'User-Agent': `playwright-runner/${pkgVersion}`}
   });
 
   let job;
