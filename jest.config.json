@@ -1,5 +1,0 @@
-{
-    "testMatch": ["**/tests/unit/**/*.[jt]s?(x)"],
-    "collectCoverageFrom": ["src/**/*.js"],
-    "collectCoverage": true
-}

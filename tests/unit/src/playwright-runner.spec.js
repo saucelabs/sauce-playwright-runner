@@ -3,7 +3,7 @@ const {generateJunitfile} = require('../../../src/playwright-runner');
 const fs = require('fs');
 
 describe('playwright-runner', function () {
-  describe('.generateJunit', function () {
+  it('should generate generateJunit', function () {
     const junitPath = 'tests/unit/src/__assets__/junit.xml';
     const backupContent = fs.readFileSync(junitPath, 'utf8');
 
