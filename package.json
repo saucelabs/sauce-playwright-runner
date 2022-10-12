@@ -30,7 +30,6 @@
     "@saucelabs/playwright-reporter": "0.3.0",
     "@saucelabs/testcomposer": "^0.1.0",
     "@wdio/logger": "^5.16.10",
-    "crypto-js": "^4.1.1",
     "dotenv": "16.0.2",
     "glob": "^7.1.6",
     "lodash": "4.17.21",
