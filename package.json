@@ -42,7 +42,7 @@
   "devDependencies": {
     "@babel/core": "^7.19.3",
     "@babel/preset-env": "^7.19.4",
-    "@types/jest": "^26.0.13",
+    "@types/jest": "^29.1.2",
     "@types/mocha": "^8.0.3",
     "@types/node": "^16.11.65",
     "babel-jest": "^29.1.2",
