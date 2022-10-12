@@ -264,6 +264,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci --production
+          npm i @cucumber/cucumber
           npx playwright install
           npx playwright install-deps
 
