@@ -2,12 +2,12 @@
 const {spawn} = require('child_process');
 const _ = require('lodash');
 const path = require('path');
+const fs = require('fs');
 const utils = require('./utils');
 const {createJobReport} = require('./reporter');
 const {prepareNpmEnv, loadRunConfig, escapeXML, preExec} = require('sauce-testrunner-utils');
 const {updateExportedValue} = require('sauce-testrunner-utils').saucectl;
 const {LOG_FILES} = require('./constants');
-const fs = require('fs');
 const glob = require('glob');
 const convert = require('xml-js');
 const {runCucumber} = require('./cucumber-runner');
@@ -73,9 +73,15 @@ async function createJob(runCfg, testComposer, hasPassed, startTime, endTime, me
   }
 
   for (const f of assets) {
+    const fileType = path.extname(f);
+    let filename = path.basename(f);
+    if (fileType === '.png') {
+      filename = `${path.basename(path.dirname(f))}-${path.basename(f)}`;
+    }
+
     files.push(
       {
-        filename: path.basename(f),
+        filename,
         data: fs.createReadStream(f),
       },
     );
