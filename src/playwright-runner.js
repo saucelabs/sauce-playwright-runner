@@ -107,8 +107,6 @@ async function createJob(runCfg, testComposer, hasPassed, startTime, endTime, me
     );
   }
 
-  testComposer.uploadAssets(job.id, files);
-
   await testComposer.uploadAssets(
     job.id,
     files
