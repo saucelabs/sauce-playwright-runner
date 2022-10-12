@@ -22,8 +22,8 @@ async function createJobReport(runCfg, testComposer, passed, startTime, endTime)
       framework: 'playwright',
       frameworkVersion: process.env.PLAYWRIGHT_VERSION,
       passed,
-      tags: this.opts.tags,
-      build: this.opts.build,
+      tags: runCfg.sauce.metadata?.tags,
+      build: runCfg.sauce.metadata?.build,
       browserName,
       browserVersion,
       platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG
