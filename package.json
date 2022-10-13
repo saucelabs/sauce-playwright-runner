@@ -24,7 +24,6 @@
   },
   "homepage": "https://github.com/saucelabs/sauce-playwright-runner",
   "dependencies": {
-    "@babel/core": "^7.14.6",
     "@babel/plugin-proposal-class-properties": "^7.17.12",
     "@playwright/test": "1.25.1",
     "@saucelabs/playwright-reporter": "0.3.1",
@@ -41,9 +40,12 @@
     "yargs": "^16.1.1"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.13",
+    "@babel/core": "^7.19.3",
+    "@babel/preset-env": "^7.19.4",
+    "@types/jest": "^29.1.2",
     "@types/mocha": "^8.0.3",
     "@types/node": "^16.11.65",
+    "babel-jest": "^29.1.2",
     "bluebird": "^3.7.2",
     "eslint": "^8.25.0",
     "eslint-config-appium": "^4.7.0",
