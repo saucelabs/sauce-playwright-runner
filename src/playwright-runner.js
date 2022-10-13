@@ -72,11 +72,13 @@ async function createJob(runCfg, testComposer, hasPassed, startTime, endTime, me
     );
   }
 
-  for (const f of assets) {
+  for (let f of assets) {
     const fileType = path.extname(f);
     let filename = path.basename(f);
     if (fileType === '.png') {
-      filename = `${path.basename(path.dirname(f))}-${path.basename(f)}`;
+      filename = path.join(path.dirname(f), `${path.basename(path.dirname(f))}-${path.basename(f)}`);
+      fs.renameSync(f, filename);
+      f = filename;
     }
 
     files.push(
