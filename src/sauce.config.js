@@ -30,6 +30,7 @@ const overrides = {
     browserName: process.env.BROWSER_NAME, // override browserName with suite browserName
     headless: process.env.SAUCE_VM ? process.env.HEADLESS === 'true' : true,
     video: process.env.SAUCE_VM ? 'off' : 'on',
+    launchOptions: {},
   },
   reporter: [
     ['list'],
@@ -55,6 +56,11 @@ if ('HTTP_PROXY' in process.env && process.env.HTTP_PROXY !== '') {
   overrides.use.contextOptions = { proxy, ignoreHTTPSErrors: true };
   // Need to set the browser launch option as well, it is a hard requirement when testing chromium + windows.
   overrides.use.launchOptions = { proxy, ignoreHTTPSErrors: true };
+}
+
+if (process.env.USE_CHROME) {
+  overrides.use.channel = 'chrome';
+  overrides.use.launchOptions.executablePath = process.env.BROWSER_PATH;
 }
 
 function arrMerger (objValue, srcValue) {
