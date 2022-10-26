@@ -48,8 +48,12 @@ const overrides = {
 };
 
 if (process.env.BROWSER_NAME !== 'chrome') {
+  // chromium, firefox and webkit come pre-packaged with playwright.
+  // So we can just pass those browser values to playwright and
+  // it knows what to do and where to pick them up.
   overrides.use.browserName = process.env.BROWSER_NAME; // override browserName with suite browserName
 } else {
+  // For (google) chrome, it will be picked up from sauce VM. So we have to let playwright know where to look.
   overrides.use.channel = 'chrome';
   overrides.use.launchOptions.executablePath = process.env.BROWSER_PATH;
 }
