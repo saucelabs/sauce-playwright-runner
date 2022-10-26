@@ -47,6 +47,10 @@ const overrides = {
   testIgnore: process.env.TEST_IGNORE,
 };
 
+if (!userConfig.use.workers) {
+  overrides.use.workers = process.env.WORKERS;
+}
+
 if (process.env.BROWSER_NAME !== 'chrome') {
   // chromium, firefox and webkit come pre-packaged with playwright.
   // So we can just pass those browser values to playwright and

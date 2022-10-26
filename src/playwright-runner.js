@@ -347,6 +347,7 @@ async function runPlaywright(nodeBin, runCfg) {
   process.env.HEADLESS = runCfg.suite.param.headless;
   process.env.SAUCE_SUITE_NAME = runCfg.suite.name;
   process.env.SAUCE_ARTIFACTS_DIRECTORY = runCfg.assetsDir;
+  process.env.WORKERS = runCfg.suite.param.workers;
   if (runCfg.suite.param.browserName === 'chrome') {
     excludeParams.push('browser');
   }
