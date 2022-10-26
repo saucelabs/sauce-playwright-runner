@@ -341,13 +341,15 @@ async function run(nodeBin, runCfgPath, suiteName) {
 }
 
 async function runPlaywright(nodeBin, runCfg) {
+  let excludeParams = ['screenshot-on-failure', 'video', 'slow-mo', 'headless', 'headed'];
+
   process.env.BROWSER_NAME = runCfg.suite.param.browserName;
   process.env.HEADLESS = runCfg.suite.param.headless;
   process.env.SAUCE_SUITE_NAME = runCfg.suite.name;
   process.env.SAUCE_ARTIFACTS_DIRECTORY = runCfg.assetsDir;
   if (runCfg.suite.param.browserName === 'chrome') {
     process.env.USE_CHROME = true;
-    runCfg.suite.param.browserName = 'chromium';
+    excludeParams.push('browser');
   }
   if (!process.env.SAUCE_VM) {
     process.env.BROWSER_PATH = DOCKER_CHROME_PATH;
@@ -388,7 +390,6 @@ async function runPlaywright(nodeBin, runCfg) {
   }
   let args = _.defaultsDeep(defaultArgs, utils.replaceLegacyKeys(suite.param));
 
-  let excludeParams = ['screenshot-on-failure', 'video', 'slow-mo', 'headless', 'headed'];
 
   // There is a conflict if the playwright project has a `browser` defined,
   // since the job is launched with the browser set by saucectl, which is now set as the job's metadata.

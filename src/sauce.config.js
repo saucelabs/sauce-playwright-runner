@@ -27,7 +27,6 @@ for (const file of configFiles) {
 
 const overrides = {
   use: {
-    browserName: process.env.BROWSER_NAME, // override browserName with suite browserName
     headless: process.env.SAUCE_VM ? process.env.HEADLESS === 'true' : true,
     video: process.env.SAUCE_VM ? 'off' : 'on',
     launchOptions: {},
@@ -47,6 +46,10 @@ const overrides = {
   ],
   testIgnore: process.env.TEST_IGNORE,
 };
+
+if (process.env.BROWSER_NAME !== 'chrome') {
+  overrides.use.browserName = process.env.BROWSER_NAME; // override browserName with suite browserName
+}
 
 if ('HTTP_PROXY' in process.env && process.env.HTTP_PROXY !== '') {
   const proxy = {
