@@ -27,9 +27,9 @@ for (const file of configFiles) {
 
 const overrides = {
   use: {
-    browserName: process.env.BROWSER_NAME, // override browserName with suite browserName
     headless: process.env.SAUCE_VM ? process.env.HEADLESS === 'true' : true,
     video: process.env.SAUCE_VM ? 'off' : 'on',
+    launchOptions: {},
   },
   reporter: [
     ['list'],
@@ -46,6 +46,17 @@ const overrides = {
   ],
   testIgnore: process.env.TEST_IGNORE,
 };
+
+if (process.env.BROWSER_NAME !== 'chrome') {
+  // chromium, firefox and webkit come pre-packaged with playwright.
+  // So we can just pass those browser values to playwright and
+  // it knows what to do and where to pick them up.
+  overrides.use.browserName = process.env.BROWSER_NAME; // override browserName with suite browserName
+} else {
+  // Google chrome is provided by the sauce VM (or docker image). So we have to let playwright know where to look.
+  overrides.use.channel = 'chrome';
+  overrides.use.launchOptions.executablePath = process.env.BROWSER_PATH;
+}
 
 if ('HTTP_PROXY' in process.env && process.env.HTTP_PROXY !== '') {
   const proxy = {
