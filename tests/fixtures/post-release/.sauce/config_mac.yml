@@ -13,19 +13,19 @@ playwright:
   version: 1.18.1
 suites:
   - name: "Post Release Test (macOS) - chromium"
-    platformName: "macOS 11.00"
+    platformName: "macOS 12"
     testMatch: ['.*.js']
     params:
       browserName: "chromium"
 
   - name: "Post Release Test (macOS) - webkit"
-    platformName: "macOS 11.00"
+    platformName: "macOS 12"
     testMatch: ['.*.js']
     params:
       browserName: "webkit"
 
   - name: "Post Release Test (macOS) - firefox"
-    platformName: "macOS 11.00"
+    platformName: "macOS 12"
     testMatch: ['.*.js']
     params:
       browserName: "firefox"
