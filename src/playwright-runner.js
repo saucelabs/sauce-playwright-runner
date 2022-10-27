@@ -341,13 +341,13 @@ async function run(nodeBin, runCfgPath, suiteName) {
 }
 
 async function runPlaywright(nodeBin, runCfg) {
-  let excludeParams = ['screenshot-on-failure', 'video', 'slow-mo', 'headless', 'headed'];
+  let excludeParams = ['screenshot-on-failure', 'video', 'slow-mo', 'headless', 'headed', 'workers'];
 
   process.env.BROWSER_NAME = runCfg.suite.param.browserName;
   process.env.HEADLESS = runCfg.suite.param.headless;
   process.env.SAUCE_SUITE_NAME = runCfg.suite.name;
   process.env.SAUCE_ARTIFACTS_DIRECTORY = runCfg.assetsDir;
-  process.env.WORKERS = runCfg.suite.param.workers;
+  process.env.WORKERS = runCfg.suite.param.workers || 1; // set workers in sauce.config.js
   if (runCfg.suite.param.browserName === 'chrome') {
     excludeParams.push('browser');
   }

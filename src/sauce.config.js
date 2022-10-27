@@ -47,8 +47,8 @@ const overrides = {
   testIgnore: process.env.TEST_IGNORE,
 };
 
-if (!userConfig?.workers) {
-  overrides.workers = process.env.WORKERS;
+if (!userConfig.workers) {
+  overrides.workers = parseInt(process.env.WORKERS, 10); // set default workers
 }
 
 if (process.env.BROWSER_NAME !== 'chrome') {
