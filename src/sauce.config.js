@@ -47,7 +47,7 @@ const overrides = {
   testIgnore: process.env.TEST_IGNORE,
 };
 
-if (!userConfig.use.workers) {
+if (!userConfig?.use?.workers) {
   overrides.use.workers = process.env.WORKERS;
 }
 
