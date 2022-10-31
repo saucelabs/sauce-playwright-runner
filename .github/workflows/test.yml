@@ -8,20 +8,29 @@ on:
 env:
   SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
   SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
+  NODE_VERSION: 16
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-      - run: npm ci
-      - run: npm run unit-test
-      - run: npm run lint
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit Test
+        run: npm run unit-test
+
+      - name: Lint
+        run: npm run lint
 
   build_and_test_docker:
     runs-on: ubuntu-latest
@@ -30,17 +39,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install saucectl
-        uses: saucelabs/saucectl-run-action@v1
+      - name: Setup saucectl
+        uses: saucelabs/saucectl-run-action@v2
         with:
           skip-run: true
-
-      - name: get saucectl path
-        id: saucectl_path
-        run: |
-          SAUCECTL_PATH=$(which saucectl)
-          echo "SAUCECTL_PATH=${SAUCECTL_PATH}"
-          echo ::set-output name=saucectl_path::${SAUCECTL_PATH}
 
       # There is discrepencies between uid used to clone and uid in container,
       # As a temporary measure, we chmod files to allow test outputs to be written.
@@ -51,7 +53,6 @@ jobs:
       - run: bash ./tests/run.sh
         env:
           SKIP_CI: true
-          SAUCE_CTL_BINARY: ${{ steps.saucectl_path.outputs.saucectl_path }}
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
         name: Build Saucectl and run E2E tests
@@ -63,13 +64,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: |
           npm ci --production
           npx playwright install
@@ -86,35 +87,37 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.ref }}
-          fetch-depth: 0
 
-      - name: Setup nodejs
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: '3.11'
+
+      - name: Google Cloud Login
+        uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: '${{ secrets.GCS_RUNNER_SA_KEY }}'
 
       - name: Install gcloud SDK
         uses: google-github-actions/setup-gcloud@v0
         with:
-          service_account_key: ${{ secrets.GCS_RUNNER_SA_KEY }}
           project_id: ${{ secrets.GCS_RUNNER_PROJECT_ID }}
         env:
           CLOUDSDK_PYTHON: ${{env.pythonLocation}}\python.exe
 
-      - name: Update Release version
+      - name: Update Release Version
         run: npm version --no-git-tag-version 1.0.0
 
       - name: Bundle Directory
         run: bash ./scripts/bundle.sh
 
-      - name: Archive bundle
+      - name: Archive Bundle
         uses: azure/powershell@v1
         with:
           inlineScript: |
@@ -131,16 +134,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.ref }}
-          fetch-depth: 0
 
-      - name: Setup nodejs
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
-      - name: Install saucectl
+      - name: Setup saucectl
         run: npm install -g saucectl
 
       - name: Test on Sauce
@@ -154,35 +155,38 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.ref }}
-          fetch-depth: 0
 
-      - name: Setup nodejs
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: '3.11'
+
+      - name: Google Cloud Login
+        id: 'auth'
+        uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: '${{ secrets.GCS_RUNNER_SA_KEY }}'
 
       - name: Install gcloud SDK
         uses: google-github-actions/setup-gcloud@v0
         with:
-          service_account_key: ${{ secrets.GCS_RUNNER_SA_KEY }}
           project_id: ${{ secrets.GCS_RUNNER_PROJECT_ID }}
         env:
           CLOUDSDK_PYTHON: ${{env.pythonLocation}}/python
 
-      - name: Update Release version
+      - name: Update Release Version
         run: npm version --no-git-tag-version 1.0.0
 
       - name: Bundle Directory
         run: bash ./scripts/bundle.sh
 
-      - name: Archive bundle
+      - name: Archive Bundle
         run: zip --symlinks -r sauce-playwright-macos.zip bundle/
 
       - name: Upload to GCS
@@ -195,16 +199,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.ref }}
-          fetch-depth: 0
 
       - name: Setup nodejs
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
-      - name: Install saucectl
+      - name: Setup saucectl
         run: npm install -g saucectl
 
       - name: Test on Sauce
@@ -216,19 +218,21 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-windows-bundle, build-macos-bundle]
     steps:
-      - name: Checkout runner
+      - name: Checkout
         uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v2
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: '3.11'
 
-      - name: Setup nodejs
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
-      - name: Install saucectl
+      - name: Setup saucectl
         run: npm install -g saucectl
 
       - name: Run web-page
@@ -244,12 +248,12 @@ jobs:
           tunnelIdentifier: github-playwright-sc-check-tunnel
           scVersion: 4.7.1
 
-      - name: run saucectl (Windows)
+      - name: Run saucectl (Windows)
         run: |
           saucectl run --select-suite "Sauce with sauce-connect (windows)" --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip"
         working-directory: ./tests/integration/sauce-connect/
 
-      - name: run saucectl (MacOS)
+      - name: Run saucectl (MacOS)
         run: |
           saucectl run --select-suite "Sauce with sauce-connect (macOS)" --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip"
         working-directory: ./tests/integration/sauce-connect/
@@ -268,55 +272,50 @@ jobs:
           npx playwright install
           npx playwright install-deps
 
-      - name: Run test locally
+      - name: Local Tests
         working-directory: tests/fixtures/cucumber/
         run: npm i; node ../../../ --suiteName "cucumber local test" --runCfgPath ./sauce-runner.json
         env:
           SAUCE_VM: true
 
-# TODO: enable tests when saucectl is ready
-#  cucumber_windows-bundle-test:
-#    needs: [build-windows-bundle]
-#    runs-on: windows-latest
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v3
-#        with:
-#          ref: ${{ github.ref }}
-#          fetch-depth: 0
-#
-#      - name: Setup nodejs
-#        uses: actions/setup-node@v3
-#        with:
-#          node-version: 16.x
-#
-#      - name: Install saucectl
-#        run: npm install -g saucectl
-#
-#      - name: Test on Sauce
-#        working-directory: ./tests/fixtures/post-release/cucumber
-#        run: |
-#          npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip" --config .sauce/config_win.yml
-#
-#  cucumber-macos-bundle-test:
-#    needs: [build-macos-bundle]
-#    runs-on: macos-latest
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v3
-#        with:
-#          ref: ${{ github.ref }}
-#          fetch-depth: 0
-#
-#      - name: Setup nodejs
-#        uses: actions/setup-node@v3
-#        with:
-#          node-version: 16.x
-#
-#      - name: Install saucectl
-#        run: npm install -g saucectl
-#
-#      - name: Test on Sauce
-#        working-directory: ./tests/fixtures/post-release/cucumber
-#        run: |
-#          npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip" --config .sauce/config_mac.yml
+  cucumber_windows-bundle-test:
+    needs: [build-windows-bundle]
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install saucectl
+        run: npm install -g saucectl
+
+      - name: Test on Sauce
+        working-directory: ./tests/fixtures/post-release/cucumber
+        run: |
+          npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip" --config .sauce/config_win.yml
+
+  cucumber-macos-bundle-test:
+    needs: [build-macos-bundle]
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install saucectl
+        run: npm install -g saucectl
+
+      - name: Test on Sauce
+        working-directory: ./tests/fixtures/post-release/cucumber
+        run: |
+          npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip" --config .sauce/config_mac.yml
