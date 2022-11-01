@@ -12,11 +12,14 @@ on:
         required: false
         default: ''
 
+env:
+  NODE_VERSION: 16
+
 jobs:
   create-release-draft:
     runs-on: ubuntu-latest
     steps:
-      - name: Check tag
+      - name: Check Tag
         id: prep
         run: |
           TAG_NAME=$(curl -s -H "Authorization: token ${{ github.token }}" \
@@ -30,19 +33,22 @@ jobs:
               echo "A release has already been published for this run_id (${{ github.run_id }} / ${TAG_NAME})."
               exit 1
           fi
-          echo ::set-output name=tag_name::${TAG_NAME}
 
-      - uses: actions/checkout@v3
+          echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Checkout
+        uses: actions/checkout@v3
         if: ${{ steps.prep.outputs.tag_name == '' }}
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
-      - name: Setup Node version
+      - name: Setup Node
         if: ${{ steps.prep.outputs.tag_name == '' }}
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
       - name: Setup Git
         if: ${{ steps.prep.outputs.tag_name == '' }}
@@ -50,7 +56,14 @@ jobs:
           git config --global user.name "devx-sauce-bot"
           git config --global user.email "devx.bot@saucelabs.com"
 
-      - name: generate (pre-)release draft
+      - name: Install Dependencies
+        if: ${{ steps.prep.outputs.tag_name == '' }}
+        run: |
+          npm ci
+          npx playwright install
+          npx playwright install-deps
+
+      - name: Generate (Pre-)Release Draft
         if: ${{ steps.prep.outputs.tag_name == '' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -64,19 +77,13 @@ jobs:
             PRE_RELEASE_ARGS="--preRelease=${{ github.event.inputs.preReleaseFlavor }} --github.preRelease"
           fi
 
-          npm ci
-
-          # Need to install browsers to query for browser versions for release notes
-          npx playwright install
-          npx playwright install-deps
-
           npx release-it ${{ github.event.inputs.releaseType }} ${PRE_RELEASE_ARGS}
 
   release-docker:
     runs-on: ubuntu-latest
     needs: [create-release-draft]
     steps:
-      - name: Find matching draft tag
+      - name: Find Matching Draft Tag
         id: prep
         run: |
           VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
@@ -90,37 +97,40 @@ jobs:
               echo "No draft version found"
               exit 1
           fi
-          echo ::set-output name=version::${VERSION}
-          echo ::set-output name=release_id::${RELEASE_ID}
+
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "release_id=${RELEASE_ID}" >> $GITHUB_OUTPUT
 
       - run: echo "${{ steps.prep.outputs.release_id }} - ${{  steps.prep.outputs.version }}"
 
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
           ref: ${{ steps.prep.outputs.version }}
 
-      - name: Update Release version
+      - name: Update Release Version
         run: |
           npm version --no-git-tag-version ${{  steps.prep.outputs.version }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
       - name: Login to DockerHub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Get Playwright version
+      - name: Get Playwright Version
         run: |
           PLAYWRIGHT_VERSION=$(< package-lock.json jq -r '.dependencies["playwright"].version')
           echo "playwright_version=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
 
-      - name: Setup Node version
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
       - name: Install dependencies
         run: |
@@ -128,7 +138,7 @@ jobs:
           npx playwright install
           npx playwright install-deps
 
-      - name: Get Playwright browser versions
+      - name: Get Playwright Browser Versions
         run: |
           CHROMIUM_VERSION=$(node ./scripts/print-browser-version.js 'chromium')
           echo "chromium_version=$CHROMIUM_VERSION" >> $GITHUB_ENV
@@ -137,12 +147,11 @@ jobs:
           WEBKIT_VERSION=$(node ./scripts/print-browser-version.js 'webkit')
           echo "webkit_version=$WEBKIT_VERSION" >> $GITHUB_ENV
 
-      - name: Build and push
-        uses: docker/build-push-action@v2
+      - name: Build and Push
+        uses: docker/build-push-action@v3
         with:
+          cache-from: saucelabs/stt-playwright-node:latest
           push: true
-          context: .
-          file: ./Dockerfile
           tags: |
             saucelabs/stt-playwright-node:latest
             saucelabs/stt-playwright-node:${{ steps.prep.outputs.version }}
@@ -158,7 +167,7 @@ jobs:
     runs-on: windows-latest
     needs: [create-release-draft]
     steps:
-      - name: Find matching draft tag
+      - name: Find Matching Draft Tag
         id: prep
         run: |
           $res = Invoke-WebRequest -Uri "https://api.github.com/repos/${{ github.repository }}/releases" -Headers @{'Authorization' = "token ${{ github.token }}"}
@@ -191,40 +200,44 @@ jobs:
           $tagName = $selectedRelease.tag_name
           $releaseId = $selectedRelease.id
           $assetId = $selectedAsset.id
-          Write-Output "::set-output name=version::$tagName"
-          Write-Output "::set-output name=release_id::$releaseId"
-          Write-Output "::set-output name=asset_id::$assetId"
+
+          echo "version=$tagName" >> $Env:GITHUB_OUTPUT
+          echo "release_id=$releaseId" >> $Env:GITHUB_OUTPUT
+          echo "asset_id=$assetId" >> $Env:GITHUB_OUTPUT
 
       - run: Write-Output "${{ steps.prep.outputs.release_id }} - ${{ steps.prep.outputs.version }} - ${{ steps.prep.outputs.asset_id }}"
 
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
         if: ${{ steps.prep.outputs.asset_id == '' }}
         with:
           ref: ${{ steps.prep.outputs.version }}
 
-      - name: Setup node version
+      - name: Setup Node
         if: ${{ steps.prep.outputs.asset_id == '' }}
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
-      - name: Update Release version
+      - name: Update Release Version
         if: ${{ steps.prep.outputs.asset_id == '' }}
         run: |
           npm version --no-git-tag-version ${{  steps.prep.outputs.version }}
 
-      - run: npm ci --production
+      - name: Install Dependencies
+        run: npm ci --production
         if: ${{ steps.prep.outputs.asset_id == '' }}
 
       - name: Bundle Directory
         if: ${{ steps.prep.outputs.asset_id == '' }}
         run: bash ./scripts/bundle.sh
 
-      - name: List bundle contents
+      - name: List Bundle Contents
         if: ${{ steps.prep.outputs.asset_id == '' }}
         run: ls -R bundle/
 
-      - name: Archive bundle
+      - name: Archive Bundle
         if: ${{ steps.prep.outputs.asset_id == '' }}
         uses: azure/powershell@v1
         with:
@@ -234,31 +247,19 @@ jobs:
 
       - name: Upload Release Asset
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-playwright-runner-win-amd64.zip
-          asset_path: ./sauce-playwright-runner-win-amd64.zip
-          asset_name: sauce-playwright-runner-win-amd64.zip
-          asset_content_type: application/zip
-
-      - name: Upload Release Asset Legacy
-        if: ${{ steps.prep.outputs.asset_id == '' }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-playwright-runner.zip
-          asset_path: ./sauce-playwright-runner-win-amd64.zip
-          asset_name: sauce-playwright-runner.zip
-          asset_content_type: application/zip
+        run: |
+          gh release upload ${{ steps.prep.outputs.version }} sauce-playwright-runner-win-amd64.zip
+          mvsauce-playwright-runner-win-amd64.zip sauce-playwright-runner.zip
+          # Legacy Filename
+          gh release upload ${{ steps.prep.outputs.version }} sauce-playwright-runner.zip
 
   release-macos-bundle:
     runs-on: macos-latest
     needs: [create-release-draft]
     steps:
-      - name: Find matching draft tag
+      - name: Find Matching Draft Tag
         id: prep
         run: |
           VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
@@ -277,70 +278,62 @@ jobs:
                       https://api.github.com/repos/${{ github.repository }}/releases | \
                       jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .assets | .[] | select(.name == \"sauce-testcafe-macos.zip\") | .id | select(. != null)")
 
-          echo ::set-output name=version::${VERSION}
-          echo ::set-output name=release_id::${RELEASE_ID}
-          echo ::set-output name=asset_id::${ASSET_ID}
+
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "release_id=${RELEASE_ID}" >> $GITHUB_OUTPUT
+          echo "asset_id=${ASSET_ID}" >> $GITHUB_OUTPUT
 
       - run: echo "${{ steps.prep.outputs.release_id }} - ${{ steps.prep.outputs.version }} - ${{ steps.prep.outputs.asset_id }}"
 
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
         if: ${{ steps.prep.outputs.asset_id == '' }}
         with:
           ref: ${{ steps.prep.outputs.version }}
 
-      - name: Setup Node.js
+      - name: Setup Node
         if: ${{ steps.prep.outputs.asset_id == '' }}
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
-      - name: Update Release version
+      - name: Update Release Version
         if: ${{ steps.prep.outputs.asset_id == '' }}
         run: |
           npm version --no-git-tag-version ${{  steps.prep.outputs.version }}
 
-      - run: npm ci --production
+      - name: Install Dependencies
+        run: npm ci --production
         if: ${{ steps.prep.outputs.asset_id == '' }}
 
       - name: Bundle Directory
         if: ${{ steps.prep.outputs.asset_id == '' }}
         run: bash ./scripts/bundle.sh
 
-      - name: List bundle contents
+      - name: List Bundle Contents
         if: ${{ steps.prep.outputs.asset_id == '' }}
         run: ls -R bundle/
 
-      - name: Archive bundle
+      - name: Archive Bundle
         if: ${{ steps.prep.outputs.asset_id == '' }}
         run: zip --symlinks -r sauce-playwright-macos-amd64.zip bundle/
 
       - name: Upload Release Asset
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-playwright-macos-amd64.zip
-          asset_path: ./sauce-playwright-macos-amd64.zip
-          asset_name: sauce-playwright-macos-amd64.zip
-          asset_content_type: application/zip
-
-      - name: Upload Release Asset Legacy
-        if: ${{ steps.prep.outputs.asset_id == '' }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-playwright-macos.zip
-          asset_path: ./sauce-playwright-macos-amd64.zip
-          asset_name: sauce-playwright-macos.zip
-          asset_content_type: application/zip
+        run: |
+          gh release upload ${{ steps.prep.outputs.version }} sauce-playwright-macos-amd64.zip
+          mv sauce-playwright-macos-amd64.zip sauce-playwright-macos.zip
+          # Legacy Filename
+          gh release upload ${{ steps.prep.outputs.version }} sauce-playwright-macos.zip
 
   publish-release:
     runs-on: ubuntu-latest
     needs: [release-docker, release-windows-bundle, release-macos-bundle]
     steps:
-      - name: Find matching draft tag
+      - name: Find Matching Draft Tag
         id: prep
         run: |
           RELEASE_ID=$(curl -s -H "Authorization: token ${{ github.token }}" \
@@ -351,9 +344,10 @@ jobs:
               echo "No draft version found"
               exit 1
           fi
-          echo ::set-output name=release_id::${RELEASE_ID}
 
-      - name: Publish release
+          echo "release_id=${RELEASE_ID}" >> $GITHUB_OUTPUT
+
+      - name: Publish Release
         run: |
           curl -f -X PATCH -H "Authorization: token ${{ github.token }}" \
             https://api.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }} \
@@ -367,18 +361,22 @@ jobs:
       SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
       SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
     steps:
-      - uses: actions/checkout@master
-      - name: Install saucectl
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup saucectl
         run: npm i saucectl
-      - name: Parse release version
+
+      - name: Parse Release Version
         id: parse_version
         run: |
           VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
                       https://api.github.com/repos/${{ github.repository }}/releases | \
                       jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
-          echo ::set-output name=version::${VERSION}
+          
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: cloud tests (Windows)
+      - name: Cloud Tests (Windows)
         working-directory: ./tests/fixtures/post-release
         env:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
@@ -392,18 +390,22 @@ jobs:
       SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
       SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
     steps:
-      - uses: actions/checkout@master
-      - name: Install saucectl
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup saucectl
         run: npm i saucectl
-      - name: Parse release version
+
+      - name: Parse Release Version
         id: parse_version
         run: |
           VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
                       https://api.github.com/repos/${{ github.repository }}/releases | \
                       jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
-          echo ::set-output name=version::${VERSION}
 
-      - name: cloud tests (MacOS)
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Cloud Tests (MacOS)
         working-directory: ./tests/fixtures/post-release
         env:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
