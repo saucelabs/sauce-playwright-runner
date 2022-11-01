@@ -259,6 +259,7 @@ jobs:
         working-directory: ./tests/integration/sauce-connect/
 
   cucumber-build-and-test-local:
+    if: false
     runs-on: windows-latest
     needs: [test]
     steps:
@@ -279,6 +280,7 @@ jobs:
           SAUCE_VM: true
 
   cucumber-windows-bundle-test:
+    if: false
     needs: [build-windows-bundle]
     runs-on: windows-latest
     steps:
@@ -300,6 +302,7 @@ jobs:
           npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip" --config .sauce/config_win.yml
 
   cucumber-macos-bundle-test:
+    if: false
     needs: [build-macos-bundle]
     runs-on: macos-latest
     steps:
