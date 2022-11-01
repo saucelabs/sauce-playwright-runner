@@ -251,7 +251,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           gh release upload ${{ steps.prep.outputs.version }} sauce-playwright-runner-win-amd64.zip
-          mvsauce-playwright-runner-win-amd64.zip sauce-playwright-runner.zip
+          mv sauce-playwright-runner-win-amd64.zip sauce-playwright-runner.zip
           # Legacy Filename
           gh release upload ${{ steps.prep.outputs.version }} sauce-playwright-runner.zip
 
