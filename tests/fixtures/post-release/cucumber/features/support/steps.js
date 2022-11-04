@@ -17,6 +17,7 @@ Before(async function () {
       break;
     default:
       this.browser = await chromium.launch(opts);
+      break;
   }
   const context = await this.browser.newContext();
   this.page = await context.newPage();

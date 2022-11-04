@@ -13,11 +13,11 @@ docker:
   image: playwright
   fileTransfer: copy
 playwright:
-  version: 1.25.1
+  version: 1.27.1
 rootDir: ./
 suites:
-  - name: mycucuc
-    browserName: "chrome"
+  - name: My Cucumber Test
+    browserName: "chromium"
     platformName: "macOS 12"
     options:
       paths:
@@ -31,3 +31,11 @@ notifications:
   slack:
     channels: ["devx"]
     send: fail
+
+npm:
+  dependencies:
+    - "@cucumber/cucumber"
+    - "@saucelabs/cucumber-reporter"
+    - "ts-node"
+    - "typescript"
+
