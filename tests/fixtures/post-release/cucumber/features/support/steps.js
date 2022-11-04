@@ -1,5 +1,6 @@
 const { Before, When, Then } = require('@cucumber/cucumber');
-const { chromium, firefox, webkit} = require('playwright');
+const { chromium, firefox, webkit } = require('playwright');
+const { expect } = require('@playwright/test');
 
 Before(async function () {
   const opts = {
@@ -23,12 +24,13 @@ Before(async function () {
   this.page = await context.newPage();
 });
 
-When('I open {string} with chrome', async function (string) {
+When('I open {string} with chromium', async function (string) {
   await this.page.goto(string);
+  await expect(this.page).toHaveTitle(/Google/);
   await new Promise((resolve) => setTimeout(resolve, 1000));
 });
 
-Then('Close chrome', async function () {
+Then('Close chromium', async function () {
   await this.browser.close();
 });
 
