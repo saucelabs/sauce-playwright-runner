@@ -425,9 +425,6 @@ jobs:
       - name: Setup saucectl
         run: npm i saucectl
 
-      - name: Setup Dependencies
-        run: npm ci --production
-
       - name: Parse Release Version
         id: parse_version
         run: |
@@ -442,6 +439,7 @@ jobs:
         env:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
         run: |
+          npm ci --production
           npx saucectl run --runner-version "url: https://github.com/saucelabs/sauce-playwright-runner/releases/download/${{ steps.parse_version.outputs.version }}/sauce-playwright-runner-win-amd64.zip" --config ./.sauce/config_win.yml
 
   post-release-macos-cucumber-tests:
@@ -457,9 +455,6 @@ jobs:
       - name: Setup saucectl
         run: npm i saucectl
 
-      - name: Setup Dependencies
-        run: npm ci --production
-
       - name: Parse Release Version
         id: parse_version
         run: |
@@ -474,4 +469,5 @@ jobs:
         env:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
         run: |
+          npm ci --production
           npx saucectl run --runner-version "url: https://github.com/saucelabs/sauce-playwright-runner/releases/download/${{ steps.parse_version.outputs.version }}/sauce-playwright-macos-amd64.zip" --config ./.sauce/config_mac.yml
