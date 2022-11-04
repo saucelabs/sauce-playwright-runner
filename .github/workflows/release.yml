@@ -425,6 +425,9 @@ jobs:
       - name: Setup saucectl
         run: npm i saucectl
 
+      - name: Setup Dependencies
+        run: npm ci --production
+
       - name: Parse Release Version
         id: parse_version
         run: |
@@ -453,6 +456,9 @@ jobs:
 
       - name: Setup saucectl
         run: npm i saucectl
+
+      - name: Setup Dependencies
+        run: npm ci --production
 
       - name: Parse Release Version
         id: parse_version
