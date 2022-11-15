@@ -411,3 +411,63 @@ jobs:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
         run: |
           npx saucectl run --runner-version "url: https://github.com/saucelabs/sauce-playwright-runner/releases/download/${{ steps.parse_version.outputs.version }}/sauce-playwright-macos-amd64.zip" --config ./.sauce/config_mac.yml
+
+  post-release-windows-cucumber-tests:
+    runs-on: ubuntu-latest
+    needs: publish-release
+    env:
+      SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
+      SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup saucectl
+        run: npm i saucectl
+
+      - name: Parse Release Version
+        id: parse_version
+        run: |
+          VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
+          
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Cloud Tests (Windows)
+        working-directory: ./tests/fixtures/post-release/cucumber
+        env:
+          BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
+        run: |
+          npm ci --production
+          npx saucectl run --runner-version "url: https://github.com/saucelabs/sauce-playwright-runner/releases/download/${{ steps.parse_version.outputs.version }}/sauce-playwright-runner-win-amd64.zip" --config ./.sauce/config_win.yml
+
+  post-release-macos-cucumber-tests:
+    runs-on: ubuntu-latest
+    needs: publish-release
+    env:
+      SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
+      SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup saucectl
+        run: npm i saucectl
+
+      - name: Parse Release Version
+        id: parse_version
+        run: |
+          VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
+
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Cloud Tests (MacOS)
+        working-directory: ./tests/fixtures/post-release/cucumber
+        env:
+          BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
+        run: |
+          npm ci --production
+          npx saucectl run --runner-version "url: https://github.com/saucelabs/sauce-playwright-runner/releases/download/${{ steps.parse_version.outputs.version }}/sauce-playwright-macos-amd64.zip" --config ./.sauce/config_mac.yml
