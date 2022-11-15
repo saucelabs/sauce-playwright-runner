@@ -47,6 +47,12 @@ const overrides = {
   testIgnore: process.env.TEST_IGNORE,
 };
 
+// Values that are arrays are merged at the very end (see arrMerger()), but primitives are not.
+// Allow the user to set a single reporter like so: `reporter: 'list'`.
+if (userConfig.reporter && !(userConfig.reporter instanceof Array)) {
+  overrides.reporter.push(userConfig.reporter);
+}
+
 if (process.env.BROWSER_NAME !== 'chrome') {
   // chromium, firefox and webkit come pre-packaged with playwright.
   // So we can just pass those browser values to playwright and
