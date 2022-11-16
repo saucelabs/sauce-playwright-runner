@@ -1,43 +1,37 @@
 #!/usr/bin/env node
-const { spawn } = require('child_process');
+const {spawn} = require('child_process');
 const _ = require('lodash');
 const path = require('path');
-const utils = require('./utils');
-const { createJobReportV2, createJobReport } = require('./reporter');
-const { prepareNpmEnv, loadRunConfig, escapeXML, preExec } = require('sauce-testrunner-utils');
-const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
-const SauceLabs = require('saucelabs').default;
-const { LOG_FILES } = require('./constants');
 const fs = require('fs');
+const utils = require('./utils');
+const {createJobReport} = require('./reporter');
+const {prepareNpmEnv, loadRunConfig, escapeXML, preExec} = require('sauce-testrunner-utils');
+const {updateExportedValue} = require('sauce-testrunner-utils').saucectl;
+const {LOG_FILES, DOCKER_CHROME_PATH} = require('./constants');
 const glob = require('glob');
 const convert = require('xml-js');
-const { runCucumber } = require('./cucumber-runner');
+const {runCucumber} = require('./cucumber-runner');
+const {TestComposer} = require('@saucelabs/testcomposer');
+const stream = require('stream');
 
-const { getAbsolutePath, getArgs, exec } = utils;
+const {getAbsolutePath, getArgs, exec} = utils;
 
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 
-async function createJob (runCfg, api, hasPassed, startTime, endTime, metrics, saucectlVersion) {
+async function createJob(runCfg, testComposer, hasPassed, startTime, endTime, metrics) {
   const cwd = process.cwd();
 
-  let sessionId;
-  if (process.env.ENABLE_DATA_STORE) {
-    // TODO: When we enable this make sure it's getting the proper parameters
-    sessionId = await createJobReportV2(runCfg.suite.name, runCfg.sauce.metadata, api);
-  } else {
-    sessionId = await createJobReport(runCfg, api, hasPassed, startTime, endTime, saucectlVersion);
+  const job = await createJobReport(runCfg, testComposer, hasPassed, startTime, endTime);
+
+  if (!job) {
+    throw new Error('Unable to create job. Assets won\'t be uploaded.');
   }
 
-  if (!sessionId) {
-    throw new Error('Unable to retrieve test entry. Assets won\'t be uploaded.');
-  }
-
-  const containerLogFiles = LOG_FILES.filter(
-    (path) => fs.existsSync(path));
+  const containerLogFiles = LOG_FILES.filter((path) => fs.existsSync(path));
 
   // Take the 1st webm video we find and translate it video.mp4
-  // TODO: We need to translate all .webm to .mp4 and combine them into one video.mp4
+  // We need to translate all .webm to .mp4 and combine them into one video.mp4 due to platform expectations.
   const webmFiles = glob.sync(path.join(runCfg.assetsDir, '**', '*.webm'));
   let videoLocation;
   if (webmFiles.length > 0) {
@@ -49,23 +43,23 @@ async function createJob (runCfg, api, hasPassed, startTime, endTime, metrics, s
       console.error(`Failed to convert ${webmFiles[0]} to mp4: '${e}'`);
     }
   }
-  const assets = glob.sync(path.join(runCfg.assetsDir, '**', '*'));
+  const assets = glob.sync(path.join(runCfg.assetsDir, '**', '*.*'));
 
   let files = [
     {
       filename: 'console.log',
-      data: fs.readFileSync(path.join(cwd, 'console.log')),
+      data: fs.createReadStream(path.join(cwd, 'console.log')),
     },
     {
       filename: 'sauce-test-report.json',
-      data: fs.readFileSync(path.join(runCfg.assetsDir, 'sauce-test-report.json')),
+      data: fs.createReadStream(path.join(runCfg.assetsDir, 'sauce-test-report.json')),
     },
   ];
 
   if (fs.existsSync(path.join(runCfg.assetsDir, 'junit.xml'))) {
     files.push({
       filename: 'junit.xml',
-      data: fs.readFileSync(path.join(runCfg.assetsDir, 'junit.xml')),
+      data: fs.createReadStream(path.join(runCfg.assetsDir, 'junit.xml')),
     });
   }
 
@@ -73,16 +67,24 @@ async function createJob (runCfg, api, hasPassed, startTime, endTime, metrics, s
     files.push(
       {
         filename: path.basename(f),
-        data: fs.readFileSync(f),
+        data: fs.createReadStream(f),
       },
     );
   }
 
-  for (const f of assets) {
+  for (let f of assets) {
+    const fileType = path.extname(f);
+    let filename = path.basename(f);
+    if (fileType === '.png') {
+      filename = path.join(path.dirname(f), `${path.basename(path.dirname(f))}-${path.basename(f)}`);
+      fs.renameSync(f, filename);
+      f = filename;
+    }
+
     files.push(
       {
-        filename: path.basename(f),
-        data: fs.readFileSync(f),
+        filename,
+        data: fs.createReadStream(f),
       },
     );
   }
@@ -92,10 +94,14 @@ async function createJob (runCfg, api, hasPassed, startTime, endTime, metrics, s
     if (_.isEmpty(mt.data)) {
       continue;
     }
+    const r = new stream.Readable();
+    r.push(JSON.stringify(mt.data, ' ', 2));
+    r.push(null);
+
     files.push(
       {
         filename: mt.name,
-        data: mt.data,
+        data: r,
       },
     );
   }
@@ -104,33 +110,29 @@ async function createJob (runCfg, api, hasPassed, startTime, endTime, metrics, s
     files.push(
       {
         filename: path.basename(videoLocation),
-        data: fs.readFileSync(videoLocation),
+        data: fs.createReadStream(videoLocation),
       }
     );
   }
 
-  await Promise.all([
-    api.uploadJobAssets(sessionId, {files})
-      .then(
-        (resp) => {
-          if (resp.errors) {
-            for (let err of resp.errors) {
-              console.error(err);
-            }
-          }
-        },
-        (e) => console.error('upload failed:', e.stack)
-      ),
-    api.updateJob(process.env.SAUCE_USERNAME, sessionId, {
-      name: runCfg.suite.name,
-      passed: hasPassed
-    })
-  ]);
+  await testComposer.uploadAssets(
+    job.id,
+    files
+  ).then(
+    (resp) => {
+      if (resp.errors) {
+        for (const err of resp.errors) {
+          console.error('Failed to upload asset:', err);
+        }
+      }
+    },
+    (e) => console.error('Failed to upload assets:', e.message)
+  );
 
-  return sessionId;
+  return job;
 }
 
-function getPlatformName (platformName) {
+function getPlatformName(platformName) {
   if (process.platform.toLowerCase() === 'linux') {
     platformName = 'Linux';
   }
@@ -138,7 +140,7 @@ function getPlatformName (platformName) {
   return platformName;
 }
 
-function generateJunitfile (sourceFile, suiteName, browserName, platformName) {
+function generateJunitfile(sourceFile, suiteName, browserName, platformName) {
   if (!fs.existsSync(sourceFile)) {
     return;
   }
@@ -244,42 +246,34 @@ function generateJunitfile (sourceFile, suiteName, browserName, platformName) {
   fs.writeFileSync(sourceFile, xmlResult);
 }
 
-async function runReporter ({ runCfg, hasPassed, startTime, endTime, metrics, saucectlVersion }) {
-  let jobDetailsUrl, reportingSucceeded = false;
-  const region = runCfg.sauce.region;
-  const tld = region === 'staging' ? 'net' : 'com';
-  const api = new SauceLabs({
-    user: process.env.SAUCE_USERNAME,
-    key: process.env.SAUCE_ACCESS_KEY,
-    region,
-    tld
-  });
+async function runReporter({runCfg, hasPassed, startTime, endTime, metrics}) {
+  let pkgVersion = 'unknown';
   try {
-    const sessionId = await createJob(runCfg, api, hasPassed, startTime, endTime, metrics, saucectlVersion);
-    if (!sessionId) {
-      throw ('Failed to create job');
-    }
-    let domain;
-    const tld = region === 'staging' ? 'net' : 'com';
-    switch (region) {
-      case 'us-west-1':
-        domain = 'saucelabs.com';
-        break;
-      default:
-        domain = `${region}.saucelabs.${tld}`;
-    }
+    const pkgData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf-8'));
+    pkgVersion = pkgData.version;
+    // eslint-disable-next-line no-empty
+  } catch (e) {
+  }
 
-    reportingSucceeded = true;
-    jobDetailsUrl = `https://app.${domain}/tests/${sessionId}`;
-    console.log(`\nOpen job details page: ${jobDetailsUrl}\n`);
+  const testComposer = new TestComposer({
+    region: runCfg.sauce.region,
+    username: process.env.SAUCE_USERNAME,
+    accessKey: process.env.SAUCE_ACCESS_KEY,
+    headers: {'User-Agent': `playwright-runner/${pkgVersion}`}
+  });
+
+  let job;
+  try {
+    job = await createJob(runCfg, testComposer, hasPassed, startTime, endTime, metrics);
+    console.log(`\nOpen job details page: ${job.url}\n`);
   } catch (e) {
     console.log(`Failed to upload results to Sauce Labs. Reason: ${e.message}`);
   } finally {
-    updateExportedValue(SAUCECTL_OUTPUT_FILE, { jobDetailsUrl, reportingSucceeded });
+    updateExportedValue(SAUCECTL_OUTPUT_FILE, {jobDetailsUrl: job?.url, reportingSucceeded: !!job});
   }
 }
 
-async function getCfg (runCfgPath, suiteName) {
+async function getCfg(runCfgPath, suiteName) {
   runCfgPath = getAbsolutePath(runCfgPath);
   const runCfg = await loadRunConfig(runCfgPath);
 
@@ -306,11 +300,12 @@ async function getCfg (runCfgPath, suiteName) {
     runCfg.sauce = {};
   }
   runCfg.sauce.region = runCfg.sauce.region || 'us-west-1';
+  runCfg.playwrightOutputFolder = path.join(runCfg.assetsDir, 'test-results');
 
   return runCfg;
 }
 
-async function run (nodeBin, runCfgPath, suiteName) {
+async function run(nodeBin, runCfgPath, suiteName) {
   const runCfg = await getCfg(runCfgPath, suiteName);
 
   let result;
@@ -335,23 +330,29 @@ async function run (nodeBin, runCfgPath, suiteName) {
     return result.hasPassed;
   }
 
-  const saucectlVersion = process.env.SAUCE_SAUCECTL_VERSION;
   await runReporter({
     runCfg,
     hasPassed: result.hasPassed,
     startTime: result.startTime,
     endTime: result.endTime,
-    metrics: result.metrics,
-    saucectlVersion,
+    metrics: result.metrics
   });
   return result.hasPassed;
 }
 
-async function runPlaywright (nodeBin, runCfg) {
+async function runPlaywright(nodeBin, runCfg) {
+  let excludeParams = ['screenshot-on-failure', 'video', 'slow-mo', 'headless', 'headed'];
+
   process.env.BROWSER_NAME = runCfg.suite.param.browserName;
   process.env.HEADLESS = runCfg.suite.param.headless;
   process.env.SAUCE_SUITE_NAME = runCfg.suite.name;
   process.env.SAUCE_ARTIFACTS_DIRECTORY = runCfg.assetsDir;
+  if (runCfg.suite.param.browserName === 'chrome') {
+    excludeParams.push('browser');
+  }
+  if (!process.env.SAUCE_VM) {
+    process.env.BROWSER_PATH = DOCKER_CHROME_PATH;
+  }
 
   if (runCfg.playwright.configFile) {
     const playwrightCfgFile = path.join(runCfg.projectPath, runCfg.playwright.configFile);
@@ -373,7 +374,7 @@ async function runPlaywright (nodeBin, runCfg) {
   fs.copyFileSync(path.join(__dirname, 'sauce.config.js'), configFile);
 
   const defaultArgs = {
-    output: runCfg.assetsDir,
+    output: runCfg.playwrightOutputFolder,
     config: configFile,
   };
 
@@ -388,7 +389,6 @@ async function runPlaywright (nodeBin, runCfg) {
   }
   let args = _.defaultsDeep(defaultArgs, utils.replaceLegacyKeys(suite.param));
 
-  let excludeParams = ['screenshot-on-failure', 'video', 'slow-mo', 'headless', 'headed'];
 
   // There is a conflict if the playwright project has a `browser` defined,
   // since the job is launched with the browser set by saucectl, which is now set as the job's metadata.
@@ -483,4 +483,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { run, generateJunitfile, getCfg };
+module.exports = {run, generateJunitfile, getCfg};

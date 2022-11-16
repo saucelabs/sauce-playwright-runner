@@ -27,9 +27,9 @@ for (const file of configFiles) {
 
 const overrides = {
   use: {
-    browserName: process.env.BROWSER_NAME, // override browserName with suite browserName
     headless: process.env.SAUCE_VM ? process.env.HEADLESS === 'true' : true,
     video: process.env.SAUCE_VM ? 'off' : 'on',
+    launchOptions: {},
   },
   reporter: [
     ['list'],
@@ -47,17 +47,34 @@ const overrides = {
   testIgnore: process.env.TEST_IGNORE,
 };
 
+// Values that are arrays are merged at the very end (see arrMerger()), but primitives are not.
+// Allow the user to set a single reporter like so: `reporter: 'list'`.
+if (userConfig.reporter && !(userConfig.reporter instanceof Array)) {
+  overrides.reporter.push([userConfig.reporter]);
+}
+
+if (process.env.BROWSER_NAME !== 'chrome') {
+  // chromium, firefox and webkit come pre-packaged with playwright.
+  // So we can just pass those browser values to playwright and
+  // it knows what to do and where to pick them up.
+  overrides.use.browserName = process.env.BROWSER_NAME; // override browserName with suite browserName
+} else {
+  // Google chrome is provided by the sauce VM (or docker image). So we have to let playwright know where to look.
+  overrides.use.channel = 'chrome';
+  overrides.use.launchOptions.executablePath = process.env.BROWSER_PATH;
+}
+
 if ('HTTP_PROXY' in process.env && process.env.HTTP_PROXY !== '') {
   const proxy = {
     server: process.env.HTTP_PROXY,
   };
 
-  overrides.use.contextOptions = { proxy, ignoreHTTPSErrors: true };
+  overrides.use.contextOptions = {proxy, ignoreHTTPSErrors: true};
   // Need to set the browser launch option as well, it is a hard requirement when testing chromium + windows.
-  overrides.use.launchOptions = { proxy, ignoreHTTPSErrors: true };
+  overrides.use.launchOptions = {proxy, ignoreHTTPSErrors: true};
 }
 
-function arrMerger (objValue, srcValue) {
+function arrMerger(objValue, srcValue) {
   if (_.isArray(objValue)) {
     return objValue.concat(srcValue);
   }
