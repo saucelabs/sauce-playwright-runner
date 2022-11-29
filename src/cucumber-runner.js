@@ -49,6 +49,10 @@ function buildArgs (runCfg, cucumberBin) {
       procArgs.push(format);
     }
   });
+  if (runCfg.suite.options.parallel) {
+    procArgs.push('--parallel');
+    procArgs.push(runCfg.suite.options.parallel);
+  }
 
   return procArgs;
 }
