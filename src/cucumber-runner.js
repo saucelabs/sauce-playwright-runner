@@ -18,7 +18,8 @@ function buildArgs (runCfg, cucumberBin) {
   ];
   if (runCfg.suite.options.config) {
     procArgs.push('-c');
-    procArgs.push(path.join(runCfg.projectPath, runCfg.suite.options.config));
+    // NOTE: cucumber-js constructs the absolute path automatically and expects a relative path here
+    procArgs.push(runCfg.suite.options.config);
   }
   if (runCfg.suite.options.name) {
     procArgs.push('--name');

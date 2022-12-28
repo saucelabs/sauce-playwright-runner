@@ -20,6 +20,17 @@
          "paths": ["features/**/*.feature"],
          "require": ["features/support/*.js"]
       }
+    },
+    {
+      "name": "cucumber config test",
+      "browserName": "chromium",
+      "browserVersion": "101",
+      "options": {
+        "config": "./cucumber-saucectl.mjs",
+        "paths": [
+          "features/**/*.feature"
+        ]
+      }
     }
   ],
   "npm": {
