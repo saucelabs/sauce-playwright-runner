@@ -308,6 +308,10 @@ async function getCfg(runCfgPath, suiteName) {
 async function run(nodeBin, runCfgPath, suiteName) {
   const runCfg = await getCfg(runCfgPath, suiteName);
 
+  const packageInfo = require(path.join(__dirname, '..', 'package.json'));
+  console.log(`Sauce Playwright Runner ${packageInfo.version}`);
+  console.log(`Running Playwright ${packageInfo.dependencies?.playwright || ''}`);
+
   let result;
   if (runCfg.Kind === 'playwright-cucumberjs') {
     result = await runCucumber(nodeBin, runCfg);
