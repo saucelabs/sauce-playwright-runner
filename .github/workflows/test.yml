@@ -332,7 +332,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm ci --production
+          ## Disable TMP
+          rm npm i --production
+          npm i --production
           npm i @cucumber/cucumber
           npx playwright install
           npx playwright install-deps
