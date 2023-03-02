@@ -34,3 +34,7 @@ notifications:
   slack:
     channels: ["devx"]
     send: fail
+
+npm:
+  packages:
+    lodash: '4.17.21'
