@@ -8,7 +8,7 @@
   "scripts": {
     "lint": "eslint tests/ src/",
     "test": "./bin/wait_display && DISPLAY=\"$(cat DISPLAY)\" ./bin/playwright",
-    "unit-test": "jest --env node",
+    "unit-test": "jest --env node ./tests/",
     "release": "release-it --github.release",
     "release:ci": "npm run release -- --ci --npm.skipChecks --no-git.requireCleanWorkingDir",
     "release:patch": "npm run release -- patch",
