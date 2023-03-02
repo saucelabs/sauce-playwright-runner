@@ -333,7 +333,8 @@ jobs:
       - name: Install dependencies
         run: |
           ## Disable TMP
-          rm npm i --production
+          rm package-lock.json
+          npm i --production
           npm i --production
           npm i @cucumber/cucumber
           npx playwright install
