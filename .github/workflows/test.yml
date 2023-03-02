@@ -33,6 +33,7 @@ jobs:
       - name: 'sauce-runner-utils: Install dependencies'
         run: |
           npm ci
+          npm run build
           npm pack
         working-directory: ./sauce-runner-utils
 
@@ -126,6 +127,7 @@ jobs:
       - name: 'sauce-runner-utils: Install dependencies'
         run: |
           npm ci
+          npm run build
           npm pack
         working-directory: ./sauce-runner-utils
 
@@ -207,6 +209,7 @@ jobs:
       - name: 'sauce-runner-utils: Install dependencies'
         run: |
           npm ci
+          npm run build
           npm pack
         working-directory: ./sauce-runner-utils
 
@@ -323,6 +326,7 @@ jobs:
       - name: 'sauce-runner-utils: Install dependencies'
         run: |
           npm ci
+          npm run build
           npm pack
         working-directory: ./sauce-runner-utils
 
