@@ -38,3 +38,4 @@ notifications:
 npm:
   packages:
     lodash: '4.17.21'
+    camelcase: '7.0.1'

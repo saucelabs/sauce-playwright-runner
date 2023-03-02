@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 const { test, expect } = require('@playwright/test');
+const camelCase = require('camelcase');
 
 test('is a basic test with the page', async ({ page }) => {
+
   await page.goto('https://playwright.dev/');
+  expect(camelCase('foo-bar')).toBe('fooBar');
   expect(await page.innerText('.navbar__title')).toBe('Playwright');
 });
