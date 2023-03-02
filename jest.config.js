@@ -1,6 +1,6 @@
 /** @type {import('jest').Config} */
 const config = {
-  testMatch: ['tests/unit/**/*.[jt]s?(x)'],
+  testMatch: ['**/tests/unit/**/*.js?(x)'],
   collectCoverageFrom: ['src/**/*.js'],
   collectCoverage: true,
   transformIgnorePatterns: [
