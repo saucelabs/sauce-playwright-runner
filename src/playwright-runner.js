@@ -439,8 +439,12 @@ async function runPlaywright(nodeBin, runCfg) {
   // Install NPM dependencies
   let metrics = [];
 
+  // Define node/npm path for execution
+  const npmBin = path.join(path.dirname(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
+  const nodePath = { nodePath: nodeBin, npmPath: npmBin };
+
   // runCfg.path must be set for prepareNpmEnv to find node_modules. :(
-  let npmMetrics = await prepareNpmEnv(runCfg);
+  let npmMetrics = await prepareNpmEnv(runCfg, nodePath);
   metrics.push(npmMetrics);
 
   // Run suite preExecs
