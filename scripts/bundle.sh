@@ -18,7 +18,7 @@ cp ../sauce-runner-utils/sauce-testrunner-utils-0.7.0.tgz ./sauce-runner-utils/
 ## [/TMP FIX]
 
 npm cache clean --force
-npm ci --production
+npm i --production
 npx playwright install
 npx playwright install-deps
 npx playwright --version
