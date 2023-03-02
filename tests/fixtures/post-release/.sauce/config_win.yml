@@ -30,12 +30,12 @@ suites:
     params:
       browserName: "firefox"
 
-notifications:
-  slack:
-    channels: ["devx"]
-    send: fail
+# notifications:
+#   slack:
+#     channels: ["devx"]
+#     send: fail
 
 npm:
   packages:
     lodash: '4.17.21'
-    camelcase: '7.0.1'
+    pretty-seconds: '3.0.0'

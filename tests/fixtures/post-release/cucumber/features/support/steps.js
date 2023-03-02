@@ -1,7 +1,7 @@
 const { Before, When, Then } = require('@cucumber/cucumber');
 const { chromium, firefox, webkit } = require('playwright');
 const { expect } = require('@playwright/test');
-const camelCase = require('camelcase');
+const prettySeconds = require('pretty-seconds');
 
 Before(async function () {
   const opts = {
@@ -28,7 +28,7 @@ Before(async function () {
 When('I open {string} with chromium', async function (string) {
   await this.page.goto(string);
   await expect(this.page).toHaveTitle(/Google/);
-  expect(camelCase('foo-bar')).toBe('fooBar');
+  expect(prettySeconds(80)).toBe('1 minute and 20 seconds');
   await new Promise((resolve) => setTimeout(resolve, 1000));
 });
 

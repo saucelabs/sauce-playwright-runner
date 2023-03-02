@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 const { test, expect } = require('@playwright/test');
-const camelCase = require('camelcase');
+const prettySeconds = require('pretty-seconds');
 
 test('is a basic test with the page', async ({ page }) => {
 
   await page.goto('https://playwright.dev/');
-  expect(camelCase('foo-bar')).toBe('fooBar');
+  expect(prettySeconds(80)).toBe('1 minute and 20 seconds');
   expect(await page.innerText('.navbar__title')).toBe('Playwright');
 });
