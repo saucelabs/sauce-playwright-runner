@@ -7,7 +7,7 @@ echo $PLAYWRIGHT_BROWSERS_PATH
 cp -r ./src/ ./bundle/src/
 cp -r bin/ bundle/bin/
 cp package.json bundle/package.json
-cp package-lock.json bundle/package-lock.json
+# TMP FIX: cp package-lock.json bundle/package-lock.json
 cp "$(which node)" bundle/
 
 pushd bundle/

@@ -37,7 +37,9 @@ jobs:
         working-directory: ./sauce-runner-utils
 
       - name: Install dependencies
-        run: npm i
+        run: |
+          rm -f package-lock.json
+          npm i
 
       - name: Unit Test
         run: npm run unit-test
