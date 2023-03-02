@@ -41,6 +41,11 @@ jobs:
           rm -f package-lock.json
           npm i
 
+      - name: 'tree'
+        run: |
+          pwd
+          ls -l
+
       - name: Unit Test
         run: npm run unit-test
 
