@@ -46,6 +46,7 @@ jobs:
           pwd
           ls -l
           cat package.json
+          ls -lR node_modules/sauce-testrunner-utils/
 
       - name: Unit Test
         run: npm run unit-test
