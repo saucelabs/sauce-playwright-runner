@@ -45,6 +45,7 @@ jobs:
         run: |
           pwd
           ls -l
+          cat package.json
 
       - name: Unit Test
         run: npm run unit-test
