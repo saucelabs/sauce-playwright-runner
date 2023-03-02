@@ -38,4 +38,5 @@ npm:
     - "@saucelabs/cucumber-reporter"
     - "ts-node"
     - "typescript"
+    - "pretty-seconds"
 
