@@ -120,5 +120,3 @@ __assets__/
 !tests/unit/src/__assets__/
 
 sauce-test-report.json
-
-sauce-runner-utils

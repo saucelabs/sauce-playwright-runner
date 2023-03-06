@@ -7,15 +7,10 @@ echo $PLAYWRIGHT_BROWSERS_PATH
 cp -r ./src/ ./bundle/src/
 cp -r bin/ bundle/bin/
 cp package.json bundle/package.json
-# TMP FIX: cp package-lock.json bundle/package-lock.json
+cp package-lock.json bundle/package-lock.json
 cp "$(which node)" bundle/
 
 pushd bundle/
-
-## [TMP FIX]
-mkdir ./sauce-runner-utils/
-cp ../sauce-runner-utils/sauce-testrunner-utils-0.7.0.tgz ./sauce-runner-utils/
-## [/TMP FIX]
 
 npm cache clean --force
 npm i --production

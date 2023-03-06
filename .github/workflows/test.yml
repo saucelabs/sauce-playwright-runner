@@ -23,31 +23,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: 'sauce-runner-utils: Install dependency'
-        uses: actions/checkout@v3
-        with:
-          repository: 'saucelabs/sauce-runner-utils'
-          ref: 'DEVX-2040-update-npm'
-          path: './sauce-runner-utils'
-
-      - name: 'sauce-runner-utils: Install dependencies'
-        run: |
-          npm ci
-          npm run build
-          npm pack
-        working-directory: ./sauce-runner-utils
-
       - name: Install dependencies
-        run: |
-          rm -f package-lock.json
-          npm i
-
-      - name: 'tree'
-        run: |
-          pwd
-          ls -l
-          cat package.json
-          ls -lR node_modules/sauce-testrunner-utils/
+        run: npm ci
 
       - name: Unit Test
         run: npm run unit-test
@@ -55,54 +32,54 @@ jobs:
       - name: Lint
         run: npm run lint
 
-  # build-and-test-docker:
-  #   runs-on: ubuntu-latest
-  #   needs: [test]
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
+  build-and-test-docker:
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
-  #     - name: Setup saucectl
-  #       uses: saucelabs/saucectl-run-action@v2
-  #       with:
-  #         skip-run: true
+      - name: Setup saucectl
+        uses: saucelabs/saucectl-run-action@v2
+        with:
+          skip-run: true
 
-  #     # There is discrepencies between uid used to clone and uid in container,
-  #     # As a temporary measure, we chmod files to allow test outputs to be written.
-  #     - name: Workaround for container permissions
-  #       run: sudo chmod -R 777 tests/
+      # There is discrepencies between uid used to clone and uid in container,
+      # As a temporary measure, we chmod files to allow test outputs to be written.
+      - name: Workaround for container permissions
+        run: sudo chmod -R 777 tests/
 
-  #     # Run e2e tests (Docker)
-  #     - run: bash ./tests/run.sh
-  #       env:
-  #         SKIP_CI: true
-  #         SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-  #         SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-  #       name: Build Saucectl and run E2E tests
+      # Run e2e tests (Docker)
+      - run: bash ./tests/run.sh
+        env:
+          SKIP_CI: true
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+        name: Build Saucectl and run E2E tests
 
-  # build-and-test-local:
-  #   runs-on: windows-latest
-  #   needs: [test]
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
+  build-and-test-local:
+    runs-on: windows-latest
+    needs: [test]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
-  #     - name: Setup Node
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: ${{ env.NODE_VERSION }}
-  #         cache: 'npm'
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
-  #     - name: Install Dependencies
-  #       run: |
-  #         npm ci --production
-  #         npx playwright install
-  #         npx playwright install-deps
+      - name: Install Dependencies
+        run: |
+          npm ci --production
+          npx playwright install
+          npx playwright install-deps
 
-  #     - run: node . --suiteName basic-js --runCfgPath ./tests/fixtures/basic-js/sauce-runner.json
-  #       env:
-  #         SAUCE_VM: true
-  #       name: Run test locally
+      - run: node . --suiteName basic-js --runCfgPath ./tests/fixtures/basic-js/sauce-runner.json
+        env:
+          SAUCE_VM: true
+        name: Run test locally
 
   build-windows-bundle:
     runs-on: windows-latest
@@ -116,20 +93,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-
-      - name: 'sauce-runner-utils: Install dependency'
-        uses: actions/checkout@v3
-        with:
-          repository: 'saucelabs/sauce-runner-utils'
-          ref: 'DEVX-2040-update-npm'
-          path: './sauce-runner-utils'
-
-      - name: 'sauce-runner-utils: Install dependencies'
-        run: |
-          npm ci
-          npm run build
-          npm pack
-        working-directory: ./sauce-runner-utils
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -198,20 +161,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-
-      - name: 'sauce-runner-utils: Install dependency'
-        uses: actions/checkout@v3
-        with:
-          repository: 'saucelabs/sauce-runner-utils'
-          ref: 'DEVX-2040-update-npm'
-          path: './sauce-runner-utils'
-
-      - name: 'sauce-runner-utils: Install dependencies'
-        run: |
-          npm ci
-          npm run build
-          npm pack
-        working-directory: ./sauce-runner-utils
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -316,26 +265,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: 'sauce-runner-utils: Install dependency'
-        uses: actions/checkout@v3
-        with:
-          repository: 'saucelabs/sauce-runner-utils'
-          ref: 'DEVX-2040-update-npm'
-          path: './sauce-runner-utils'
-
-      - name: 'sauce-runner-utils: Install dependencies'
-        run: |
-          npm ci
-          npm run build
-          npm pack
-        working-directory: ./sauce-runner-utils
-
       - name: Install dependencies
         run: |
-          ## Disable TMP
-          rm package-lock.json
-          npm i --production
-          npm i --production
+          npm ci --production
           npm i @cucumber/cucumber
           npx playwright install
           npx playwright install-deps
