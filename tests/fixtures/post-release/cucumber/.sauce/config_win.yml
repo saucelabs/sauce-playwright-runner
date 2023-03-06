@@ -13,7 +13,7 @@ docker:
   image: playwright
   fileTransfer: copy
 playwright:
-  version: 1.27.1
+  version: 1.29.2
 rootDir: ./
 suites:
   - name: My Cucumber Test
@@ -27,10 +27,10 @@ suites:
       format:
         - "json:my-cucumber.json"
 
-# notifications:
-#   slack:
-#     channels: ["devx"]
-#     send: fail
+notifications:
+  slack:
+    channels: ["devx"]
+    send: fail
 
 npm:
   dependencies:
@@ -39,4 +39,3 @@ npm:
     - "ts-node"
     - "typescript"
     - "pretty-seconds"
-

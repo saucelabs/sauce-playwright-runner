@@ -12,7 +12,7 @@ docker:
   image: "saucelabs/stt-playwright-node:local"
 rootDir: .
 playwright:
-  version: 1.18.1
+  version: 1.29.2
 suites:
   - name: "saucy test - webkit"
     mode: docker

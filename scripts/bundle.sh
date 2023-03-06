@@ -11,9 +11,8 @@ cp package-lock.json bundle/package-lock.json
 cp "$(which node)" bundle/
 
 pushd bundle/
-
 npm cache clean --force
-npm i --production
+npm ci --production
 npx playwright install
 npx playwright install-deps
 npx playwright --version
