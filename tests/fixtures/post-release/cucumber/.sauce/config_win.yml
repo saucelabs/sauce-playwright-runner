@@ -13,7 +13,7 @@ docker:
   image: playwright
   fileTransfer: copy
 playwright:
-  version: 1.27.1
+  version: 1.29.2
 rootDir: ./
 suites:
   - name: My Cucumber Test
@@ -38,4 +38,4 @@ npm:
     - "@saucelabs/cucumber-reporter"
     - "ts-node"
     - "typescript"
-
+    - "pretty-seconds"

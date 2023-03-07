@@ -69,9 +69,13 @@ async function runCucumber (nodeBin, runCfg) {
     SAUCE_REPORT_OUTPUT_NAME: runCfg.sauceReportFile,
   });
 
+  // Define node/npm path for execution
+  const npmBin = path.join(path.dirname(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
+  const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
+
   // Install NPM dependencies
   let metrics = [];
-  let npmMetrics = await prepareNpmEnv(runCfg);
+  let npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
   metrics.push(npmMetrics);
 
   const startTime = new Date().toISOString();

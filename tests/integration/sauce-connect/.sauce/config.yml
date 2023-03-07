@@ -11,7 +11,7 @@ sauce:
 defaults:
   mode: sauce
 playwright:
-  version: 1.18.1
+  version: 1.29.2
 
 suites:
   - name: "Sauce with sauce-connect (windows)"
