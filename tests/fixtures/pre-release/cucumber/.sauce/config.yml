@@ -49,10 +49,10 @@ suites:
       format:
         - "json:my-cucumber.json"
 
-notifications:
-  slack:
-    channels: ["devx"]
-    send: fail
+# notifications:
+#   slack:
+#     channels: ["devx"]
+#     send: fail
 
 npm:
   dependencies:
