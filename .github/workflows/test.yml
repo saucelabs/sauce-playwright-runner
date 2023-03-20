@@ -177,7 +177,7 @@ jobs:
     strategy:
       matrix:
         os: [Win10, Win11, macOS12]
-        browser: [Chrome, Firefox, Wekbit]
+        browser: [Chromium, Firefox, Webkit]
         sc: [no-sc]
       fail-fast: false
 

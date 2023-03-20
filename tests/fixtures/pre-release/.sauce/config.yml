@@ -11,6 +11,10 @@ defaults:
 playwright:
   version: 1.31.1
 
+npm:
+  packages:
+    pretty-seconds: '3.0.0'
+
 suites:
   # Windows 10 tests
   - name: "Win10 - Chromium - no-sc"
@@ -18,21 +22,21 @@ suites:
     params:
       browserName: "chromium"
     testMatch:
-      - "tests/*.test.js"
+      - "tests/.*.test.js"
 
   - name: "Win10 - Firefox - no-sc"
     platformName: "Windows 10"
     params:
       browserName: "firefox"
     testMatch:
-      - "tests/*.test.js"
+      - "tests/.*.test.js"
 
   - name: "Win10 - Webkit - no-sc"
     platformName: "Windows 10"
     params:
       browserName: "webkit"
     testMatch:
-      - "tests/*.test.js"
+      - "tests/.*.test.js"
 
   ## Windows 11 Tests
   - name: "Win11 - Chromium - no-sc"
@@ -40,21 +44,21 @@ suites:
     params:
       browserName: "chromium"
     testMatch:
-      - "tests/*.test.js"
+      - "tests/.*.test.js"
 
   - name: "Win11 - Firefox - no-sc"
     platformName: "Windows 10"
     params:
       browserName: "firefox"
     testMatch:
-      - "tests/*.test.js"
+      - "tests/.*.test.js"
 
   - name: "Win11 - Webkit - no-sc"
     platformName: "Windows 10"
     params:
       browserName: "webkit"
     testMatch:
-      - "tests/*.test.js"
+      - "tests/.*.test.js"
 
   ## macOS12 tests
 
@@ -63,18 +67,18 @@ suites:
     params:
       browserName: "chromium"
     testMatch:
-      - "tests/*.test.js"
+      - "tests/.*.test.js"
 
   - name: "macOS12 - Firefox - no-sc"
     platformName: "macOS 12"
     params:
       browserName: "firefox"
     testMatch:
-      - "tests/*.test.js"
+      - "tests/.*.test.js"
 
   - name: "macOS12 - Webkit - no-sc"
     platformName: "macOS 12"
     params:
       browserName: "webkit"
     testMatch:
-      - "tests/*.test.js"
+      - "tests/.*.test.js"
