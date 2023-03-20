@@ -6,6 +6,8 @@ sauce:
       - pre-release tests
     build: Github Pre-Release
   region: us-west-1
+  tunnel:
+    name: github-playwright-sc-check-tunnel
 defaults:
   mode: sauce
 playwright:
@@ -22,21 +24,21 @@ suites:
     params:
       browserName: "chromium"
     testMatch:
-      - "tests/no-sc/.*.test.js"
+      - "tests/.*.test.js"
 
   - name: "Win10 - Firefox"
     platformName: "Windows 10"
     params:
       browserName: "firefox"
     testMatch:
-      - "tests/no-sc/.*.test.js"
+      - "tests/.*.test.js"
 
   - name: "Win10 - Webkit"
     platformName: "Windows 10"
     params:
       browserName: "webkit"
     testMatch:
-      - "tests/no-sc/.*.test.js"
+      - "tests/.*.test.js"
 
   ## Windows 11 Tests
   - name: "Win11 - Chromium"
@@ -44,21 +46,21 @@ suites:
     params:
       browserName: "chromium"
     testMatch:
-      - "tests/no-sc/.*.test.js"
+      - "tests/.*.test.js"
 
   - name: "Win11 - Firefox"
     platformName: "Windows 10"
     params:
       browserName: "firefox"
     testMatch:
-      - "tests/no-sc/.*.test.js"
+      - "tests/.*.test.js"
 
   - name: "Win11 - Webkit"
     platformName: "Windows 10"
     params:
       browserName: "webkit"
     testMatch:
-      - "tests/no-sc/.*.test.js"
+      - "tests/.*.test.js"
 
   ## macOS12 tests
 
@@ -67,18 +69,18 @@ suites:
     params:
       browserName: "chromium"
     testMatch:
-      - "tests/no-sc/.*.test.js"
+      - "tests/.*.test.js"
 
   - name: "macOS12 - Firefox"
     platformName: "macOS 12"
     params:
       browserName: "firefox"
     testMatch:
-      - "tests/no-sc/.*.test.js"
+      - "tests/.*.test.js"
 
   - name: "macOS12 - Webkit"
     platformName: "macOS 12"
     params:
       browserName: "webkit"
     testMatch:
-      - "tests/no-sc/.*.test.js"
+      - "tests/.*.test.js"
