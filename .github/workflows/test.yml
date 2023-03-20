@@ -220,7 +220,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup nodejs
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -232,7 +237,7 @@ jobs:
       - name: Run web-page
         run: |
           python -m http.server 8000 &
-        working-directory: ./tests/integration/sauce-connect/www/
+        working-directory: ./tests/fixtures/pre-release/www/
 
       - name: Start sauce-connect
         uses: saucelabs/sauce-connect-action@v2.0.0
