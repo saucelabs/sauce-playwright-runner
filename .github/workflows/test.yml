@@ -76,7 +76,7 @@ jobs:
           npx playwright install
           npx playwright install-deps
 
-      - run: node . --suiteName basic-js --runCfgPath ./tests/fixtures/basic-js/sauce-runner.json
+      - run: node . --suiteName basic-js --runCfgPath ./tests/fixtures/local/basic-js/sauce-runner.json
         env:
           SAUCE_VM: true
         name: Run test locally
