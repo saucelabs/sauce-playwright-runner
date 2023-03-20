@@ -128,27 +128,6 @@ jobs:
         run: |
           gsutil cp ./sauce-playwright-runner.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip
 
-  windows-bundle-test:
-    needs: [build-windows-bundle]
-    runs-on: windows-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - name: Setup saucectl
-        run: npm install -g saucectl
-
-      - name: Test on Sauce
-        working-directory: ./tests/fixtures/post-release
-        run: |
-          npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip" --config .sauce/config_win.yml
-
   build-macos-bundle:
     runs-on: macos-latest
     needs: [test]
@@ -193,9 +172,16 @@ jobs:
         run: |
           gsutil cp ./sauce-playwright-macos.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip
 
-  macos-bundle-test:
-    needs: [build-macos-bundle]
-    runs-on: macos-latest
+  bundle-test:
+    needs: [build-windows-bundle, build-macos-bundle]
+    strategy:
+      matrix:
+        os: [Win10, Win11, macOS12]
+        browser: [Chrome, Firefox, Wekbit]
+        sc: [no-sc]
+      fail-fast: false
+
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -210,9 +196,14 @@ jobs:
         run: npm install -g saucectl
 
       - name: Test on Sauce
-        working-directory: ./tests/fixtures/post-release
+        working-directory: ./tests/fixtures/pre-release
         run: |
-          npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip" --config .sauce/config_mac.yml
+          if [[ ${{ matrix.os }} =~ ^Win ]];then
+            npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip" --config .sauce/config.yml --select-suite "${{ matrix.os }} - ${{ matrix.browser }} - ${{ matrix.sc }}"
+          fi
+          if [[ ${{ matrix.os}} =~ ^macOS ]];then
+            npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip" --config .sauce/config.yml --select-suite "${{ matrix.os }} - ${{ matrix.browser }} - ${{ matrix.sc }}"
+          fi
 
   run-bundle-with-sauce-connect:
     runs-on: ubuntu-latest
