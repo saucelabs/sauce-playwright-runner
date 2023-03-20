@@ -236,6 +236,11 @@ jobs:
       matrix:
         os: [Win10, Win11, macOS12]
         browser: [Chromium, Firefox, Webkit]
+        exclude:
+          - os: Win10
+            browser: Webkit
+          - os: Win11
+            browser: Webkit
       fail-fast: false
 
     runs-on: ubuntu-latest
