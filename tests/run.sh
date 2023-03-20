@@ -18,7 +18,7 @@ for i in ${tests[@]}; do
     tmpfile=$(mktemp)
 
     echo "Running ${key}:"
-    pushd ./tests/fixtures/${key}/ > /dev/null
+    pushd ./tests/fixtures/docker/${key}/ > /dev/null
     saucectl run -c .sauce/config.yml > ${tmpfile} 2>&1
     RETURN_CODE=${?}
     popd > /dev/null
