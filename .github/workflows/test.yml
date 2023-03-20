@@ -286,7 +286,11 @@ jobs:
 
   cucumber-bundle-test:
     needs: [build-windows-bundle, build-macos-bundle]
-    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [win, mac]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -306,11 +310,10 @@ jobs:
           npm ci --production
 
           BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip
-          if [[ ${{ matrix.os }} =~ ^macOS ]];then
+          if [[ ${{ matrix.os }} = mac ]];then
             BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip
           fi
           
           npx saucectl run \
             --runner-version "url: ${BUNDLE_URL}" \
-            --config .sauce/config.yml \
-            --select-suite "Cucumber - ${{ matrix.os }} - ${{ matrix.browser }}"
+            --config .sauce/config_${{ matrix.os }}.yml
