@@ -287,11 +287,6 @@ jobs:
   cucumber-bundle-test:
     needs: [build-windows-bundle, build-macos-bundle]
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [Win10, Win11, macOS12]
-        browser: [Chromium]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
