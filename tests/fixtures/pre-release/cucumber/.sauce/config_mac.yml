@@ -16,28 +16,6 @@ playwright:
   version: 1.29.2
 rootDir: ./
 suites:
-  - name: Cucumber - Win10 - Chromium
-    browserName: "chromium"
-    platformName: "Windows 10"
-    options:
-      paths:
-        - "features/**/*.feature"
-      require:
-        - "features/support/*.js"
-      format:
-        - "json:my-cucumber.json"
-
-  - name: Cucumber - Win11 - Chromium
-    browserName: "chromium"
-    platformName: "Windows 11"
-    options:
-      paths:
-        - "features/**/*.feature"
-      require:
-        - "features/support/*.js"
-      format:
-        - "json:my-cucumber.json"
-
   - name: Cucumber - macOS12 - Chromium
     browserName: "chromium"
     platformName: "macOS 12"
@@ -51,7 +29,7 @@ suites:
 
 notifications:
   slack:
-    channels: ["devx"]
+    channels: ["devx-slack-notifications"]
     send: fail
 
 npm:

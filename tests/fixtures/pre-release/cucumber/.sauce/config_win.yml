@@ -38,20 +38,9 @@ suites:
       format:
         - "json:my-cucumber.json"
 
-  - name: Cucumber - macOS12 - Chromium
-    browserName: "chromium"
-    platformName: "macOS 12"
-    options:
-      paths:
-        - "features/**/*.feature"
-      require:
-        - "features/support/*.js"
-      format:
-        - "json:my-cucumber.json"
-
 notifications:
   slack:
-    channels: ["devx"]
+    channels: ["devx-slack-notifications"]
     send: fail
 
 npm:
