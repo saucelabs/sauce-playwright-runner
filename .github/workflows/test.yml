@@ -76,10 +76,39 @@ jobs:
           npx playwright install
           npx playwright install-deps
 
-      - run: node . --suiteName basic-js --runCfgPath ./tests/fixtures/basic-js/sauce-runner.json
+      - run: node . --suiteName basic-js --runCfgPath ./tests/fixtures/local/basic-js/sauce-runner.json
         env:
           SAUCE_VM: true
         name: Run test locally
+
+  cucumber-build-and-test-local:
+    runs-on: windows-latest
+    needs: [test]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci --production
+          npm i @cucumber/cucumber
+          npx playwright install
+          npx playwright install-deps
+
+      - name: Local Tests
+        working-directory: tests/fixtures/local/cucumber/
+        run: |
+          npm i
+          node ../../../../ --suiteName "cucumber local test" --runCfgPath ./sauce-runner.json
+          node ../../../../ --suiteName "cucumber config test" --runCfgPath ./sauce-runner.json
+        env:
+          SAUCE_VM: true
 
   build-windows-bundle:
     runs-on: windows-latest
@@ -128,27 +157,6 @@ jobs:
         run: |
           gsutil cp ./sauce-playwright-runner.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip
 
-  windows-bundle-test:
-    needs: [build-windows-bundle]
-    runs-on: windows-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - name: Setup saucectl
-        run: npm install -g saucectl
-
-      - name: Test on Sauce
-        working-directory: ./tests/fixtures/post-release
-        run: |
-          npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip" --config .sauce/config_win.yml
-
   build-macos-bundle:
     runs-on: macos-latest
     needs: [test]
@@ -193,9 +201,15 @@ jobs:
         run: |
           gsutil cp ./sauce-playwright-macos.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip
 
-  macos-bundle-test:
-    needs: [build-macos-bundle]
-    runs-on: macos-latest
+  bundle-test:
+    needs: [build-windows-bundle, build-macos-bundle]
+    strategy:
+      matrix:
+        os: [Win10, Win11, macOS12]
+        browser: [Chromium, Firefox, Webkit]
+      fail-fast: false
+
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -210,13 +224,32 @@ jobs:
         run: npm install -g saucectl
 
       - name: Test on Sauce
-        working-directory: ./tests/fixtures/post-release
+        working-directory: ./tests/fixtures/cloud
         run: |
-          npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip" --config .sauce/config_mac.yml
+          BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip          
+          if [[ ${{ matrix.os }} =~ ^macOS ]];then
+            BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip
+          fi
 
-  run-bundle-with-sauce-connect:
-    runs-on: ubuntu-latest
+          npx saucectl run \
+            --runner-version "url: ${BUNDLE_URL}" \
+            --config .sauce/config.yml \
+            --select-suite "${{ matrix.os }} - ${{ matrix.browser }}"
+
+  bundle-test-with-sauce-connect:
     needs: [build-windows-bundle, build-macos-bundle]
+    strategy:
+      matrix:
+        os: [Win10, Win11, macOS12]
+        browser: [Chromium, Firefox, Webkit]
+        exclude:
+          - os: Win10
+            browser: Webkit
+          - os: Win11
+            browser: Webkit
+      fail-fast: false
+
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -238,52 +271,37 @@ jobs:
       - name: Run web-page
         run: |
           python -m http.server 8000 &
-        working-directory: ./tests/integration/sauce-connect/www/
+        working-directory: ./tests/fixtures/cloud/www/
 
       - name: Start sauce-connect
-        uses: saucelabs/sauce-connect-action@v2.0.0
+        uses: saucelabs/sauce-connect-action@v2
         with:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
-          tunnelIdentifier: github-playwright-sc-check-tunnel
+          tunnelIdentifier: github-playwright-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }}
           scVersion: 4.7.1
 
-      - name: Run saucectl (Windows)
+      - name: Test on Sauce
+        working-directory: ./tests/fixtures/cloud
         run: |
-          saucectl run --select-suite "Sauce with sauce-connect (windows)" --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip"
-        working-directory: ./tests/integration/sauce-connect/
+          BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip
+          if [[ ${{ matrix.os }} =~ ^macOS ]];then
+            BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip
+          fi
 
-      - name: Run saucectl (MacOS)
-        run: |
-          saucectl run --select-suite "Sauce with sauce-connect (macOS)" --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip"
-        working-directory: ./tests/integration/sauce-connect/
+          npx saucectl run \
+            --runner-version "url: ${BUNDLE_URL}" \
+            --config .sauce/config-sc.yml \
+            --tunnel-name github-playwright-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }} \
+            --select-suite "${{ matrix.os }} - ${{ matrix.browser }}"
 
-  cucumber-build-and-test-local:
-    runs-on: windows-latest
-    needs: [test]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install dependencies
-        run: |
-          npm ci --production
-          npm i @cucumber/cucumber
-          npx playwright install
-          npx playwright install-deps
-
-      - name: Local Tests
-        working-directory: tests/fixtures/cucumber/
-        run: |
-          npm i
-          node ../../../ --suiteName "cucumber local test" --runCfgPath ./sauce-runner.json
-          node ../../../ --suiteName "cucumber config test" --runCfgPath ./sauce-runner.json
-        env:
-          SAUCE_VM: true
-
-  cucumber-windows-bundle-test:
-    needs: [build-windows-bundle]
-    runs-on: windows-latest
+  cucumber-bundle-test:
+    needs: [build-windows-bundle, build-macos-bundle]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [win, mac]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -298,29 +316,15 @@ jobs:
         run: npm install -g saucectl
 
       - name: Test on Sauce
-        working-directory: ./tests/fixtures/post-release/cucumber
+        working-directory: ./tests/fixtures/cloud/cucumber
         run: |
           npm ci --production
-          npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip" --config .sauce/config_win.yml
 
-  cucumber-macos-bundle-test:
-    needs: [build-macos-bundle]
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - name: Install saucectl
-        run: npm install -g saucectl
-
-      - name: Test on Sauce
-        working-directory: ./tests/fixtures/post-release/cucumber
-        run: |
-          npm ci --production
-          npx saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip" --config .sauce/config_mac.yml
+          BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip
+          if [[ ${{ matrix.os }} = mac ]];then
+            BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip
+          fi
+          
+          npx saucectl run \
+            --runner-version "url: ${BUNDLE_URL}" \
+            --config .sauce/config_${{ matrix.os }}.yml

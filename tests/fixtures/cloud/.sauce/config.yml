@@ -1,0 +1,89 @@
+apiVersion: v1alpha
+kind: playwright
+sauce:
+  metadata:
+    tags:
+      - pre-release tests
+    build: Github Pre-Release
+  region: us-west-1
+defaults:
+  mode: sauce
+playwright:
+  version: 1.31.1
+
+npm:
+  packages:
+    pretty-seconds: '3.0.0'
+
+suites:
+  # Windows 10 tests
+  - name: "Win10 - Chromium"
+    platformName: "Windows 10"
+    params:
+      browserName: "chromium"
+    testMatch:
+      - "tests/no-sc/.*.test.js"
+
+  - name: "Win10 - Firefox"
+    platformName: "Windows 10"
+    params:
+      browserName: "firefox"
+    testMatch:
+      - "tests/no-sc/.*.test.js"
+
+  - name: "Win10 - Webkit"
+    platformName: "Windows 10"
+    params:
+      browserName: "webkit"
+    testMatch:
+      - "tests/no-sc/.*.test.js"
+
+  ## Windows 11 Tests
+  - name: "Win11 - Chromium"
+    platformName: "Windows 10"
+    params:
+      browserName: "chromium"
+    testMatch:
+      - "tests/no-sc/.*.test.js"
+
+  - name: "Win11 - Firefox"
+    platformName: "Windows 10"
+    params:
+      browserName: "firefox"
+    testMatch:
+      - "tests/no-sc/.*.test.js"
+
+  - name: "Win11 - Webkit"
+    platformName: "Windows 10"
+    params:
+      browserName: "webkit"
+    testMatch:
+      - "tests/no-sc/.*.test.js"
+
+  ## macOS12 tests
+
+  - name: "macOS12 - Chromium"
+    platformName: "macOS 12"
+    params:
+      browserName: "chromium"
+    testMatch:
+      - "tests/no-sc/.*.test.js"
+
+  - name: "macOS12 - Firefox"
+    platformName: "macOS 12"
+    params:
+      browserName: "firefox"
+    testMatch:
+      - "tests/no-sc/.*.test.js"
+
+  - name: "macOS12 - Webkit"
+    platformName: "macOS 12"
+    params:
+      browserName: "webkit"
+    testMatch:
+      - "tests/no-sc/.*.test.js"
+
+notifications:
+  slack:
+    channels: ["devx-slack-notifications"]
+    send: fail
