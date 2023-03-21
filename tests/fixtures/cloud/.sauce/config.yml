@@ -61,6 +61,7 @@ suites:
       - "tests/no-sc/.*.test.js"
 
   ## macOS12 tests
+
   - name: "macOS12 - Chromium"
     platformName: "macOS 12"
     params:
@@ -77,28 +78,6 @@ suites:
 
   - name: "macOS12 - Webkit"
     platformName: "macOS 12"
-    params:
-      browserName: "webkit"
-    testMatch:
-      - "tests/no-sc/.*.test.js"
-
-  ## macOS13 tests
-  - name: "macOS13 - Chromium"
-    platformName: "macOS 13"
-    params:
-      browserName: "chromium"
-    testMatch:
-      - "tests/no-sc/.*.test.js"
-
-  - name: "macOS13 - Firefox"
-    platformName: "macOS 13"
-    params:
-      browserName: "firefox"
-    testMatch:
-      - "tests/no-sc/.*.test.js"
-
-  - name: "macOS13 - Webkit"
-    platformName: "macOS 13"
     params:
       browserName: "webkit"
     testMatch:
