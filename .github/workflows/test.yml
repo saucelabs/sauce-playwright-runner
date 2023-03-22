@@ -10,6 +10,10 @@ env:
   SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
   NODE_VERSION: 16
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.head_ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -204,6 +208,7 @@ jobs:
   bundle-test:
     needs: [build-windows-bundle, build-macos-bundle]
     strategy:
+      max-parallel: 3
       matrix:
         os: [Win10, Win11, macOS12]
         browser: [Chromium, Firefox, Webkit]
@@ -239,6 +244,7 @@ jobs:
   bundle-test-with-sauce-connect:
     needs: [build-windows-bundle, build-macos-bundle]
     strategy:
+      max-parallel: 3
       matrix:
         os: [Win10, Win11, macOS12]
         browser: [Chromium, Firefox, Webkit]
