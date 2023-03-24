@@ -30,7 +30,7 @@ WORKDIR /home/seluser
 
 COPY package.json .
 COPY package-lock.json .
-RUN npm ci --production
+RUN npm ci --omit=dev
 
 
 # Playwright caches the downloaded browser by default in ~/.cache/ms-playwright
