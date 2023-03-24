@@ -16,7 +16,7 @@ USER seluser
 #=================
 # Install Node.JS
 #=================
-ENV NODE_VERSION=16.13.0
+ENV NODE_VERSION=18.15.0
 ENV NVM_VERSION=0.39.0
 RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/install.sh | bash \
   && export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")" \
@@ -30,7 +30,7 @@ WORKDIR /home/seluser
 
 COPY package.json .
 COPY package-lock.json .
-RUN npm ci --production
+RUN npm ci --omit=dev
 
 
 # Playwright caches the downloaded browser by default in ~/.cache/ms-playwright

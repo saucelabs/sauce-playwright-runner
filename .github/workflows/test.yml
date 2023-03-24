@@ -8,7 +8,7 @@ on:
 env:
   SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
   SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
-  NODE_VERSION: 16
+  NODE_VERSION: 18
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -231,7 +231,7 @@ jobs:
       - name: Test on Sauce
         working-directory: ./tests/fixtures/cloud
         run: |
-          BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip          
+          BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip
           if [[ ${{ matrix.os }} =~ ^macOS ]];then
             BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip
           fi
@@ -330,7 +330,7 @@ jobs:
           if [[ ${{ matrix.os }} = mac ]];then
             BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip
           fi
-          
+
           npx saucectl run \
             --runner-version "url: ${BUNDLE_URL}" \
             --config .sauce/config_${{ matrix.os }}.yml
