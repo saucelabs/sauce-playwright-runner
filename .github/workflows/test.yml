@@ -82,24 +82,24 @@ jobs:
 
       - name: Run basic-js
         run: |
-          node . \
-            --suiteName basic-js \
+          node . `
+            --suiteName basic-js `
             --runCfgPath ./tests/fixtures/local/basic-js/sauce-runner.json
         env:
           SAUCE_VM: true
 
       - name: Run basic-ts
         run: |
-          node . \
-            --suiteName basic-ts \
+          node . `
+            --suiteName basic-ts `
             --runCfgPath ./tests/fixtures/local/basic-ts/sauce-runner.json
         env:
           SAUCE_VM: true
 
       - name: Run config-merging
         run: |
-          node . \
-            --suiteName config-merging \
+          node . `
+            --suiteName config-merging `
             --runCfgPath ./tests/fixtures/local/config-merging/sauce-runner.json
         env:
           SAUCE_VM: true
