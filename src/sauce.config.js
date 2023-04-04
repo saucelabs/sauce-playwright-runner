@@ -13,11 +13,11 @@ const configFiles = process.env.PLAYWRIGHT_CFG_FILE ?
 for (const file of configFiles) {
   if (fs.existsSync(file)) {
     try {
-      const userDefaults = await import(pathToFileURL(file));
+      userConfig = await import(pathToFileURL(file));
       // it should put config just under root level to get it work with playwright.config.ts
       // there is no such issue with playwright.config.js
-      if (userDefaults.default) {
-        userConfig = userDefaults.default;
+      if (userConfig.default) {
+        userConfig = userConfig.default;
       }
       break;
     } catch (e) {
@@ -81,5 +81,4 @@ function arrMerger(objValue, srcValue) {
   }
 }
 
-const merged = _.mergeWith(userConfig, overrides, arrMerger);
-export default merged;
+export default _.mergeWith(userConfig, overrides, arrMerger);
