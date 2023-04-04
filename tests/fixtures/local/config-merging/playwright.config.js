@@ -2,10 +2,9 @@
 module.exports = {
   use: {
     headless: true,
-    video: false,
+    video: 'off',
     timezoneId: 'Asia/Seoul',
     locale: 'ko-KR',
     reporter: [['dot']],
   },
 };
-

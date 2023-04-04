@@ -14,14 +14,7 @@
         {
             "name": "config-merging",
             "param": {
-              "browserName": "chromium",
-              "globalTimeout": 900000,
-              "grep": ".*",
-              "repeatEach": 1,
-              "retries": 0,
-              "shard": "1/2",
-              "timeout": 30000,
-              "maxFailures": 2
+              "browserName": "chromium"
             },
             "testMatch": ".*.js"
         }
