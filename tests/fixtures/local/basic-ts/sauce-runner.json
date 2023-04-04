@@ -7,8 +7,7 @@
             "name": "basic-ts",
             "param": {
               "browserName": "chromium",
-              "headful": true,
-              "slowMo": 10000
+              "headless": true
             },
             "testMatch": ".*.spec.ts"
         }
