@@ -154,12 +154,12 @@ jobs:
         uses: azure/powershell@v1
         with:
           inlineScript: |
-            Compress-Archive bundle/ sauce-playwright-runner.zip
+            Compress-Archive bundle/ playwright-windows-amd64.zip
           azPSVersion: '3.1.0'
 
       - name: Upload to GCS
         run: |
-          gsutil cp ./sauce-playwright-runner.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip
+          gsutil cp ./playwright-windows-amd64.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/playwright-windows-amd64-${{ github.run_id }}.zip
 
   build-macos-bundle:
     runs-on: macos-latest
@@ -199,11 +199,11 @@ jobs:
         run: bash ./scripts/bundle.sh
 
       - name: Archive Bundle
-        run: zip --symlinks -r sauce-playwright-macos.zip bundle/
+        run: zip --symlinks -r playwright-macos-amd64.zip bundle/
 
       - name: Upload to GCS
         run: |
-          gsutil cp ./sauce-playwright-macos.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip
+          gsutil cp ./playwright-macos-amd64.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
 
   bundle-test:
     needs: [build-windows-bundle, build-macos-bundle]
@@ -231,9 +231,9 @@ jobs:
       - name: Test on Sauce
         working-directory: ./tests/fixtures/cloud
         run: |
-          BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip
+          BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-windows-amd64-${{ github.run_id }}.zip
           if [[ ${{ matrix.os }} =~ ^macOS ]];then
-            BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip
+            BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
           fi
 
           npx saucectl run \
@@ -290,9 +290,9 @@ jobs:
       - name: Test on Sauce
         working-directory: ./tests/fixtures/cloud
         run: |
-          BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip
+          BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-windows-amd64-${{ github.run_id }}.zip
           if [[ ${{ matrix.os }} =~ ^macOS ]];then
-            BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip
+            BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
           fi
 
           npx saucectl run \
@@ -326,9 +326,9 @@ jobs:
         run: |
           npm ci --production
 
-          BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-runner-${{ github.run_id }}.zip
+          BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-windows-amd64-${{ github.run_id }}.zip
           if [[ ${{ matrix.os }} = mac ]];then
-            BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-playwright-macos-${{ github.run_id }}.zip
+            BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
           fi
 
           npx saucectl run \
