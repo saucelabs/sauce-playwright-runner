@@ -192,7 +192,7 @@ jobs:
 
           $selectedAsset = $null
           Foreach ($asset in $selectedRelease.assets) {
-            if ($asset.name -eq "sauce-playwright-runner.zip") {
+            if ($asset.name -eq "playwright-windows-amd64.zip") {
               $selectedAsset = $asset
             }
           }
@@ -242,7 +242,7 @@ jobs:
         uses: azure/powershell@v1
         with:
           inlineScript: |
-            Compress-Archive bundle/ sauce-playwright-runner-win-amd64.zip
+            Compress-Archive bundle/ playwright-windows-amd64.zip
           azPSVersion: '3.1.0'
 
       - name: Upload Release Asset
@@ -250,10 +250,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          gh release upload ${{ steps.prep.outputs.version }} sauce-playwright-runner-win-amd64.zip
-          mv sauce-playwright-runner-win-amd64.zip sauce-playwright-runner.zip
-          # Legacy Filename
-          gh release upload ${{ steps.prep.outputs.version }} sauce-playwright-runner.zip
+          gh release upload ${{ steps.prep.outputs.version }} playwright-windows-amd64.zip
 
   release-macos-bundle:
     runs-on: macos-latest
@@ -317,17 +314,14 @@ jobs:
 
       - name: Archive Bundle
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        run: zip --symlinks -r sauce-playwright-macos-amd64.zip bundle/
+        run: zip --symlinks -r playwright-macos-amd64.zip bundle/
 
       - name: Upload Release Asset
         if: ${{ steps.prep.outputs.asset_id == '' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          gh release upload ${{ steps.prep.outputs.version }} sauce-playwright-macos-amd64.zip
-          mv sauce-playwright-macos-amd64.zip sauce-playwright-macos.zip
-          # Legacy Filename
-          gh release upload ${{ steps.prep.outputs.version }} sauce-playwright-macos.zip
+          gh release upload ${{ steps.prep.outputs.version }} playwright-macos-amd64.zip
 
   publish-release:
     runs-on: ubuntu-latest
@@ -381,7 +375,7 @@ jobs:
         env:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
         run: |
-          npx saucectl run --runner-version "url: https://github.com/saucelabs/sauce-playwright-runner/releases/download/${{ steps.parse_version.outputs.version }}/sauce-playwright-runner-win-amd64.zip" --config ./.sauce/config_win.yml
+          npx saucectl run --runner-version "url: https://github.com/saucelabs/sauce-playwright-runner/releases/download/${{ steps.parse_version.outputs.version }}/playwright-windows-amd64.zip" --config ./.sauce/config_win.yml
 
   post-release-macos-tests:
     runs-on: ubuntu-latest
@@ -410,7 +404,7 @@ jobs:
         env:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
         run: |
-          npx saucectl run --runner-version "url: https://github.com/saucelabs/sauce-playwright-runner/releases/download/${{ steps.parse_version.outputs.version }}/sauce-playwright-macos-amd64.zip" --config ./.sauce/config_mac.yml
+          npx saucectl run --runner-version "url: https://github.com/saucelabs/sauce-playwright-runner/releases/download/${{ steps.parse_version.outputs.version }}/playwright-macos-amd64.zip" --config ./.sauce/config_mac.yml
 
   post-release-windows-cucumber-tests:
     runs-on: ubuntu-latest
@@ -440,7 +434,7 @@ jobs:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
         run: |
           npm ci --production
-          npx saucectl run --runner-version "url: https://github.com/saucelabs/sauce-playwright-runner/releases/download/${{ steps.parse_version.outputs.version }}/sauce-playwright-runner-win-amd64.zip" --config ./.sauce/config_win.yml
+          npx saucectl run --runner-version "url: https://github.com/saucelabs/sauce-playwright-runner/releases/download/${{ steps.parse_version.outputs.version }}/playwright-windows-amd64.zip" --config ./.sauce/config_win.yml
 
   post-release-macos-cucumber-tests:
     runs-on: ubuntu-latest
@@ -470,4 +464,4 @@ jobs:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
         run: |
           npm ci --production
-          npx saucectl run --runner-version "url: https://github.com/saucelabs/sauce-playwright-runner/releases/download/${{ steps.parse_version.outputs.version }}/sauce-playwright-macos-amd64.zip" --config ./.sauce/config_mac.yml
+          npx saucectl run --runner-version "url: https://github.com/saucelabs/sauce-playwright-runner/releases/download/${{ steps.parse_version.outputs.version }}/playwright-macos-amd64.zip" --config ./.sauce/config_mac.yml
