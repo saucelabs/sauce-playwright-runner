@@ -374,8 +374,8 @@ async function runPlaywright(nodeBin, runCfg) {
 
   // Copy our runner's playwright config to a custom location in order to
   // preserve the customer's config which we may want to load in the future
-  const configFile = path.join(runCfg.projectPath, 'sauce.config.js');
-  fs.copyFileSync(path.join(__dirname, 'sauce.config.js'), configFile);
+  const configFile = path.join(runCfg.projectPath, 'sauce.config.mjs');
+  fs.copyFileSync(path.join(__dirname, 'sauce.config.mjs'), configFile);
 
   const defaultArgs = {
     output: runCfg.playwrightOutputFolder,

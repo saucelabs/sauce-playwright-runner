@@ -44,7 +44,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup saucectl
-        uses: saucelabs/saucectl-run-action@v2
+        uses: saucelabs/saucectl-run-action@v3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           skip-run: true
 
@@ -80,10 +82,29 @@ jobs:
           npx playwright install
           npx playwright install-deps
 
-      - run: node . --suiteName basic-js --runCfgPath ./tests/fixtures/local/basic-js/sauce-runner.json
+      - name: Run basic-js
+        run: |
+          node . `
+            --suiteName basic-js `
+            --runCfgPath ./tests/fixtures/local/basic-js/sauce-runner.json
         env:
           SAUCE_VM: true
-        name: Run test locally
+
+      - name: Run basic-ts
+        run: |
+          node . `
+            --suiteName basic-ts `
+            --runCfgPath ./tests/fixtures/local/basic-ts/sauce-runner.json
+        env:
+          SAUCE_VM: true
+
+      - name: Run config-merging
+        run: |
+          node . `
+            --suiteName config-merging `
+            --runCfgPath ./tests/fixtures/local/config-merging/sauce-runner.json
+        env:
+          SAUCE_VM: true
 
   cucumber-build-and-test-local:
     runs-on: windows-latest

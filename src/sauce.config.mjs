@@ -1,6 +1,7 @@
-const process = require('process');
-const _ = require('lodash');
-const fs = require('fs');
+import * as fs from 'node:fs';
+import * as process from 'node:process';
+import { pathToFileURL } from 'node:url';
+import _ from 'lodash';
 
 let userConfig = {};
 
@@ -12,7 +13,7 @@ const configFiles = process.env.PLAYWRIGHT_CFG_FILE ?
 for (const file of configFiles) {
   if (fs.existsSync(file)) {
     try {
-      userConfig = require(file);
+      userConfig = await import(pathToFileURL(file));
       // it should put config just under root level to get it work with playwright.config.ts
       // there is no such issue with playwright.config.js
       if (userConfig.default) {
@@ -80,4 +81,4 @@ function arrMerger(objValue, srcValue) {
   }
 }
 
-module.exports = _.mergeWith(userConfig, overrides, arrMerger);
+export default _.mergeWith(userConfig, overrides, arrMerger);
