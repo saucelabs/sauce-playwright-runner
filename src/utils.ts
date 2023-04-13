@@ -1,11 +1,12 @@
-const shell = require('shelljs');
-const logger = require('@wdio/logger').default;
-const path = require('path');
-const yargs = require('yargs/yargs');
+import path from 'node:path';
+
+import shell from 'shelljs';
+import logger from '@wdio/logger';
+import yargs from 'yargs/yargs';
 
 const log = logger('utils');
 
-function getAbsolutePath (pathToDir) {
+export function getAbsolutePath (pathToDir: string) {
   if (path.isAbsolute(pathToDir)) {
     return pathToDir;
   }
@@ -14,10 +15,8 @@ function getAbsolutePath (pathToDir) {
 
 /**
  * Convert a camel-case or snake-case string into a hyphenated one
- *
- * @param {str} str String to hyphenate
  */
-function toHyphenated (str) {
+export function toHyphenated (str: string) {
   const out = [];
   for (let i = 0; i < str.length; i++) {
     const char = str.charAt(i);
@@ -31,12 +30,12 @@ function toHyphenated (str) {
   return out.join('');
 }
 
-function exec (expression, {suppressLogs = false}) {
+export function exec (expression: string, {suppressLogs = false}) {
   const COMMAND_TIMEOUT = 5000;
   const cp = shell.exec(expression, { async: true, silent: true });
   if (!suppressLogs) {
-    cp.stdout.on('data', (data) => log.info(`${data}`));
-    cp.stderr.on('data', (data) => log.info(`${data}`));
+    cp.stdout?.on('data', (data) => log.info(`${data}`));
+    cp.stderr?.on('data', (data) => log.info(`${data}`));
   }
 
   return new Promise((resolve) => {
@@ -48,7 +47,7 @@ function exec (expression, {suppressLogs = false}) {
   });
 }
 
-function getArgs () {
+export function getArgs () {
   const argv = yargs(process.argv.slice(2))
       .command('$0', 'the default command')
       .option('runCfgPath', {
@@ -68,7 +67,7 @@ function getArgs () {
   return { nodeBin, runCfgPath, suiteName };
 }
 
-function replaceLegacyKeys (args) {
+export function replaceLegacyKeys (args: Record<string, any>) {
   // browserName => browser
   if ('browserName' in args) {
     if (!('browser' in args)) {
@@ -86,7 +85,7 @@ function replaceLegacyKeys (args) {
   return args;
 }
 
-function setEnvironmentVariables (envVars = {}) {
+export function setEnvironmentVariables (envVars: Record<string, string> = {}) {
   if (!envVars) {
     return;
   }
@@ -94,7 +93,3 @@ function setEnvironmentVariables (envVars = {}) {
     process.env[key] = value;
   }
 }
-
-module.exports = {
-  exec, getAbsolutePath, toHyphenated,
-  getArgs, replaceLegacyKeys, setEnvironmentVariables };
