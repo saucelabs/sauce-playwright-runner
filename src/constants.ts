@@ -1,4 +1,4 @@
-const path = require('path');
+import path from 'node:path';
 
 const HOME_DIR = '/home/seluser';
 const LOG_DIR = '/var/log/cont';
@@ -18,6 +18,6 @@ exports.LOG_FILES = [
   path.join(HOME_DIR, '/console.log'),
 ];
 
-exports.DESIRED_BROWSER = process.env.BROWSER_NAME || 'chromium';
+export const DESIRED_BROWSER = process.env.BROWSER_NAME || 'chromium';
 
-exports.DOCKER_CHROME_PATH = '/opt/google/chrome/google-chrome';
+export const DOCKER_CHROME_PATH = '/opt/google/chrome/google-chrome';
