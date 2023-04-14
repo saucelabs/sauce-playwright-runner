@@ -1,11 +1,11 @@
-const { spawn } = require('child_process');
-const path = require('path');
-const { prepareNpmEnv, preExec } = require('sauce-testrunner-utils');
-const utils = require('./utils');
+import { spawn } from 'node:child_process';
+import path from 'node:path';
+import { prepareNpmEnv, preExec } from 'sauce-testrunner-utils';
+import * as utils from './utils';
 
-function buildArgs (runCfg, cucumberBin) {
-  let paths = [];
-  runCfg.suite.options.paths.forEach((p) => {
+function buildArgs (runCfg: any, cucumberBin: string) {
+  const paths: string[] = [];
+  runCfg.suite.options.paths.forEach((p: any) => {
     paths.push(path.join(runCfg.projectPath, p));
   });
   const procArgs = [
@@ -29,19 +29,19 @@ function buildArgs (runCfg, cucumberBin) {
     procArgs.push('-b');
     procArgs.push('true');
   }
-  runCfg.suite.options.require?.forEach((req) => {
+  runCfg.suite.options.require?.forEach((req: any) => {
     procArgs.push('-r');
     procArgs.push(path.join(runCfg.projectPath, req));
   });
-  runCfg.suite.options.import?.forEach((im) => {
+  runCfg.suite.options.import?.forEach((im: any) => {
     procArgs.push('-i');
     procArgs.push(path.join(runCfg.projectPath, im));
   });
-  runCfg.suite.options.tags?.forEach((tag) => {
+  runCfg.suite.options.tags?.forEach((tag: any) => {
     procArgs.push('-t');
     procArgs.push(tag);
   });
-  runCfg.suite.options.format?.forEach((format) => {
+  runCfg.suite.options.format?.forEach((format: any) => {
     procArgs.push('--format');
     const opts = format.split(':');
     if (opts.length === 2) {
@@ -58,7 +58,7 @@ function buildArgs (runCfg, cucumberBin) {
   return procArgs;
 }
 
-async function runCucumber (nodeBin, runCfg) {
+export async function runCucumber (nodeBin: string, runCfg: any) {
   process.env.BROWSER_NAME = runCfg.suite.browserName;
   process.env.BROWSER_OPTIONS = runCfg.suite.browserOptions;
   process.env.SAUCE_SUITE_NAME = runCfg.suite.name;
@@ -74,8 +74,8 @@ async function runCucumber (nodeBin, runCfg) {
   const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
 
   // Install NPM dependencies
-  let metrics = [];
-  let npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
+  const metrics = [];
+  const npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
   metrics.push(npmMetrics);
 
   const startTime = new Date().toISOString();
@@ -94,7 +94,7 @@ async function runCucumber (nodeBin, runCfg) {
   const proc = spawn(nodeBin, procArgs, {stdio: 'inherit', env: process.env});
 
   let passed = false;
-  const procPromise = new Promise((resolve) => {
+  const procPromise = new Promise<boolean>((resolve) => {
     proc.stdout?.on('data', (data) => resolve(data.toString()));
     proc.on('error', (err) => {
       throw new Error(err.message);
@@ -103,7 +103,8 @@ async function runCucumber (nodeBin, runCfg) {
       const passed = code === 0;
       resolve(passed);
     });
-  }).catch((err) => console.error(err));
+  });
+  // }).catch((err) => console.error(err));
 
   const endTime = new Date().toISOString();
   try {
@@ -120,7 +121,7 @@ async function runCucumber (nodeBin, runCfg) {
   };
 }
 
-function buildFormatOption (cfg) {
+function buildFormatOption (cfg: any) {
   return {
     upload: false,
     suiteName: cfg.suite.name,
@@ -129,5 +130,3 @@ function buildFormatOption (cfg) {
     outputFile: path.join(cfg.assetsDir, 'sauce-test-report.json'),
   };
 }
-
-module.exports = { runCucumber };
