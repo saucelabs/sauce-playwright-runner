@@ -8,6 +8,7 @@ module.exports = {
     node: true,
     es2020: true,
   },
+  ignorePatterns: ['src/sauce.config.mjs'],
   overrides: [
     {
       files: ['*.ts'],
