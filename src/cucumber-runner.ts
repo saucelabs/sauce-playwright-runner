@@ -94,21 +94,20 @@ export async function runCucumber (nodeBin: string, runCfg: any) {
   const proc = spawn(nodeBin, procArgs, {stdio: 'inherit', env: process.env});
 
   let passed = false;
-  const procPromise = new Promise<boolean>((resolve) => {
-    proc.stdout?.on('data', (data) => resolve(data.toString()));
+  const procPromise = new Promise<number | null>((resolve, reject) => {
+    // proc.stdout?.on('data', (data) => resolve(data.toString()));
     proc.on('error', (err) => {
-      throw new Error(err.message);
+      reject(err);
     });
-    proc.on('close', (code, /*, ...args*/) => {
-      const passed = code === 0;
-      resolve(passed);
+    proc.on('close', (code) => {
+      resolve(code);
     });
   });
-  // }).catch((err) => console.error(err));
 
   const endTime = new Date().toISOString();
   try {
-    passed = await procPromise;
+    const exitCode = await procPromise;
+    passed = exitCode === 0;
   } catch (e) {
     console.error(`Could not complete job. Reason: ${e}`);
   }
