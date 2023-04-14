@@ -1,5 +1,5 @@
 jest.mock('fs');
-const {generateJunitfile} = require('../../../src/playwright-runner');
+const {generateJunitfile} = require('../../../lib/playwright-runner');
 const fs = require('fs');
 
 describe('playwright-runner', function () {

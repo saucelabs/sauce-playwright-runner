@@ -9,9 +9,10 @@
   ],
   "main": "lib/cli.js",
   "scripts": {
+    "build": "tsc",
     "lint": "eslint tests/ src/",
     "test": "./bin/wait_display && DISPLAY=\"$(cat DISPLAY)\" ./bin/playwright",
-    "unit-test": "jest --env node",
+    "unit-test": "npm run build && jest --env node",
     "release": "release-it --github.release",
     "release:ci": "npm run release -- --ci --npm.skipChecks --no-git.requireCleanWorkingDir",
     "release:patch": "npm run release -- patch",
