@@ -40,9 +40,9 @@ export function exec (expression: string, {suppressLogs = false}) {
 
   return new Promise((resolve) => {
     const timeout = setTimeout(resolve, COMMAND_TIMEOUT);
-    cp.on('close', () => {
+    cp.on('close', (code) => {
       clearTimeout(timeout);
-      resolve();
+      resolve(code);
     });
   });
 }
@@ -61,7 +61,7 @@ export function getArgs () {
         description: 'Select the suite to run'
       })
       .demandOption(['runCfgPath', 'suiteName'])
-      .argv;
+      .parseSync();
   const { runCfgPath, suiteName } = argv;
   const nodeBin = process.argv[0];
   return { nodeBin, runCfgPath, suiteName };
