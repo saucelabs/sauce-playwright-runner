@@ -4,7 +4,10 @@
   "description": "Sauce Labs Playwright Test Runner",
   "license": "MIT",
   "private": true,
-  "main": "src/playwright-recorder.js",
+  "files": [
+    "lib"
+  ],
+  "main": "lib/cli.js",
   "scripts": {
     "lint": "eslint tests/ src/",
     "test": "./bin/wait_display && DISPLAY=\"$(cat DISPLAY)\" ./bin/playwright",
@@ -28,7 +31,7 @@
     "@playwright/test": "1.31.1",
     "@saucelabs/playwright-reporter": "0.4.1",
     "@saucelabs/testcomposer": "^1.0.0",
-    "@wdio/logger": "8.6.6",
+    "@wdio/logger": "7.26.0",
     "dotenv": "16.0.3",
     "glob": "^8.0.0",
     "lodash": "4.17.21",

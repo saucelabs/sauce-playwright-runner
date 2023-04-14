@@ -1,7 +1,7 @@
 {
   "extends": "@tsconfig/node18/tsconfig.json",
   "include": ["src/**/*"],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", "src/sauce.config.mjs"],
   "compilerOptions": {
     "allowJs": true,
     "outDir": "lib"
