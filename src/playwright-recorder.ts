@@ -1,15 +1,16 @@
-const fs = require('fs');
-const path = require('path');
-const { Transform } = require('stream');
-const childProcess = require('child_process');
+import fs from 'node:fs';
+import path from 'node:path';
+import { Transform } from 'node:stream';
+import * as childProcess from 'node:child_process';
+import process from 'node:process';
 
 const escapeSequenceRegex = new RegExp('[\\u001b]\\[2K|[\\u001b]\\[0G', 'g');
 
-function playwrightRecorder () {
+export function playwrightRecorder () {
   // console.log is saved out of reportsDir since it is cleared on startup.
   const ws = fs.createWriteStream(path.join(process.cwd(), 'console.log'), { flags: 'w+', mode: 0o644 });
   const stripAsciiTransform = new Transform({
-    transform (chunk, encoding, callback) {
+    transform (chunk, _, callback) {
       // list reporter uses escape codes to rewrite lines, strip them to make console output more readable
       callback(null, chunk.toString().replace(escapeSequenceRegex, ''));
     },
@@ -25,12 +26,6 @@ function playwrightRecorder () {
 
   child.on('exit', (exitCode) => {
     ws.end();
-    process.exit(exitCode);
+    process.exit(exitCode ?? 1);
   });
 }
-
-if (require.main === module) {
-  (async () => await playwrightRecorder())();
-}
-
-exports.playwrightRecorder = playwrightRecorder;
