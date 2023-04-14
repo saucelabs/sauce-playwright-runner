@@ -1,19 +1,26 @@
 module.exports = {
-  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
-  parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'jest'],
+  root: true,
+  extends: ['eslint:recommended'],
   rules: {
-    "no-console": "off",
-    "no-control-regex": "off",
-    "promise/no-native": "off",
-    "promise/prefer-await-to-callbacks": "off",
-    "promise/prefer-await-to-then": "off",
-    "promise/catch-or-return": "off",
-    "space-before-function-paren": "off"
+    'no-control-regex': 'off',
   },
   env: {
     node: true,
-    jest: true,
+    es2020: true,
   },
-  root: true,
+  overrides: [
+    {
+      files: ['*.ts'],
+      extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
+      plugins: ['@typescript-eslint'],
+      parser: '@typescript-eslint/parser',
+    },
+    {
+      files: ['tests/**/*.js'],
+      plugins: ['jest'],
+      env: {
+        jest: true,
+      },
+    },
+  ],
 };

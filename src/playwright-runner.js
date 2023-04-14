@@ -480,11 +480,9 @@ async function runPlaywright(nodeBin, runCfg) {
 if (require.main === module) {
   const {nodeBin, runCfgPath, suiteName} = getArgs();
   run(nodeBin, runCfgPath, suiteName)
-    // eslint-disable-next-line promise/prefer-await-to-then
     .then((passed) => {
       process.exit(passed ? 0 : 1);
     })
-    // eslint-disable-next-line promise/prefer-await-to-callbacks
     .catch((err) => {
       console.log(err);
       process.exit(1);
