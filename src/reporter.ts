@@ -1,6 +1,14 @@
-const {DESIRED_BROWSER} = require('./constants');
+import type { TestComposer } from '@saucelabs/testcomposer';
 
-async function createJobReport(runCfg, testComposer, passed, startTime, endTime) {
+import { DESIRED_BROWSER } from './constants';
+
+export async function createJobReport(
+  runCfg: any,
+  testComposer: TestComposer,
+  passed: boolean,
+  startTime: string,
+  endTime: string
+) {
   /**
    * don't try to create a job if no credentials are set
    */
@@ -20,7 +28,7 @@ async function createJobReport(runCfg, testComposer, passed, startTime, endTime)
       startTime,
       endTime,
       framework: 'playwright',
-      frameworkVersion: process.env.PLAYWRIGHT_VERSION,
+      frameworkVersion: process.env.PLAYWRIGHT_VERSION || '',
       passed,
       tags: runCfg.sauce.metadata?.tags,
       build: runCfg.sauce.metadata?.build,
@@ -34,5 +42,3 @@ async function createJobReport(runCfg, testComposer, passed, startTime, endTime)
 
   return job;
 }
-
-module.exports.createJobReport = createJobReport;
