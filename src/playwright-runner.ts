@@ -1,25 +1,27 @@
 #!/usr/bin/env node
-const {spawn} = require('child_process');
-const _ = require('lodash');
-const path = require('path');
-const fs = require('fs');
-const utils = require('./utils');
-const {createJobReport} = require('./reporter');
-const {prepareNpmEnv, loadRunConfig, escapeXML, preExec} = require('sauce-testrunner-utils');
-const {updateExportedValue} = require('sauce-testrunner-utils').saucectl;
-const {LOG_FILES, DOCKER_CHROME_PATH} = require('./constants');
-const glob = require('glob');
-const convert = require('xml-js');
-const {runCucumber} = require('./cucumber-runner');
-const {TestComposer} = require('@saucelabs/testcomposer');
-const stream = require('stream');
+import {spawn} from 'node:child_process';
+import path from 'node:path';
+import fs from 'node:fs';
+import stream from 'node:stream';
+
+import _ from 'lodash';
+import {TestComposer} from '@saucelabs/testcomposer';
+import {prepareNpmEnv, loadRunConfig, escapeXML, preExec, saucectl} from 'sauce-testrunner-utils';
+import glob from 'glob';
+import convert from 'xml-js';
+
+import * as utils from './utils';
+import {createJobReport} from './reporter';
+import {LOG_FILES, DOCKER_CHROME_PATH} from './constants';
+import {runCucumber} from './cucumber-runner';
+import type { RunResult, Metrics } from './types';
 
 const {getAbsolutePath, getArgs, exec} = utils;
 
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 
-async function createJob(runCfg, testComposer, hasPassed, startTime, endTime, metrics) {
+async function createJob(runCfg: any, testComposer: TestComposer, hasPassed: boolean, startTime: string, endTime: string, metrics: Metrics[]) {
   const cwd = process.cwd();
 
   const job = await createJobReport(runCfg, testComposer, hasPassed, startTime, endTime);
@@ -45,7 +47,7 @@ async function createJob(runCfg, testComposer, hasPassed, startTime, endTime, me
   }
   const assets = glob.sync(path.join(runCfg.assetsDir, '**', '*.*'));
 
-  let files = [
+  const files: { filename: string, data: stream.Readable }[] = [
     {
       filename: 'console.log',
       data: fs.createReadStream(path.join(cwd, 'console.log')),
@@ -90,12 +92,12 @@ async function createJob(runCfg, testComposer, hasPassed, startTime, endTime, me
   }
 
   // Upload metrics
-  for (let [, mt] of Object.entries(metrics)) {
+  for (const [, mt] of Object.entries(metrics)) {
     if (_.isEmpty(mt.data)) {
       continue;
     }
     const r = new stream.Readable();
-    r.push(JSON.stringify(mt.data, ' ', 2));
+    r.push(JSON.stringify(mt.data, null, 2));
     r.push(null);
 
     files.push(
@@ -132,7 +134,7 @@ async function createJob(runCfg, testComposer, hasPassed, startTime, endTime, me
   return job;
 }
 
-function getPlatformName(platformName) {
+function getPlatformName(platformName: string) {
   if (process.platform.toLowerCase() === 'linux') {
     platformName = 'Linux';
   }
@@ -140,18 +142,17 @@ function getPlatformName(platformName) {
   return platformName;
 }
 
-function generateJunitfile(sourceFile, suiteName, browserName, platformName) {
+function generateJunitfile(sourceFile: string, suiteName: string, browserName: string, platformName: string) {
   if (!fs.existsSync(sourceFile)) {
     return;
   }
 
-  let opts = {compact: true, spaces: 4};
 
   const xmlData = fs.readFileSync(sourceFile, 'utf8');
   if (!xmlData) {
     return;
   }
-  let result = convert.xml2js(xmlData, opts);
+  let result = convert.xml2js(xmlData, {compact: true}) as any;
   if (!result.testsuites || !result.testsuites.testsuite) {
     return;
   }
@@ -160,14 +161,14 @@ function generateJunitfile(sourceFile, suiteName, browserName, platformName) {
     result.testsuites.testsuite = [result.testsuites.testsuite];
   }
 
-  let testsuites = [];
+  const testsuites = [];
   let totalTests = 0;
   let totalErrs = 0;
   let totalFailures = 0;
   let totalSkipped = 0;
   let totalTime = 0;
   for (let i = 0; i < result.testsuites.testsuite.length; i++) {
-    let testsuite = result.testsuites.testsuite[i];
+    const testsuite = result.testsuites.testsuite[i] as any;
     if (testsuite._attributes) {
       totalTests += +testsuite._attributes.tests || 0;
       totalFailures += +testsuite._attributes.failures || 0;
@@ -179,7 +180,7 @@ function generateJunitfile(sourceFile, suiteName, browserName, platformName) {
     // _attributes
     testsuite._attributes = testsuite._attributes || {};
     testsuite._attributes.id = i;
-    let timestamp = new Date(+testsuite._attributes.timestamp);
+    const timestamp = new Date(+testsuite._attributes.timestamp);
     testsuite._attributes.timestamp = timestamp.toISOString();
 
     // properties
@@ -241,12 +242,12 @@ function generateJunitfile(sourceFile, suiteName, browserName, platformName) {
     }
   };
 
-  opts.textFn = escapeXML;
-  let xmlResult = convert.js2xml(result, opts);
+  const opts = {compact: true, spaces: 4, textFn: escapeXML};
+  const xmlResult = convert.js2xml(result, opts);
   fs.writeFileSync(sourceFile, xmlResult);
 }
 
-async function runReporter({runCfg, hasPassed, startTime, endTime, metrics}) {
+async function runReporter({runCfg, hasPassed, startTime, endTime, metrics}: {runCfg: any, hasPassed: boolean, startTime: string, endTime: string, metrics: Metrics[]}) {
   let pkgVersion = 'unknown';
   try {
     const pkgData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf-8'));
@@ -257,8 +258,8 @@ async function runReporter({runCfg, hasPassed, startTime, endTime, metrics}) {
 
   const testComposer = new TestComposer({
     region: runCfg.sauce.region,
-    username: process.env.SAUCE_USERNAME,
-    accessKey: process.env.SAUCE_ACCESS_KEY,
+    username: process.env.SAUCE_USERNAME || '',
+    accessKey: process.env.SAUCE_ACCESS_KEY || '',
     headers: {'User-Agent': `playwright-runner/${pkgVersion}`}
   });
 
@@ -267,15 +268,17 @@ async function runReporter({runCfg, hasPassed, startTime, endTime, metrics}) {
     job = await createJob(runCfg, testComposer, hasPassed, startTime, endTime, metrics);
     console.log(`\nOpen job details page: ${job.url}\n`);
   } catch (e) {
-    console.log(`Failed to upload results to Sauce Labs. Reason: ${e.message}`);
+    if (e instanceof Error) {
+      console.log(`Failed to upload results to Sauce Labs. Reason: ${e.message}`);
+    }
   } finally {
-    updateExportedValue(SAUCECTL_OUTPUT_FILE, {jobDetailsUrl: job?.url, reportingSucceeded: !!job});
+    saucectl.updateExportedValue(SAUCECTL_OUTPUT_FILE, {jobDetailsUrl: job?.url, reportingSucceeded: !!job});
   }
 }
 
-async function getCfg(runCfgPath, suiteName) {
+async function getCfg(runCfgPath: string, suiteName: string) {
   runCfgPath = getAbsolutePath(runCfgPath);
-  const runCfg = await loadRunConfig(runCfgPath);
+  const runCfg: any = loadRunConfig(runCfgPath);
 
   const suite = _.find(runCfg.suites, ({name}) => name === suiteName);
   if (!suite) {
@@ -305,14 +308,15 @@ async function getCfg(runCfgPath, suiteName) {
   return runCfg;
 }
 
-async function run(nodeBin, runCfgPath, suiteName) {
+async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   const runCfg = await getCfg(runCfgPath, suiteName);
 
-  const packageInfo = require(path.join(__dirname, '..', 'package.json'));
+  // const packageInfo = require(path.join(__dirname, '..', 'package.json'));
+  const packageInfo = await import(path.join(__dirname, '..', 'package.json'));
   console.log(`Sauce Playwright Runner ${packageInfo.version}`);
   console.log(`Running Playwright ${packageInfo.dependencies?.playwright || ''}`);
 
-  let result;
+  let result: RunResult;
   if (runCfg.Kind === 'playwright-cucumberjs') {
     result = await runCucumber(nodeBin, runCfg);
   } else {
@@ -344,8 +348,8 @@ async function run(nodeBin, runCfgPath, suiteName) {
   return result.hasPassed;
 }
 
-async function runPlaywright(nodeBin, runCfg) {
-  let excludeParams = ['screenshot-on-failure', 'video', 'slow-mo', 'headless', 'headed'];
+async function runPlaywright(nodeBin: string, runCfg: any): Promise<RunResult> {
+  const excludeParams = ['screenshot-on-failure', 'video', 'slow-mo', 'headless', 'headed'];
 
   process.env.BROWSER_NAME = runCfg.suite.param.browserName;
   process.env.HEADLESS = runCfg.suite.param.headless;
@@ -391,7 +395,7 @@ async function runPlaywright(nodeBin, runCfg) {
   if (!suite.param.globalTimeout) {
     suite.param.timeout = 1800000;
   }
-  let args = _.defaultsDeep(defaultArgs, utils.replaceLegacyKeys(suite.param));
+  let args: Record<string, any> = _.defaultsDeep(defaultArgs, utils.replaceLegacyKeys(suite.param));
 
 
   // There is a conflict if the playwright project has a `browser` defined,
@@ -401,6 +405,7 @@ async function runPlaywright(nodeBin, runCfg) {
     excludeParams.push('browser');
   }
 
+  // eslint-disable-next-line prefer-const
   for (let [key, value] of Object.entries(args)) {
     key = utils.toHyphenated(key);
     if (excludeParams.includes(key.toLowerCase()) || value === false) {
@@ -426,7 +431,7 @@ async function runPlaywright(nodeBin, runCfg) {
 
   runCfg.args = args;
 
-  let env = {
+  const env = {
     ...process.env,
     ...suite.env,
     PLAYWRIGHT_JUNIT_OUTPUT_NAME: runCfg.junitFile,
@@ -437,38 +442,46 @@ async function runPlaywright(nodeBin, runCfg) {
   utils.setEnvironmentVariables(env);
 
   // Install NPM dependencies
-  let metrics = [];
+  const metrics = [];
 
   // Define node/npm path for execution
   const npmBin = path.join(path.dirname(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
   const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
 
   // runCfg.path must be set for prepareNpmEnv to find node_modules. :(
-  let npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
+  const npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
   metrics.push(npmMetrics);
 
+  const startTime = new Date().toISOString();
   // Run suite preExecs
   if (!await preExec.run(suite, runCfg.preExecTimeout)) {
-    return false;
+    return {
+      startTime,
+      endTime: new Date().toISOString(),
+      hasPassed: false,
+      metrics,
+    };
   }
 
   const playwrightProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd: runCfg.projectPath, env});
 
-  const playwrightPromise = new Promise((resolve) => {
-    playwrightProc.on('close', (code /*, ...args*/) => {
-      const hasPassed = code === 0;
-      resolve(hasPassed);
+  const playwrightPromise = new Promise<number | null>((resolve) => {
+    playwrightProc.on('close', (code) => {
+      resolve(code);
     });
   });
 
-  let startTime, endTime, hasPassed = false;
+  let hasPassed = false;
   try {
-    startTime = new Date().toISOString();
-    hasPassed = await playwrightPromise;
-    endTime = new Date().toISOString();
+    // startTime = new Date().toISOString();
+    // hasPassed = await playwrightPromise;
+    const exitCode = await playwrightPromise;
+    hasPassed = exitCode === 0;
+    // endTime = new Date().toISOString();
   } catch (e) {
     console.error(`Could not complete job. Reason: ${e}`);
   }
+  const endTime = new Date().toISOString()
   return {
     startTime,
     endTime,
