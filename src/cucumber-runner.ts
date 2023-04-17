@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { prepareNpmEnv, preExec } from 'sauce-testrunner-utils';
 import * as utils from './utils';
+import type { RunResult } from './types';
 
 function buildArgs (runCfg: any, cucumberBin: string) {
   const paths: string[] = [];
@@ -58,7 +59,7 @@ function buildArgs (runCfg: any, cucumberBin: string) {
   return procArgs;
 }
 
-export async function runCucumber (nodeBin: string, runCfg: any) {
+export async function runCucumber (nodeBin: string, runCfg: any): Promise<RunResult> {
   process.env.BROWSER_NAME = runCfg.suite.browserName;
   process.env.BROWSER_OPTIONS = runCfg.suite.browserOptions;
   process.env.SAUCE_SUITE_NAME = runCfg.suite.name;
