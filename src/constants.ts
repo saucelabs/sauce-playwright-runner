@@ -2,7 +2,7 @@ import path from 'node:path';
 
 const HOME_DIR = '/home/seluser';
 const LOG_DIR = '/var/log/cont';
-exports.LOG_FILES = [
+export const LOG_FILES = [
   path.join(LOG_DIR, 'chrome_browser.log'),
   path.join(LOG_DIR, '/firefox_browser.log'),
   path.join(LOG_DIR, '/supervisord.log'),
