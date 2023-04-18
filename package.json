@@ -12,7 +12,7 @@
     "build": "tsc && cp src/sauce.config.mjs lib/",
     "clean": "rm -rf lib",
     "lint": "eslint tests/ src/",
-    "test": "./bin/wait_display && DISPLAY=\"$(cat DISPLAY)\" ./bin/playwright",
+    "test": "./bin/wait_display && DISPLAY=\"$(cat DISPLAY)\" node .",
     "unit-test": "npm run build && jest --env node",
     "release": "release-it --github.release",
     "release:ci": "npm run release -- --ci --npm.skipChecks --no-git.requireCleanWorkingDir",
