@@ -311,7 +311,6 @@ async function getCfg(runCfgPath: string, suiteName: string) {
 async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   const runCfg = await getCfg(runCfgPath, suiteName);
 
-  // const packageInfo = require(path.join(__dirname, '..', 'package.json'));
   const packageInfo = await import(path.join(__dirname, '..', 'package.json'));
   console.log(`Sauce Playwright Runner ${packageInfo.version}`);
   console.log(`Running Playwright ${packageInfo.dependencies?.playwright || ''}`);
