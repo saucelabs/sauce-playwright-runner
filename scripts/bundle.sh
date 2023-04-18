@@ -4,7 +4,8 @@ rm -rf ./bundle/
 mkdir ./bundle/
 export PLAYWRIGHT_BROWSERS_PATH=$PWD/bundle/Cache/
 echo $PLAYWRIGHT_BROWSERS_PATH
-cp -r ./src/ ./bundle/src/
+npm run build
+cp -r ./lib/ ./bundle/lib/
 cp -r bin/ bundle/bin/
 cp package.json bundle/package.json
 cp package-lock.json bundle/package-lock.json
