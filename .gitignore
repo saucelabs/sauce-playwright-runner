@@ -20,3 +20,5 @@ lib
 coverage
 
 node_modules
+
+console.log
