@@ -4,6 +4,8 @@
   "exclude": ["node_modules", "src/sauce.config.mjs"],
   "compilerOptions": {
     "allowJs": true,
-    "outDir": "lib"
+    "outDir": "lib",
+    "declaration": true,
+    "declarationMap": true
   }
 }
