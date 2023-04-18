@@ -1,8 +1,9 @@
 import { spawn } from 'node:child_process';
-import path from 'node:path';
+import * as path from 'node:path';
 import { prepareNpmEnv, preExec } from 'sauce-testrunner-utils';
-import * as utils from './utils';
+
 import type { RunResult } from './types';
+import * as utils from './utils';
 
 function buildArgs (runCfg: any, cucumberBin: string) {
   const paths: string[] = [];

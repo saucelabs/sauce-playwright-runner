@@ -1,6 +1,6 @@
-import path from 'node:path';
+import * as path from 'node:path';
 
-import shell from 'shelljs';
+import * as shell from 'shelljs';
 import logger from '@wdio/logger';
 
 const log = logger('utils');

@@ -1,8 +1,8 @@
-import fs from 'node:fs';
-import path from 'node:path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { Transform } from 'node:stream';
 import * as childProcess from 'node:child_process';
-import process from 'node:process';
+import * as process from 'node:process';
 
 const escapeSequenceRegex = new RegExp('[\\u001b]\\[2K|[\\u001b]\\[0G', 'g');
 

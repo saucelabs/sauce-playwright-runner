@@ -1,22 +1,20 @@
 #!/usr/bin/env node
 import {spawn} from 'node:child_process';
-import path from 'node:path';
-import fs from 'node:fs';
-import stream from 'node:stream';
+import * as path from 'node:path';
+import * as fs from 'node:fs';
+import * as stream from 'node:stream';
 
-import _ from 'lodash';
 import {TestComposer} from '@saucelabs/testcomposer';
-import {getArgs, prepareNpmEnv, loadRunConfig, escapeXML, preExec, saucectl} from 'sauce-testrunner-utils';
 import glob from 'glob';
-import convert from 'xml-js';
+import _ from 'lodash';
+import {getArgs, prepareNpmEnv, loadRunConfig, escapeXML, preExec, saucectl} from 'sauce-testrunner-utils';
+import * as convert from 'xml-js';
 
-import * as utils from './utils';
-import {createJobReport} from './reporter';
 import {LOG_FILES, DOCKER_CHROME_PATH} from './constants';
 import {runCucumber} from './cucumber-runner';
+import {createJobReport} from './reporter';
 import type { RunResult, Metrics } from './types';
-
-const {getAbsolutePath, exec} = utils;
+import * as utils from './utils';
 
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
@@ -39,7 +37,7 @@ async function createJob(runCfg: any, testComposer: TestComposer, hasPassed: boo
   if (webmFiles.length > 0) {
     videoLocation = path.join(runCfg.assetsDir, 'video.mp4');
     try {
-      await exec(`ffmpeg -i ${webmFiles[0]} ${videoLocation}`, {suppressLogs: true});
+      await utils.exec(`ffmpeg -i ${webmFiles[0]} ${videoLocation}`, {suppressLogs: true});
     } catch (e) {
       videoLocation = null;
       console.error(`Failed to convert ${webmFiles[0]} to mp4: '${e}'`);
@@ -277,7 +275,7 @@ async function runReporter({runCfg, hasPassed, startTime, endTime, metrics}: {ru
 }
 
 async function getCfg(runCfgPath: string, suiteName: string) {
-  runCfgPath = getAbsolutePath(runCfgPath);
+  runCfgPath = utils.getAbsolutePath(runCfgPath);
   const runCfg: any = loadRunConfig(runCfgPath);
 
   const suite = _.find(runCfg.suites, ({name}) => name === suiteName);

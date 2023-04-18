@@ -1,4 +1,4 @@
-import path from 'node:path';
+import * as path from 'node:path';
 
 const HOME_DIR = '/home/seluser';
 const LOG_DIR = '/var/log/cont';
