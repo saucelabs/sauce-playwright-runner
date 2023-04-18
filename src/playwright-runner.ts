@@ -142,7 +142,7 @@ function getPlatformName(platformName: string) {
   return platformName;
 }
 
-function generateJunitfile(sourceFile: string, suiteName: string, browserName: string, platformName: string) {
+export function generateJunitfile(sourceFile: string, suiteName: string, browserName: string, platformName: string) {
   if (!fs.existsSync(sourceFile)) {
     return;
   }
