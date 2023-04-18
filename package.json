@@ -7,7 +7,7 @@
   "files": [
     "lib"
   ],
-  "main": "lib/cli.js",
+  "main": "lib/playwright-recorder.js",
   "scripts": {
     "build": "tsc",
     "lint": "eslint tests/ src/",
