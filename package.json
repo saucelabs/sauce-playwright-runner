@@ -9,7 +9,8 @@
   ],
   "main": "lib/playwright-recorder.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp src/sauce.config.mjs lib/",
+    "clean": "rm -rf lib",
     "lint": "eslint tests/ src/",
     "test": "./bin/wait_display && DISPLAY=\"$(cat DISPLAY)\" ./bin/playwright",
     "unit-test": "npm run build && jest --env node",
