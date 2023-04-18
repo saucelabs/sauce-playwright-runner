@@ -179,11 +179,6 @@ jobs:
       - name: Update Release Version
         run: npm version --no-git-tag-version 1.0.0
 
-      - name: Build
-        run: |
-          npm ci
-          npm run build
-
       - name: Bundle Directory
         run: bash ./scripts/bundle.sh
 
@@ -231,11 +226,6 @@ jobs:
 
       - name: Update Release Version
         run: npm version --no-git-tag-version 1.0.0
-
-      - name: Build
-        run: |
-          npm ci
-          npm run build
 
       - name: Bundle Directory
         run: bash ./scripts/bundle.sh
