@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import * as path from 'node:path';
 import { prepareNpmEnv, preExec } from 'sauce-testrunner-utils';
 
-import type { RunResult } from './types';
+import type { Metrics, RunResult } from './types';
 import * as utils from './utils';
 
 function buildArgs (runCfg: any, cucumberBin: string) {
@@ -76,7 +76,7 @@ export async function runCucumber (nodeBin: string, runCfg: any): Promise<RunRes
   const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
 
   // Install NPM dependencies
-  const metrics = [];
+  const metrics: Metrics[] = [];
   const npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
   metrics.push(npmMetrics);
 
@@ -97,7 +97,6 @@ export async function runCucumber (nodeBin: string, runCfg: any): Promise<RunRes
 
   let passed = false;
   const procPromise = new Promise<number | null>((resolve, reject) => {
-    // proc.stdout?.on('data', (data) => resolve(data.toString()));
     proc.on('error', (err) => {
       reject(err);
     });

@@ -439,7 +439,7 @@ async function runPlaywright(nodeBin: string, runCfg: any): Promise<RunResult> {
   utils.setEnvironmentVariables(env);
 
   // Install NPM dependencies
-  const metrics = [];
+  const metrics: Metrics[] = [];
 
   // Define node/npm path for execution
   const npmBin = path.join(path.dirname(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
@@ -462,7 +462,10 @@ async function runPlaywright(nodeBin: string, runCfg: any): Promise<RunResult> {
 
   const playwrightProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd: runCfg.projectPath, env});
 
-  const playwrightPromise = new Promise<number | null>((resolve) => {
+  const playwrightPromise = new Promise<number | null>((resolve, reject) => {
+    playwrightProc.on('error', (err) => {
+      reject(err);
+    });
     playwrightProc.on('close', (code) => {
       resolve(code);
     });
