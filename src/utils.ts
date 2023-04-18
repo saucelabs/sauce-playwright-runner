@@ -2,7 +2,6 @@ import path from 'node:path';
 
 import shell from 'shelljs';
 import logger from '@wdio/logger';
-import yargs from 'yargs/yargs';
 
 const log = logger('utils');
 
@@ -45,26 +44,6 @@ export function exec (expression: string, {suppressLogs = false}) {
       resolve(code);
     });
   });
-}
-
-export function getArgs () {
-  const argv = yargs(process.argv.slice(2))
-      .command('$0', 'the default command')
-      .option('runCfgPath', {
-        alias: 'r',
-        type: 'string',
-        description: 'Path to sauce runner json',
-      })
-      .option('suiteName', {
-        alias: 's',
-        type: 'string',
-        description: 'Select the suite to run'
-      })
-      .demandOption(['runCfgPath', 'suiteName'])
-      .parseSync();
-  const { runCfgPath, suiteName } = argv;
-  const nodeBin = process.argv[0];
-  return { nodeBin, runCfgPath, suiteName };
 }
 
 export function replaceLegacyKeys (args: Record<string, any>) {

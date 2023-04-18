@@ -6,7 +6,7 @@ import stream from 'node:stream';
 
 import _ from 'lodash';
 import {TestComposer} from '@saucelabs/testcomposer';
-import {prepareNpmEnv, loadRunConfig, escapeXML, preExec, saucectl} from 'sauce-testrunner-utils';
+import {getArgs, prepareNpmEnv, loadRunConfig, escapeXML, preExec, saucectl} from 'sauce-testrunner-utils';
 import glob from 'glob';
 import convert from 'xml-js';
 
@@ -16,7 +16,7 @@ import {LOG_FILES, DOCKER_CHROME_PATH} from './constants';
 import {runCucumber} from './cucumber-runner';
 import type { RunResult, Metrics } from './types';
 
-const {getAbsolutePath, getArgs, exec} = utils;
+const {getAbsolutePath, exec} = utils;
 
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
