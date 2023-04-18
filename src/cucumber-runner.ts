@@ -105,13 +105,13 @@ export async function runCucumber (nodeBin: string, runCfg: any): Promise<RunRes
     });
   });
 
-  const endTime = new Date().toISOString();
   try {
     const exitCode = await procPromise;
     passed = exitCode === 0;
   } catch (e) {
     console.error(`Could not complete job. Reason: ${e}`);
   }
+  const endTime = new Date().toISOString();
 
   return {
     startTime,

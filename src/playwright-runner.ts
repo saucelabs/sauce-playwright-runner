@@ -473,15 +473,13 @@ async function runPlaywright(nodeBin: string, runCfg: any): Promise<RunResult> {
 
   let hasPassed = false;
   try {
-    // startTime = new Date().toISOString();
-    // hasPassed = await playwrightPromise;
     const exitCode = await playwrightPromise;
     hasPassed = exitCode === 0;
-    // endTime = new Date().toISOString();
   } catch (e) {
     console.error(`Could not complete job. Reason: ${e}`);
   }
   const endTime = new Date().toISOString()
+
   return {
     startTime,
     endTime,
@@ -502,4 +500,3 @@ if (require.main === module) {
     });
 }
 
-module.exports = {run, generateJunitfile, getCfg};
