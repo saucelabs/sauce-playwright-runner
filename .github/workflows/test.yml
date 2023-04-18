@@ -82,6 +82,9 @@ jobs:
           npx playwright install
           npx playwright install-deps
 
+      - name: Build
+        run: npm run build
+
       - name: Run basic-js
         run: |
           node . `
@@ -125,6 +128,9 @@ jobs:
           npm i @cucumber/cucumber
           npx playwright install
           npx playwright install-deps
+
+      - name: Build
+        run: npm run build
 
       - name: Local Tests
         working-directory: tests/fixtures/local/cucumber/

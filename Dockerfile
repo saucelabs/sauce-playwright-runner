@@ -43,6 +43,8 @@ RUN npx playwright install-deps
 
 COPY --chown=seluser:seluser . .
 
+RUN npm run build
+
 ENV IMAGE_NAME=saucelabs/stt-playwright-node
 
 ARG BUILD_TAG
