@@ -13,13 +13,13 @@ import * as convert from 'xml-js';
 import {LOG_FILES, DOCKER_CHROME_PATH} from './constants';
 import {runCucumber} from './cucumber-runner';
 import {createJobReport} from './reporter';
-import type { RunResult, Metrics } from './types';
+import type { RunResult, Metrics, RunnerConfig } from './types';
 import * as utils from './utils';
 
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 
-async function createJob(runCfg: any, testComposer: TestComposer, hasPassed: boolean, startTime: string, endTime: string, metrics: Metrics[]) {
+async function createJob(runCfg: RunnerConfig, testComposer: TestComposer, hasPassed: boolean, startTime: string, endTime: string, metrics: Metrics[]) {
   const cwd = process.cwd();
 
   const job = await createJobReport(runCfg, testComposer, hasPassed, startTime, endTime);
@@ -245,7 +245,7 @@ function generateJunitfile(sourceFile: string, suiteName: string, browserName: s
   fs.writeFileSync(sourceFile, xmlResult);
 }
 
-async function runReporter({runCfg, hasPassed, startTime, endTime, metrics}: {runCfg: any, hasPassed: boolean, startTime: string, endTime: string, metrics: Metrics[]}) {
+async function runReporter({runCfg, hasPassed, startTime, endTime, metrics}: {runCfg: RunnerConfig, hasPassed: boolean, startTime: string, endTime: string, metrics: Metrics[]}) {
   let pkgVersion = 'unknown';
   try {
     const pkgData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf-8'));
@@ -345,7 +345,7 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   return result.hasPassed;
 }
 
-async function runPlaywright(nodeBin: string, runCfg: any): Promise<RunResult> {
+async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<RunResult> {
   const excludeParams = ['screenshot-on-failure', 'video', 'slow-mo', 'headless', 'headed'];
 
   process.env.BROWSER_NAME = runCfg.suite.param.browserName;
