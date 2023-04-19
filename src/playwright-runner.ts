@@ -159,7 +159,7 @@ function generateJunitfile(sourceFile: string, suiteName: string, browserName: s
     result.testsuites.testsuite = [result.testsuites.testsuite];
   }
 
-  const testsuites = [];
+  const testsuites: any[] = [];
   let totalTests = 0;
   let totalErrs = 0;
   let totalFailures = 0;

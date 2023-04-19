@@ -1,6 +1,6 @@
 import * as path from 'node:path';
 
-import * as shell from 'shelljs';
+import shell from 'shelljs';
 import logger from '@wdio/logger';
 
 const log = logger('utils');
@@ -16,7 +16,7 @@ export function getAbsolutePath (pathToDir: string) {
  * Convert a camel-case or snake-case string into a hyphenated one
  */
 export function toHyphenated (str: string) {
-  const out = [];
+  const out: string[] = [];
   for (let i = 0; i < str.length; i++) {
     const char = str.charAt(i);
     if (char.toUpperCase() === char && char.toLowerCase() !== char) {
