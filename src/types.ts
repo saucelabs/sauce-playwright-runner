@@ -22,6 +22,8 @@ export interface RunnerConfig {
   // NOTE: Kind is serialized by saucectl with a capital 'K' ¯\_(ツ)_/¯
   Kind: string;
 
+  // NOTE: The following properties are set dynamcially by the runner and are not
+  // serialized by saucectl
   assetsDir: string;
   junitFile: string;
   sauceReportFile: string;
@@ -52,20 +54,22 @@ export interface Suite {
   // Name              string            `yaml:"name,omitempty" json:"name"`
   name: string;
   // Params            SuiteConfig       `yaml:"params,omitempty" json:"param,omitempty"`
-  param?: SuiteConfig;
+  param: SuiteConfig;
+  // TestMatch         []string          `yaml:"testMatch,omitempty" json:"testMatch,omitempty"`
+  testMatch: string[] | string;
   // PlatformName      string            `yaml:"platformName,omitempty" json:"platformName,omitempty"`
   platformName?: string;
-  // TestMatch         []string          `yaml:"testMatch,omitempty" json:"testMatch,omitempty"`
-  testMatch?: string[] | string;
   // Env               map[string]string `yaml:"env,omitempty" json:"env,omitempty"`
   env?: Record<string, string>;
   // PreExec           []string          `yaml:"preExec,omitempty" json:"preExec"`
   preExec: string[];
+  // ExcludedTestFiles []string          `yaml:"excludedTestFiles,omitempty" json:"testIgnore"`
+  testIgnore?: string | string[];
 }
-//
+
 export interface SuiteConfig {
   // BrowserName string `yaml:"browserName,omitempty" json:"browserName,omitempty"`
-  browserName?: Browser;
+  browserName: Browser;
   // Headless        bool   `yaml:"headless,omitempty" json:"headless,omitempty"`
   headless?: boolean;
   // Project         string `yaml:"project" json:"project,omitempty"`
@@ -74,4 +78,7 @@ export interface SuiteConfig {
   globalTimeout?: number;
   // Timeout         int    `yaml:"timeout,omitempty" json:"timeout,omitempty"`
   timeout?: number;
+
+  headed?: boolean;
+  headful?: boolean;
 }
