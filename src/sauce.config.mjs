@@ -46,7 +46,7 @@ const overrides = {
       },
     ],
   ],
-  testIgnore: process.env.TEST_IGNORE?.split(',') ?? [],
+  testIgnore: process.env.TEST_IGNORE?.split(','),
 };
 
 // Values that are arrays are merged at the very end (see arrMerger()), but primitives are not.
