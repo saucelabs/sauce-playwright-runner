@@ -1,3 +1,4 @@
+// @ts-check
 import * as fs from 'node:fs';
 import * as process from 'node:process';
 import { pathToFileURL } from 'node:url';
@@ -13,7 +14,7 @@ const configFiles = process.env.PLAYWRIGHT_CFG_FILE ?
 for (const file of configFiles) {
   if (fs.existsSync(file)) {
     try {
-      userConfig = await import(pathToFileURL(file));
+      userConfig = await import(pathToFileURL(file).toString());
       // it should put config just under root level to get it work with playwright.config.ts
       // there is no such issue with playwright.config.js
       if (userConfig.default) {
@@ -45,7 +46,7 @@ const overrides = {
       },
     ],
   ],
-  testIgnore: process.env.TEST_IGNORE,
+  testIgnore: process.env.TEST_IGNORE?.split(',') ?? [],
 };
 
 // Values that are arrays are merged at the very end (see arrMerger()), but primitives are not.

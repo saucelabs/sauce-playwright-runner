@@ -427,7 +427,7 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
 
   // args = _.defaultsDeep(suite, args);
   if (suite.testIgnore && suite.testIgnore.length > 0) {
-    process.env.TEST_IGNORE = suite.testIgnore;
+    process.env.TEST_IGNORE = suite.testIgnore.join(',');
   }
 
   runCfg.args = args;

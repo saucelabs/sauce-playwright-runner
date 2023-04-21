@@ -58,8 +58,7 @@ export interface Suite {
   platformName: string;
   env?: Record<string, string>;
   preExec: string[];
-  // BUG: The implementation assumes string, but it must be string[]
-  testIgnore?: string;
+  testIgnore?: string[];
 }
 
 export interface SuiteConfig {
