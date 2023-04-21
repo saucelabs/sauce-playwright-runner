@@ -20,7 +20,8 @@ function buildArgs (runCfg: CucumberRunnerConfig, cucumberBin: string) {
   ];
   if (runCfg.suite.options.config) {
     procArgs.push('-c');
-    // NOTE: cucumber-js constructs the absolute path automatically and expects a relative path here
+    // NOTE: cucumber-js constructs the absolute path automatically and expects a relative path here. options.config should already be relative to the project path
+    // so just pass it along as is.
     procArgs.push(runCfg.suite.options.config);
   }
   if (runCfg.suite.options.name) {
