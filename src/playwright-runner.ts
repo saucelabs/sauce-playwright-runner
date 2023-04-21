@@ -305,7 +305,7 @@ async function getCfg(runCfgPath: string, suiteName: string): Promise<RunnerConf
   if (!runCfg.sauce) {
     runCfg.sauce = {};
   }
-  // runCfg.sauce.region = runCfg.sauce.region || 'us-west-1';
+  runCfg.sauce.region = runCfg.sauce.region || 'us-west-1';
   runCfg.playwrightOutputFolder = path.join(runCfg.assetsDir, 'test-results');
 
   return runCfg;
@@ -425,7 +425,6 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
   }
   procArgs.push(...suite.testMatch);
 
-  // args = _.defaultsDeep(suite, args);
   if (suite.testIgnore && suite.testIgnore.length > 0) {
     process.env.TEST_IGNORE = suite.testIgnore.join(',');
   }
