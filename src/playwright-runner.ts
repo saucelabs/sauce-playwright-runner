@@ -413,8 +413,8 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
       continue;
     }
     procArgs.push(`--${key}`);
-    if (value !== true && typeof value === 'string') {
-      procArgs.push(value);
+    if (value !== true) {
+      procArgs.push(new String(value).toString());
     }
   }
 
