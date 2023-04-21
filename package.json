@@ -4,11 +4,16 @@
   "description": "Sauce Labs Playwright Test Runner",
   "license": "MIT",
   "private": true,
-  "main": "src/playwright-recorder.js",
+  "files": [
+    "lib"
+  ],
+  "main": "lib/playwright-recorder.js",
   "scripts": {
+    "build": "tsc && cp src/sauce.config.mjs lib/",
+    "clean": "rm -rf lib",
     "lint": "eslint tests/ src/",
-    "test": "./bin/wait_display && DISPLAY=\"$(cat DISPLAY)\" ./bin/playwright",
-    "unit-test": "jest --env node",
+    "test": "./bin/wait_display && DISPLAY=\"$(cat DISPLAY)\" node .",
+    "unit-test": "npm run build && jest --env node",
     "release": "release-it --github.release",
     "release:ci": "npm run release -- --ci --npm.skipChecks --no-git.requireCleanWorkingDir",
     "release:patch": "npm run release -- patch",
@@ -28,7 +33,7 @@
     "@playwright/test": "1.31.1",
     "@saucelabs/playwright-reporter": "0.4.1",
     "@saucelabs/testcomposer": "^1.0.0",
-    "@wdio/logger": "^5.16.10",
+    "@wdio/logger": "7.26.0",
     "dotenv": "16.0.3",
     "glob": "^8.0.0",
     "lodash": "4.17.21",
@@ -36,17 +41,21 @@
     "query-string": "^7.1.1",
     "sauce-testrunner-utils": "^1.0.0",
     "shelljs": "^0.8.5",
-    "xml-js": "1.6.11",
-    "yargs": "^17.7.1"
+    "xml-js": "1.6.11"
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",
     "@babel/preset-env": "^7.19.4",
+    "@tsconfig/node18": "1.0.1",
     "@types/jest": "^29.1.2",
+    "@types/lodash": "4.14.194",
     "@types/node": "^18.15.7",
+    "@types/shelljs": "0.8.12",
+    "@typescript-eslint/eslint-plugin": "5.58.0",
+    "@typescript-eslint/parser": "5.58.0",
     "babel-jest": "^29.1.2",
     "bluebird": "^3.7.2",
-    "eslint": "^8.25.0",
+    "eslint": "8.38.0",
     "eslint-config-appium": "^4.7.0",
     "eslint-plugin-jest": "^27.1.1",
     "husky": "^4.3.0",
@@ -54,7 +63,7 @@
     "jest-circus": "^29.1.2",
     "jest-cli": "^29.1.2",
     "release-it": "^15.5.0",
-    "typescript": "^3.9.7"
+    "typescript": "5.0.4"
   },
   "husky": {
     "hooks": {

@@ -1,13 +1,30 @@
-const {DESIRED_BROWSER} = require('./constants');
+import type { TestComposer } from '@saucelabs/testcomposer';
 
-async function createJobReport(runCfg, testComposer, passed, startTime, endTime) {
+import { DESIRED_BROWSER } from './constants';
+import { CucumberRunnerConfig, RunnerConfig } from './types';
+
+export async function createJobReport(
+  runCfg: RunnerConfig | CucumberRunnerConfig,
+  testComposer: TestComposer,
+  passed: boolean,
+  startTime: string,
+  endTime: string
+) {
   /**
    * don't try to create a job if no credentials are set
    */
   if (!process.env.SAUCE_USERNAME || !process.env.SAUCE_ACCESS_KEY) {
     return;
   }
-  const browserName = runCfg.Kind === 'playwright' ? runCfg.args.param.browser : runCfg.suite.browserName;
+
+  let browserName;
+  if (runCfg.Kind === 'playwright') {
+    if (runCfg.args.param !== null && typeof runCfg.args.param === 'object' && 'browser' in runCfg.args.param) {
+      browserName = runCfg.args.param.browser as string;
+    }
+  } else {
+     browserName = runCfg.suite.browserName;
+  }
   let browserVersion = DESIRED_BROWSER.toLowerCase() === 'firefox' ? process.env.FF_VER : process.env.CHROME_VER;
   if (!browserVersion) {
     browserVersion = runCfg.playwright.version;
@@ -20,7 +37,7 @@ async function createJobReport(runCfg, testComposer, passed, startTime, endTime)
       startTime,
       endTime,
       framework: 'playwright',
-      frameworkVersion: process.env.PLAYWRIGHT_VERSION,
+      frameworkVersion: process.env.PLAYWRIGHT_VERSION || '',
       passed,
       tags: runCfg.sauce.metadata?.tags,
       build: runCfg.sauce.metadata?.build,
@@ -34,5 +51,3 @@ async function createJobReport(runCfg, testComposer, passed, startTime, endTime)
 
   return job;
 }
-
-module.exports.createJobReport = createJobReport;

@@ -1,10 +1,12 @@
-const { spawn } = require('child_process');
-const path = require('path');
-const { prepareNpmEnv, preExec } = require('sauce-testrunner-utils');
-const utils = require('./utils');
+import { spawn } from 'node:child_process';
+import * as path from 'node:path';
+import { prepareNpmEnv, preExec } from 'sauce-testrunner-utils';
 
-function buildArgs (runCfg, cucumberBin) {
-  let paths = [];
+import type { CucumberRunnerConfig, Metrics, RunResult } from './types';
+import * as utils from './utils';
+
+function buildArgs (runCfg: CucumberRunnerConfig, cucumberBin: string) {
+  const paths: string[] = [];
   runCfg.suite.options.paths.forEach((p) => {
     paths.push(path.join(runCfg.projectPath, p));
   });
@@ -18,7 +20,8 @@ function buildArgs (runCfg, cucumberBin) {
   ];
   if (runCfg.suite.options.config) {
     procArgs.push('-c');
-    // NOTE: cucumber-js constructs the absolute path automatically and expects a relative path here
+    // NOTE: cucumber-js constructs the absolute path automatically and expects a relative path here. options.config should already be relative to the project path
+    // so just pass it along as is.
     procArgs.push(runCfg.suite.options.config);
   }
   if (runCfg.suite.options.name) {
@@ -52,13 +55,13 @@ function buildArgs (runCfg, cucumberBin) {
   });
   if (runCfg.suite.options.parallel) {
     procArgs.push('--parallel');
-    procArgs.push(runCfg.suite.options.parallel);
+    procArgs.push(runCfg.suite.options.parallel.toString(10));
   }
 
   return procArgs;
 }
 
-async function runCucumber (nodeBin, runCfg) {
+export async function runCucumber (nodeBin: string, runCfg: CucumberRunnerConfig): Promise<RunResult> {
   process.env.BROWSER_NAME = runCfg.suite.browserName;
   process.env.BROWSER_OPTIONS = runCfg.suite.browserOptions;
   process.env.SAUCE_SUITE_NAME = runCfg.suite.name;
@@ -74,8 +77,8 @@ async function runCucumber (nodeBin, runCfg) {
   const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
 
   // Install NPM dependencies
-  let metrics = [];
-  let npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
+  const metrics: Metrics[] = [];
+  const npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
   metrics.push(npmMetrics);
 
   const startTime = new Date().toISOString();
@@ -94,23 +97,22 @@ async function runCucumber (nodeBin, runCfg) {
   const proc = spawn(nodeBin, procArgs, {stdio: 'inherit', env: process.env});
 
   let passed = false;
-  const procPromise = new Promise((resolve) => {
-    proc.stdout?.on('data', (data) => resolve(data.toString()));
+  const procPromise = new Promise<number | null>((resolve, reject) => {
     proc.on('error', (err) => {
-      throw new Error(err.message);
+      reject(err);
     });
-    proc.on('close', (code, /*, ...args*/) => {
-      const passed = code === 0;
-      resolve(passed);
+    proc.on('close', (code) => {
+      resolve(code);
     });
-  }).catch((err) => console.error(err));
+  });
 
-  const endTime = new Date().toISOString();
   try {
-    passed = await procPromise;
+    const exitCode = await procPromise;
+    passed = exitCode === 0;
   } catch (e) {
     console.error(`Could not complete job. Reason: ${e}`);
   }
+  const endTime = new Date().toISOString();
 
   return {
     startTime,
@@ -120,7 +122,7 @@ async function runCucumber (nodeBin, runCfg) {
   };
 }
 
-function buildFormatOption (cfg) {
+function buildFormatOption (cfg: CucumberRunnerConfig) {
   return {
     upload: false,
     suiteName: cfg.suite.name,
@@ -129,5 +131,3 @@ function buildFormatOption (cfg) {
     outputFile: path.join(cfg.assetsDir, 'sauce-test-report.json'),
   };
 }
-
-module.exports = { runCucumber };

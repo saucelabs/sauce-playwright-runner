@@ -1,25 +1,30 @@
 #!/usr/bin/env node
-const {spawn} = require('child_process');
-const _ = require('lodash');
-const path = require('path');
-const fs = require('fs');
-const utils = require('./utils');
-const {createJobReport} = require('./reporter');
-const {prepareNpmEnv, loadRunConfig, escapeXML, preExec} = require('sauce-testrunner-utils');
-const {updateExportedValue} = require('sauce-testrunner-utils').saucectl;
-const {LOG_FILES, DOCKER_CHROME_PATH} = require('./constants');
-const glob = require('glob');
-const convert = require('xml-js');
-const {runCucumber} = require('./cucumber-runner');
-const {TestComposer} = require('@saucelabs/testcomposer');
-const stream = require('stream');
+import {spawn} from 'node:child_process';
+import * as path from 'node:path';
+import * as fs from 'node:fs';
+import * as stream from 'node:stream';
 
-const {getAbsolutePath, getArgs, exec} = utils;
+import {TestComposer} from '@saucelabs/testcomposer';
+import glob from 'glob';
+import _ from 'lodash';
+import {getArgs, prepareNpmEnv, loadRunConfig, escapeXML, preExec, saucectl} from 'sauce-testrunner-utils';
+import * as convert from 'xml-js';
+
+import {LOG_FILES, DOCKER_CHROME_PATH} from './constants';
+import {runCucumber} from './cucumber-runner';
+import {createJobReport} from './reporter';
+import type {
+  CucumberRunnerConfig,
+  Metrics,
+  RunnerConfig,
+  RunResult,
+} from './types';
+import * as utils from './utils';
 
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 
-async function createJob(runCfg, testComposer, hasPassed, startTime, endTime, metrics) {
+async function createJob(runCfg: RunnerConfig | CucumberRunnerConfig, testComposer: TestComposer, hasPassed: boolean, startTime: string, endTime: string, metrics: Metrics[]) {
   const cwd = process.cwd();
 
   const job = await createJobReport(runCfg, testComposer, hasPassed, startTime, endTime);
@@ -37,7 +42,7 @@ async function createJob(runCfg, testComposer, hasPassed, startTime, endTime, me
   if (webmFiles.length > 0) {
     videoLocation = path.join(runCfg.assetsDir, 'video.mp4');
     try {
-      await exec(`ffmpeg -i ${webmFiles[0]} ${videoLocation}`, {suppressLogs: true});
+      await utils.exec(`ffmpeg -i ${webmFiles[0]} ${videoLocation}`, {suppressLogs: true});
     } catch (e) {
       videoLocation = null;
       console.error(`Failed to convert ${webmFiles[0]} to mp4: '${e}'`);
@@ -45,7 +50,7 @@ async function createJob(runCfg, testComposer, hasPassed, startTime, endTime, me
   }
   const assets = glob.sync(path.join(runCfg.assetsDir, '**', '*.*'));
 
-  let files = [
+  const files: { filename: string, data: stream.Readable }[] = [
     {
       filename: 'console.log',
       data: fs.createReadStream(path.join(cwd, 'console.log')),
@@ -90,12 +95,12 @@ async function createJob(runCfg, testComposer, hasPassed, startTime, endTime, me
   }
 
   // Upload metrics
-  for (let [, mt] of Object.entries(metrics)) {
+  for (const [, mt] of Object.entries(metrics)) {
     if (_.isEmpty(mt.data)) {
       continue;
     }
     const r = new stream.Readable();
-    r.push(JSON.stringify(mt.data, ' ', 2));
+    r.push(JSON.stringify(mt.data, null, 2));
     r.push(null);
 
     files.push(
@@ -132,7 +137,7 @@ async function createJob(runCfg, testComposer, hasPassed, startTime, endTime, me
   return job;
 }
 
-function getPlatformName(platformName) {
+function getPlatformName(platformName: string) {
   if (process.platform.toLowerCase() === 'linux') {
     platformName = 'Linux';
   }
@@ -140,18 +145,17 @@ function getPlatformName(platformName) {
   return platformName;
 }
 
-function generateJunitfile(sourceFile, suiteName, browserName, platformName) {
+function generateJunitfile(sourceFile: string, suiteName: string, browserName: string, platformName: string) {
   if (!fs.existsSync(sourceFile)) {
     return;
   }
 
-  let opts = {compact: true, spaces: 4};
 
   const xmlData = fs.readFileSync(sourceFile, 'utf8');
   if (!xmlData) {
     return;
   }
-  let result = convert.xml2js(xmlData, opts);
+  let result = convert.xml2js(xmlData, {compact: true}) as any;
   if (!result.testsuites || !result.testsuites.testsuite) {
     return;
   }
@@ -160,14 +164,14 @@ function generateJunitfile(sourceFile, suiteName, browserName, platformName) {
     result.testsuites.testsuite = [result.testsuites.testsuite];
   }
 
-  let testsuites = [];
+  const testsuites: any[] = [];
   let totalTests = 0;
   let totalErrs = 0;
   let totalFailures = 0;
   let totalSkipped = 0;
   let totalTime = 0;
   for (let i = 0; i < result.testsuites.testsuite.length; i++) {
-    let testsuite = result.testsuites.testsuite[i];
+    const testsuite = result.testsuites.testsuite[i] as any;
     if (testsuite._attributes) {
       totalTests += +testsuite._attributes.tests || 0;
       totalFailures += +testsuite._attributes.failures || 0;
@@ -179,7 +183,7 @@ function generateJunitfile(sourceFile, suiteName, browserName, platformName) {
     // _attributes
     testsuite._attributes = testsuite._attributes || {};
     testsuite._attributes.id = i;
-    let timestamp = new Date(+testsuite._attributes.timestamp);
+    const timestamp = new Date(+testsuite._attributes.timestamp);
     testsuite._attributes.timestamp = timestamp.toISOString();
 
     // properties
@@ -241,12 +245,12 @@ function generateJunitfile(sourceFile, suiteName, browserName, platformName) {
     }
   };
 
-  opts.textFn = escapeXML;
-  let xmlResult = convert.js2xml(result, opts);
+  const opts = {compact: true, spaces: 4, textFn: escapeXML};
+  const xmlResult = convert.js2xml(result, opts);
   fs.writeFileSync(sourceFile, xmlResult);
 }
 
-async function runReporter({runCfg, hasPassed, startTime, endTime, metrics}) {
+async function runReporter({runCfg, hasPassed, startTime, endTime, metrics}: {runCfg: RunnerConfig | CucumberRunnerConfig, hasPassed: boolean, startTime: string, endTime: string, metrics: Metrics[]}) {
   let pkgVersion = 'unknown';
   try {
     const pkgData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf-8'));
@@ -256,9 +260,9 @@ async function runReporter({runCfg, hasPassed, startTime, endTime, metrics}) {
   }
 
   const testComposer = new TestComposer({
-    region: runCfg.sauce.region,
-    username: process.env.SAUCE_USERNAME,
-    accessKey: process.env.SAUCE_ACCESS_KEY,
+    region: runCfg.sauce.region || 'us-west-1',
+    username: process.env.SAUCE_USERNAME || '',
+    accessKey: process.env.SAUCE_ACCESS_KEY || '',
     headers: {'User-Agent': `playwright-runner/${pkgVersion}`}
   });
 
@@ -267,15 +271,17 @@ async function runReporter({runCfg, hasPassed, startTime, endTime, metrics}) {
     job = await createJob(runCfg, testComposer, hasPassed, startTime, endTime, metrics);
     console.log(`\nOpen job details page: ${job.url}\n`);
   } catch (e) {
-    console.log(`Failed to upload results to Sauce Labs. Reason: ${e.message}`);
+    if (e instanceof Error) {
+      console.log(`Failed to upload results to Sauce Labs. Reason: ${e.message}`);
+    }
   } finally {
-    updateExportedValue(SAUCECTL_OUTPUT_FILE, {jobDetailsUrl: job?.url, reportingSucceeded: !!job});
+    saucectl.updateExportedValue(SAUCECTL_OUTPUT_FILE, {jobDetailsUrl: job?.url, reportingSucceeded: !!job});
   }
 }
 
-async function getCfg(runCfgPath, suiteName) {
-  runCfgPath = getAbsolutePath(runCfgPath);
-  const runCfg = await loadRunConfig(runCfgPath);
+async function getCfg(runCfgPath: string, suiteName: string): Promise<RunnerConfig | CucumberRunnerConfig> {
+  runCfgPath = utils.getAbsolutePath(runCfgPath);
+  const runCfg = loadRunConfig(runCfgPath) as RunnerConfig;
 
   const suite = _.find(runCfg.suites, ({name}) => name === suiteName);
   if (!suite) {
@@ -305,14 +311,14 @@ async function getCfg(runCfgPath, suiteName) {
   return runCfg;
 }
 
-async function run(nodeBin, runCfgPath, suiteName) {
+async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   const runCfg = await getCfg(runCfgPath, suiteName);
 
-  const packageInfo = require(path.join(__dirname, '..', 'package.json'));
+  const packageInfo = await import(path.join(__dirname, '..', 'package.json'));
   console.log(`Sauce Playwright Runner ${packageInfo.version}`);
   console.log(`Running Playwright ${packageInfo.dependencies?.playwright || ''}`);
 
-  let result;
+  let result: RunResult;
   if (runCfg.Kind === 'playwright-cucumberjs') {
     result = await runCucumber(nodeBin, runCfg);
   } else {
@@ -344,11 +350,11 @@ async function run(nodeBin, runCfgPath, suiteName) {
   return result.hasPassed;
 }
 
-async function runPlaywright(nodeBin, runCfg) {
-  let excludeParams = ['screenshot-on-failure', 'video', 'slow-mo', 'headless', 'headed'];
+async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<RunResult> {
+  const excludeParams = ['screenshot-on-failure', 'video', 'slow-mo', 'headless', 'headed'];
 
   process.env.BROWSER_NAME = runCfg.suite.param.browserName;
-  process.env.HEADLESS = runCfg.suite.param.headless;
+  process.env.HEADLESS = runCfg.suite.param.headless === true ? 'true' : '';
   process.env.SAUCE_SUITE_NAME = runCfg.suite.name;
   process.env.SAUCE_ARTIFACTS_DIRECTORY = runCfg.assetsDir;
   if (runCfg.suite.param.browserName === 'chrome') {
@@ -391,8 +397,7 @@ async function runPlaywright(nodeBin, runCfg) {
   if (!suite.param.globalTimeout) {
     suite.param.timeout = 1800000;
   }
-  let args = _.defaultsDeep(defaultArgs, utils.replaceLegacyKeys(suite.param));
-
+  let args: Record<string, unknown> = _.defaultsDeep(defaultArgs, utils.replaceLegacyKeys(suite.param));
 
   // There is a conflict if the playwright project has a `browser` defined,
   // since the job is launched with the browser set by saucectl, which is now set as the job's metadata.
@@ -401,6 +406,7 @@ async function runPlaywright(nodeBin, runCfg) {
     excludeParams.push('browser');
   }
 
+  // eslint-disable-next-line prefer-const
   for (let [key, value] of Object.entries(args)) {
     key = utils.toHyphenated(key);
     if (excludeParams.includes(key.toLowerCase()) || value === false) {
@@ -408,7 +414,7 @@ async function runPlaywright(nodeBin, runCfg) {
     }
     procArgs.push(`--${key}`);
     if (value !== true) {
-      procArgs.push(value);
+      procArgs.push(String(value));
     }
   }
 
@@ -420,55 +426,64 @@ async function runPlaywright(nodeBin, runCfg) {
   procArgs.push(...suite.testMatch);
 
   args = _.defaultsDeep(suite, args);
-  if (args.testIgnore && args.testIgnore.length > 0) {
-    process.env.TEST_IGNORE = args.testIgnore;
+  if (Array.isArray(args.testIgnore) && args.testIgnore.length > 0) {
+    process.env.TEST_IGNORE = args.testIgnore.join(',');
   }
 
   runCfg.args = args;
 
-  let env = {
+  const env = {
     ...process.env,
     ...suite.env,
     PLAYWRIGHT_JUNIT_OUTPUT_NAME: runCfg.junitFile,
     SAUCE_REPORT_OUTPUT_NAME: runCfg.sauceReportFile,
-    FORCE_COLOR: 0,
+    FORCE_COLOR: '0',
   };
 
   utils.setEnvironmentVariables(env);
 
   // Install NPM dependencies
-  let metrics = [];
+  const metrics: Metrics[] = [];
 
   // Define node/npm path for execution
   const npmBin = path.join(path.dirname(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
   const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
 
   // runCfg.path must be set for prepareNpmEnv to find node_modules. :(
-  let npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
+  const npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
   metrics.push(npmMetrics);
 
+  const startTime = new Date().toISOString();
   // Run suite preExecs
   if (!await preExec.run(suite, runCfg.preExecTimeout)) {
-    return false;
+    return {
+      startTime,
+      endTime: new Date().toISOString(),
+      hasPassed: false,
+      metrics,
+    };
   }
 
   const playwrightProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd: runCfg.projectPath, env});
 
-  const playwrightPromise = new Promise((resolve) => {
-    playwrightProc.on('close', (code /*, ...args*/) => {
-      const hasPassed = code === 0;
-      resolve(hasPassed);
+  const playwrightPromise = new Promise<number | null>((resolve, reject) => {
+    playwrightProc.on('error', (err) => {
+      reject(err);
+    });
+    playwrightProc.on('close', (code) => {
+      resolve(code);
     });
   });
 
-  let startTime, endTime, hasPassed = false;
+  let hasPassed = false;
   try {
-    startTime = new Date().toISOString();
-    hasPassed = await playwrightPromise;
-    endTime = new Date().toISOString();
+    const exitCode = await playwrightPromise;
+    hasPassed = exitCode === 0;
   } catch (e) {
     console.error(`Could not complete job. Reason: ${e}`);
   }
+  const endTime = new Date().toISOString()
+
   return {
     startTime,
     endTime,
@@ -480,15 +495,12 @@ async function runPlaywright(nodeBin, runCfg) {
 if (require.main === module) {
   const {nodeBin, runCfgPath, suiteName} = getArgs();
   run(nodeBin, runCfgPath, suiteName)
-    // eslint-disable-next-line promise/prefer-await-to-then
     .then((passed) => {
       process.exit(passed ? 0 : 1);
     })
-    // eslint-disable-next-line promise/prefer-await-to-callbacks
     .catch((err) => {
       console.log(err);
       process.exit(1);
     });
 }
 
-module.exports = {run, generateJunitfile, getCfg};

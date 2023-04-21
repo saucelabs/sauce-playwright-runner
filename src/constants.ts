@@ -1,8 +1,8 @@
-const path = require('path');
+import * as path from 'node:path';
 
 const HOME_DIR = '/home/seluser';
 const LOG_DIR = '/var/log/cont';
-exports.LOG_FILES = [
+export const LOG_FILES = [
   path.join(LOG_DIR, 'chrome_browser.log'),
   path.join(LOG_DIR, '/firefox_browser.log'),
   path.join(LOG_DIR, '/supervisord.log'),
@@ -18,6 +18,6 @@ exports.LOG_FILES = [
   path.join(HOME_DIR, '/console.log'),
 ];
 
-exports.DESIRED_BROWSER = process.env.BROWSER_NAME || 'chromium';
+export const DESIRED_BROWSER = process.env.BROWSER_NAME || 'chromium';
 
-exports.DOCKER_CHROME_PATH = '/opt/google/chrome/google-chrome';
+export const DOCKER_CHROME_PATH = '/opt/google/chrome/google-chrome';

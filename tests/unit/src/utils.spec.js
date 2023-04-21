@@ -1,4 +1,4 @@
-const utils = require('../../../src/utils');
+const utils = require('../../../lib/utils');
 
 describe('utils', function () {
   describe('.replaceLegacyKeys', function () {

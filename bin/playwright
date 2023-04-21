@@ -1,5 +1,0 @@
-#!/usr/bin/env node
-
-const { playwrightRecorder } = require('../src/playwright-recorder');
-
-(async () => await playwrightRecorder())();
