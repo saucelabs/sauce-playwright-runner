@@ -21,9 +21,7 @@ export interface RunResult {
 export interface RunnerConfig {
   // NOTE: Kind is serialized by saucectl with a capital 'K' ¯\_(ツ)_/¯
   Kind: 'playwright';
-  // Sauce          config.SauceConfig     `yaml:"sauce,omitempty" json:"sauce"`
   sauce: {
-    // Region      string            `yaml:"region,omitempty" json:"region"`
     region?: Region;
     metadata?: {
       build?: string;
@@ -31,14 +29,9 @@ export interface RunnerConfig {
     };
   };
 
-  // Suites        []Suite              `yaml:"suites,omitempty" json:"suites"`
   suites: Suite[];
-  // Suite         Suite                `yaml:"suite,omitempty" json:"-"`
-  suite: Suite;
 
-  // Playwright     Playwright             `yaml:"playwright,omitempty" json:"playwright"`
   playwright: {
-    // ConfigFile string `yaml:"configFile,omitempty" json:"configFile,omitempty"`
     configFile?: string;
     version: string;
   };
@@ -52,38 +45,27 @@ export interface RunnerConfig {
   path: string;
   projectPath: string;
   playwrightOutputFolder: string;
+  suite: Suite;
 
   args: Record<string, unknown>;
 }
 
 export interface Suite {
-  // Name              string            `yaml:"name,omitempty" json:"name"`
   name: string;
-  // Params            SuiteConfig       `yaml:"params,omitempty" json:"param,omitempty"`
   param: SuiteConfig;
-  // TestMatch         []string          `yaml:"testMatch,omitempty" json:"testMatch,omitempty"`
   testMatch: string[] | string;
-  // PlatformName      string            `yaml:"platformName,omitempty" json:"platformName,omitempty"`
   platformName: string;
-  // Env               map[string]string `yaml:"env,omitempty" json:"env,omitempty"`
   env?: Record<string, string>;
-  // PreExec           []string          `yaml:"preExec,omitempty" json:"preExec"`
   preExec: string[];
-  // ExcludedTestFiles []string          `yaml:"excludedTestFiles,omitempty" json:"testIgnore"`
   // BUG: The implementation assumes string, but it must be string[]
   testIgnore?: string;
 }
 
 export interface SuiteConfig {
-  // BrowserName string `yaml:"browserName,omitempty" json:"browserName,omitempty"`
   browserName?: string;
-  // Headless        bool   `yaml:"headless,omitempty" json:"headless,omitempty"`
   headless?: boolean;
-  // Project         string `yaml:"project" json:"project,omitempty"`
   project?: string;
-  // GlobalTimeout   int    `yaml:"globalTimeout,omitempty" json:"globalTimeout,omitempty"`
   globalTimeout?: number;
-  // Timeout         int    `yaml:"timeout,omitempty" json:"timeout,omitempty"`
   timeout?: number;
 
   browser: string;
@@ -101,7 +83,6 @@ export interface CucumberRunnerConfig {
     region?: Region;
   };
   playwright: {
-    // ConfigFile string `yaml:"configFile,omitempty" json:"configFile,omitempty"`
     configFile?: string;
     version: string;
   };
