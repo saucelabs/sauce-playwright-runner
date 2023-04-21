@@ -13,13 +13,18 @@ import * as convert from 'xml-js';
 import {LOG_FILES, DOCKER_CHROME_PATH} from './constants';
 import {runCucumber} from './cucumber-runner';
 import {createJobReport} from './reporter';
-import type { RunResult, Metrics, RunnerConfig } from './types';
+import type {
+  CucumberRunnerConfig,
+  Metrics,
+  RunnerConfig,
+  RunResult,
+} from './types';
 import * as utils from './utils';
 
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 
-async function createJob(runCfg: RunnerConfig, testComposer: TestComposer, hasPassed: boolean, startTime: string, endTime: string, metrics: Metrics[]) {
+async function createJob(runCfg: RunnerConfig | CucumberRunnerConfig, testComposer: TestComposer, hasPassed: boolean, startTime: string, endTime: string, metrics: Metrics[]) {
   const cwd = process.cwd();
 
   const job = await createJobReport(runCfg, testComposer, hasPassed, startTime, endTime);
@@ -245,7 +250,7 @@ function generateJunitfile(sourceFile: string, suiteName: string, browserName: s
   fs.writeFileSync(sourceFile, xmlResult);
 }
 
-async function runReporter({runCfg, hasPassed, startTime, endTime, metrics}: {runCfg: RunnerConfig, hasPassed: boolean, startTime: string, endTime: string, metrics: Metrics[]}) {
+async function runReporter({runCfg, hasPassed, startTime, endTime, metrics}: {runCfg: RunnerConfig | CucumberRunnerConfig, hasPassed: boolean, startTime: string, endTime: string, metrics: Metrics[]}) {
   let pkgVersion = 'unknown';
   try {
     const pkgData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf-8'));
@@ -274,7 +279,7 @@ async function runReporter({runCfg, hasPassed, startTime, endTime, metrics}: {ru
   }
 }
 
-async function getCfg(runCfgPath: string, suiteName: string) {
+async function getCfg(runCfgPath: string, suiteName: string): Promise<RunnerConfig | CucumberRunnerConfig> {
   runCfgPath = utils.getAbsolutePath(runCfgPath);
   const runCfg = loadRunConfig(runCfgPath) as RunnerConfig;
 
@@ -392,7 +397,7 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
   if (!suite.param.globalTimeout) {
     suite.param.timeout = 1800000;
   }
-  let args: Record<string, any> = _.defaultsDeep(defaultArgs, utils.replaceLegacyKeys(suite.param));
+  let args: Record<string, unknown> = _.defaultsDeep(defaultArgs, utils.replaceLegacyKeys(suite.param));
 
 
   // There is a conflict if the playwright project has a `browser` defined,

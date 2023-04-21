@@ -2,12 +2,12 @@ import { spawn } from 'node:child_process';
 import * as path from 'node:path';
 import { prepareNpmEnv, preExec } from 'sauce-testrunner-utils';
 
-import type { Metrics, RunResult } from './types';
+import type { CucumberRunnerConfig, Metrics, RunResult } from './types';
 import * as utils from './utils';
 
-function buildArgs (runCfg: any, cucumberBin: string) {
+function buildArgs (runCfg: CucumberRunnerConfig, cucumberBin: string) {
   const paths: string[] = [];
-  runCfg.suite.options.paths.forEach((p: any) => {
+  runCfg.suite.options.paths.forEach((p) => {
     paths.push(path.join(runCfg.projectPath, p));
   });
   const procArgs = [
@@ -31,19 +31,19 @@ function buildArgs (runCfg: any, cucumberBin: string) {
     procArgs.push('-b');
     procArgs.push('true');
   }
-  runCfg.suite.options.require?.forEach((req: any) => {
+  runCfg.suite.options.require?.forEach((req) => {
     procArgs.push('-r');
     procArgs.push(path.join(runCfg.projectPath, req));
   });
-  runCfg.suite.options.import?.forEach((im: any) => {
+  runCfg.suite.options.import?.forEach((im) => {
     procArgs.push('-i');
     procArgs.push(path.join(runCfg.projectPath, im));
   });
-  runCfg.suite.options.tags?.forEach((tag: any) => {
+  runCfg.suite.options.tags?.forEach((tag) => {
     procArgs.push('-t');
     procArgs.push(tag);
   });
-  runCfg.suite.options.format?.forEach((format: any) => {
+  runCfg.suite.options.format?.forEach((format) => {
     procArgs.push('--format');
     const opts = format.split(':');
     if (opts.length === 2) {
@@ -54,13 +54,13 @@ function buildArgs (runCfg: any, cucumberBin: string) {
   });
   if (runCfg.suite.options.parallel) {
     procArgs.push('--parallel');
-    procArgs.push(runCfg.suite.options.parallel);
+    procArgs.push(runCfg.suite.options.parallel.toString(10));
   }
 
   return procArgs;
 }
 
-export async function runCucumber (nodeBin: string, runCfg: any): Promise<RunResult> {
+export async function runCucumber (nodeBin: string, runCfg: CucumberRunnerConfig): Promise<RunResult> {
   process.env.BROWSER_NAME = runCfg.suite.browserName;
   process.env.BROWSER_OPTIONS = runCfg.suite.browserOptions;
   process.env.SAUCE_SUITE_NAME = runCfg.suite.name;
@@ -121,7 +121,7 @@ export async function runCucumber (nodeBin: string, runCfg: any): Promise<RunRes
   };
 }
 
-function buildFormatOption (cfg: any) {
+function buildFormatOption (cfg: CucumberRunnerConfig) {
   return {
     upload: false,
     suiteName: cfg.suite.name,

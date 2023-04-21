@@ -1,9 +1,10 @@
 import type { TestComposer } from '@saucelabs/testcomposer';
 
 import { DESIRED_BROWSER } from './constants';
+import { CucumberRunnerConfig, RunnerConfig } from './types';
 
 export async function createJobReport(
-  runCfg: any,
+  runCfg: RunnerConfig | CucumberRunnerConfig,
   testComposer: TestComposer,
   passed: boolean,
   startTime: string,
@@ -15,7 +16,15 @@ export async function createJobReport(
   if (!process.env.SAUCE_USERNAME || !process.env.SAUCE_ACCESS_KEY) {
     return;
   }
-  const browserName = runCfg.Kind === 'playwright' ? runCfg.args.param.browser : runCfg.suite.browserName;
+
+  let browserName;
+  if (runCfg.Kind === 'playwright') {
+    if (runCfg.args.param !== null && typeof runCfg.args.param === 'object' && 'browser' in runCfg.args.param) {
+      browserName = runCfg.args.param.browser as string;
+    }
+  } else {
+     browserName = runCfg.suite.browserName;
+  }
   let browserVersion = DESIRED_BROWSER.toLowerCase() === 'firefox' ? process.env.FF_VER : process.env.CHROME_VER;
   if (!browserVersion) {
     browserVersion = runCfg.playwright.version;

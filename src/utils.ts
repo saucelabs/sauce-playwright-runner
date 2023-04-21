@@ -46,7 +46,7 @@ export function exec (expression: string, {suppressLogs = false}) {
   });
 }
 
-export function replaceLegacyKeys (args: Record<string, any>) {
+export function replaceLegacyKeys (args: Record<string, unknown>) {
   // browserName => browser
   if ('browserName' in args) {
     if (!('browser' in args)) {

@@ -20,11 +20,15 @@ export interface RunResult {
 
 export interface RunnerConfig {
   // NOTE: Kind is serialized by saucectl with a capital 'K' ¯\_(ツ)_/¯
-  Kind: string;
+  Kind: 'playwright';
   // Sauce          config.SauceConfig     `yaml:"sauce,omitempty" json:"sauce"`
   sauce: {
     // Region      string            `yaml:"region,omitempty" json:"region"`
     region?: Region;
+    metadata?: {
+      build?: string;
+      tags?: string[];
+    };
   };
 
   // Suites        []Suite              `yaml:"suites,omitempty" json:"suites"`
@@ -36,6 +40,7 @@ export interface RunnerConfig {
   playwright: {
     // ConfigFile string `yaml:"configFile,omitempty" json:"configFile,omitempty"`
     configFile?: string;
+    version: string;
   };
 
   // WARN: The following properties are set dynamcially by the runner and are not
@@ -47,7 +52,8 @@ export interface RunnerConfig {
   path: string;
   projectPath: string;
   playwrightOutputFolder: string;
-  args: Record<string, any>;
+
+  args: Record<string, unknown>;
 }
 
 export interface Suite {
@@ -82,4 +88,45 @@ export interface SuiteConfig {
   browser: Browser;
   // headed?: boolean;
   // headful?: boolean;
+}
+
+export interface CucumberRunnerConfig {
+  Kind: 'playwright-cucumberjs';
+  sauce: {
+    metadata?: {
+      build?: string;
+      tags?: string[];
+    };
+    region?: Region;
+  };
+  playwright: {
+    // ConfigFile string `yaml:"configFile,omitempty" json:"configFile,omitempty"`
+    configFile?: string;
+    version: string;
+  };
+  suite: CucumberSuite;
+  assetsDir: string;
+  sauceReportFile: string;
+  path: string;
+  preExecTimeout: number;
+  projectPath: string;
+}
+
+export interface CucumberSuite {
+  browserName?: string;
+  browserOptions?: string;
+  name: string;
+  env: Record<string, string>;
+  preExec: string[];
+  options: {
+    config?: string;
+    name?: string;
+    backtrace?: boolean;
+    require?: string[];
+    import?: string[];
+    tags?: string[];
+    format?: string[];
+    parallel?: number;
+    paths: string[];
+  };
 }
