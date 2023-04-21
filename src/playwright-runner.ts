@@ -414,7 +414,7 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
     }
     procArgs.push(`--${key}`);
     if (value !== true) {
-      procArgs.push(new String(value).toString());
+      procArgs.push(String(value));
     }
   }
 
