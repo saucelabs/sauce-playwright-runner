@@ -255,7 +255,7 @@ async function runReporter({runCfg, hasPassed, startTime, endTime, metrics}: {ru
   }
 
   const testComposer = new TestComposer({
-    region: runCfg.sauce.region,
+    region: runCfg.sauce.region || 'us-west-1',
     username: process.env.SAUCE_USERNAME || '',
     accessKey: process.env.SAUCE_ACCESS_KEY || '',
     headers: {'User-Agent': `playwright-runner/${pkgVersion}`}
@@ -276,7 +276,7 @@ async function runReporter({runCfg, hasPassed, startTime, endTime, metrics}: {ru
 
 async function getCfg(runCfgPath: string, suiteName: string) {
   runCfgPath = utils.getAbsolutePath(runCfgPath);
-  const runCfg: any = loadRunConfig(runCfgPath);
+  const runCfg = loadRunConfig(runCfgPath) as RunnerConfig;
 
   const suite = _.find(runCfg.suites, ({name}) => name === suiteName);
   if (!suite) {
@@ -300,7 +300,7 @@ async function getCfg(runCfgPath: string, suiteName: string) {
   if (!runCfg.sauce) {
     runCfg.sauce = {};
   }
-  runCfg.sauce.region = runCfg.sauce.region || 'us-west-1';
+  // runCfg.sauce.region = runCfg.sauce.region || 'us-west-1';
   runCfg.playwrightOutputFolder = path.join(runCfg.assetsDir, 'test-results');
 
   return runCfg;
@@ -349,7 +349,7 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
   const excludeParams = ['screenshot-on-failure', 'video', 'slow-mo', 'headless', 'headed'];
 
   process.env.BROWSER_NAME = runCfg.suite.param.browserName;
-  process.env.HEADLESS = runCfg.suite.param.headless;
+  process.env.HEADLESS = runCfg.suite.param.headless === true ? 'true' : '';
   process.env.SAUCE_SUITE_NAME = runCfg.suite.name;
   process.env.SAUCE_ARTIFACTS_DIRECTORY = runCfg.assetsDir;
   if (runCfg.suite.param.browserName === 'chrome') {
@@ -433,7 +433,7 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
     ...suite.env,
     PLAYWRIGHT_JUNIT_OUTPUT_NAME: runCfg.junitFile,
     SAUCE_REPORT_OUTPUT_NAME: runCfg.sauceReportFile,
-    FORCE_COLOR: 0,
+    FORCE_COLOR: '0',
   };
 
   utils.setEnvironmentVariables(env);

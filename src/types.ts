@@ -21,21 +21,10 @@ export interface RunResult {
 export interface RunnerConfig {
   // NOTE: Kind is serialized by saucectl with a capital 'K' ¯\_(ツ)_/¯
   Kind: string;
-
-  // NOTE: The following properties are set dynamcially by the runner and are not
-  // serialized by saucectl
-  assetsDir: string;
-  junitFile: string;
-  sauceReportFile: string;
-  preExecTimeout: number;
-  path: string;
-  projectPath: string;
-  playwrightOutputFolder: string;
-
   // Sauce          config.SauceConfig     `yaml:"sauce,omitempty" json:"sauce"`
   sauce: {
     // Region      string            `yaml:"region,omitempty" json:"region"`
-    region: Region;
+    region?: Region;
   };
 
   // Suites        []Suite              `yaml:"suites,omitempty" json:"suites"`
@@ -48,6 +37,17 @@ export interface RunnerConfig {
     // ConfigFile string `yaml:"configFile,omitempty" json:"configFile,omitempty"`
     configFile?: string;
   };
+
+  // WARN: The following properties are set dynamcially by the runner and are not
+  // deserialized from the runner config json.
+  assetsDir: string;
+  junitFile: string;
+  sauceReportFile: string;
+  preExecTimeout: number;
+  path: string;
+  projectPath: string;
+  playwrightOutputFolder: string;
+  args: Record<string, any>;
 }
 
 export interface Suite {
@@ -58,18 +58,18 @@ export interface Suite {
   // TestMatch         []string          `yaml:"testMatch,omitempty" json:"testMatch,omitempty"`
   testMatch: string[] | string;
   // PlatformName      string            `yaml:"platformName,omitempty" json:"platformName,omitempty"`
-  platformName?: string;
+  platformName: string;
   // Env               map[string]string `yaml:"env,omitempty" json:"env,omitempty"`
   env?: Record<string, string>;
   // PreExec           []string          `yaml:"preExec,omitempty" json:"preExec"`
   preExec: string[];
-  // ExcludedTestFiles []string          `yaml:"excludedTestFiles,omitempty" json:"testIgnore"`
-  testIgnore?: string | string[];
+  // // ExcludedTestFiles []string          `yaml:"excludedTestFiles,omitempty" json:"testIgnore"`
+  // testIgnore?: string | string[];
 }
 
 export interface SuiteConfig {
   // BrowserName string `yaml:"browserName,omitempty" json:"browserName,omitempty"`
-  browserName: Browser;
+  browserName?: Browser;
   // Headless        bool   `yaml:"headless,omitempty" json:"headless,omitempty"`
   headless?: boolean;
   // Project         string `yaml:"project" json:"project,omitempty"`
@@ -79,6 +79,7 @@ export interface SuiteConfig {
   // Timeout         int    `yaml:"timeout,omitempty" json:"timeout,omitempty"`
   timeout?: number;
 
-  headed?: boolean;
-  headful?: boolean;
+  browser: Browser;
+  // headed?: boolean;
+  // headful?: boolean;
 }
