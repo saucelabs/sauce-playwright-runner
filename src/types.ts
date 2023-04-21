@@ -69,13 +69,14 @@ export interface Suite {
   env?: Record<string, string>;
   // PreExec           []string          `yaml:"preExec,omitempty" json:"preExec"`
   preExec: string[];
-  // // ExcludedTestFiles []string          `yaml:"excludedTestFiles,omitempty" json:"testIgnore"`
-  // testIgnore?: string | string[];
+  // ExcludedTestFiles []string          `yaml:"excludedTestFiles,omitempty" json:"testIgnore"`
+  // BUG: The implementation assumes string, but it must be string[]
+  testIgnore?: string;
 }
 
 export interface SuiteConfig {
   // BrowserName string `yaml:"browserName,omitempty" json:"browserName,omitempty"`
-  browserName?: Browser;
+  browserName?: string;
   // Headless        bool   `yaml:"headless,omitempty" json:"headless,omitempty"`
   headless?: boolean;
   // Project         string `yaml:"project" json:"project,omitempty"`
@@ -85,9 +86,9 @@ export interface SuiteConfig {
   // Timeout         int    `yaml:"timeout,omitempty" json:"timeout,omitempty"`
   timeout?: number;
 
-  browser: Browser;
-  // headed?: boolean;
-  // headful?: boolean;
+  browser: string;
+  headed?: boolean;
+  headful?: boolean;
 }
 
 export interface CucumberRunnerConfig {

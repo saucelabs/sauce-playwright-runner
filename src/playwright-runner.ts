@@ -397,8 +397,7 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
   if (!suite.param.globalTimeout) {
     suite.param.timeout = 1800000;
   }
-  let args: Record<string, unknown> = _.defaultsDeep(defaultArgs, utils.replaceLegacyKeys(suite.param));
-
+  const args: Record<string, unknown> = _.defaultsDeep(defaultArgs, utils.replaceLegacyKeys(suite.param));
 
   // There is a conflict if the playwright project has a `browser` defined,
   // since the job is launched with the browser set by saucectl, which is now set as the job's metadata.
@@ -414,7 +413,7 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
       continue;
     }
     procArgs.push(`--${key}`);
-    if (value !== true) {
+    if (value !== true && typeof value === 'string') {
       procArgs.push(value);
     }
   }
@@ -426,9 +425,9 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
   }
   procArgs.push(...suite.testMatch);
 
-  args = _.defaultsDeep(suite, args);
-  if (args.testIgnore && args.testIgnore.length > 0) {
-    process.env.TEST_IGNORE = args.testIgnore;
+  // args = _.defaultsDeep(suite, args);
+  if (suite.testIgnore && suite.testIgnore.length > 0) {
+    process.env.TEST_IGNORE = suite.testIgnore;
   }
 
   runCfg.args = args;

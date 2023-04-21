@@ -2,6 +2,7 @@ import * as path from 'node:path';
 
 import shell from 'shelljs';
 import logger from '@wdio/logger';
+import { SuiteConfig } from './types';
 
 const log = logger('utils');
 
@@ -46,7 +47,14 @@ export function exec (expression: string, {suppressLogs = false}) {
   });
 }
 
-export function replaceLegacyKeys (args: Record<string, unknown>) {
+export function replaceLegacyKeys (config: SuiteConfig) {
+  const args: Record<string, unknown> = {};
+
+  let k: keyof SuiteConfig;
+
+  for (k in config) {
+    args[k] = config[k];
+  }
   // browserName => browser
   if ('browserName' in args) {
     if (!('browser' in args)) {
