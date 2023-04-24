@@ -14,6 +14,7 @@ function buildArgs (runCfg: CucumberRunnerConfig, cucumberBin: string) {
     cucumberBin,
     ...paths,
     '--publish-quiet',
+    '--force-exit',
     '--require-module', 'ts-node/register',
     '--format', '@saucelabs/cucumber-reporter',
     '--format-options', JSON.stringify(buildFormatOption(runCfg)),
