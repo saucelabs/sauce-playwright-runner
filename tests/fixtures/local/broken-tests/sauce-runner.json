@@ -1,0 +1,30 @@
+{
+  "apiVersion": "v1alpha",
+  "kind": "playwright",
+  "sauce": {
+    "region": "us-west-1",
+    "concurrency": 1,
+    "metadata": {
+      "tags": [
+        "e2e"
+      ],
+      "build": "$BUILD_ID"
+    }
+  },
+  "rootDir": ".",
+  "playwright": {
+    "version": "1.29.2"
+  },
+  "suites": [
+    {
+      "name": "broken-tests",
+      "testMatch": [
+        ".*.spec.js"
+      ],
+      "param": {
+        "browserName": "firefox",
+        "slowMo": 1000
+      }
+    }
+  ]
+}

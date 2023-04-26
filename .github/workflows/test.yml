@@ -58,27 +58,8 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Run basic-js
-        run: |
-          node . `
-            --suiteName basic-js `
-            --runCfgPath ./tests/fixtures/local/basic-js/sauce-runner.json
-        env:
-          SAUCE_VM: true
-
-      - name: Run basic-ts
-        run: |
-          node . `
-            --suiteName basic-ts `
-            --runCfgPath ./tests/fixtures/local/basic-ts/sauce-runner.json
-        env:
-          SAUCE_VM: true
-
-      - name: Run config-merging
-        run: |
-          node . `
-            --suiteName config-merging `
-            --runCfgPath ./tests/fixtures/local/config-merging/sauce-runner.json
+      - name: Run tests
+        run: npm run integration-tests
         env:
           SAUCE_VM: true
 

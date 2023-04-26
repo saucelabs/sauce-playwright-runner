@@ -23,7 +23,7 @@ export async function createJobReport(
       browserName = runCfg.args.param.browser as string;
     }
   } else {
-     browserName = runCfg.suite.browserName;
+     browserName = runCfg.suite.browserName || runCfg.suite.param?.browserName;
   }
   let browserVersion = DESIRED_BROWSER.toLowerCase() === 'firefox' ? process.env.FF_VER : process.env.CHROME_VER;
   if (!browserVersion) {
