@@ -7,15 +7,11 @@ sauce:
     tags:
       - e2e
     build: "$BUILD_ID"
-docker:
-  fileTransfer: mount
-  image: "saucelabs/stt-playwright-node:local"
 rootDir: .
 playwright:
   version: 1.29.2
 suites:
   - name: "saucy test - webkit"
-    mode: docker
     platformName: "Windows 10"
     testMatch:
       - '.*.js'
@@ -26,7 +22,6 @@ suites:
       headed: true
 
   - name: "saucy test - firefox"
-    mode: docker
     platformName: "Windows 10"
     testMatch:
       - '.*.js'
@@ -37,7 +32,6 @@ suites:
       headed: true
 
   - name: "saucy test - chromium"
-    mode: docker
     platformName: "Windows 10"
     testMatch:
       - '.*.js'
