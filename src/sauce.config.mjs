@@ -29,8 +29,8 @@ for (const file of configFiles) {
 
 const overrides = {
   use: {
-    headless: process.env.SAUCE_VM ? process.env.HEADLESS === 'true' : true,
-    video: process.env.SAUCE_VM ? 'off' : 'on',
+    headless: process.env.HEADLESS === 'true',
+    video: 'off',
     launchOptions: {},
   },
   reporter: [

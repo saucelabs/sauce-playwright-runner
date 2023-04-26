@@ -2,17 +2,12 @@
 import {spawn} from 'node:child_process';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
-import * as stream from 'node:stream';
 
-import {TestComposer} from '@saucelabs/testcomposer';
-import glob from 'glob';
 import _ from 'lodash';
-import {getArgs, prepareNpmEnv, loadRunConfig, escapeXML, preExec, saucectl} from 'sauce-testrunner-utils';
+import {getArgs, prepareNpmEnv, loadRunConfig, escapeXML, preExec} from 'sauce-testrunner-utils';
 import * as convert from 'xml-js';
 
-import {LOG_FILES, DOCKER_CHROME_PATH} from './constants';
 import {runCucumber} from './cucumber-runner';
-import {createJobReport} from './reporter';
 import type {
   CucumberRunnerConfig,
   Metrics,
@@ -20,122 +15,6 @@ import type {
   RunResult,
 } from './types';
 import * as utils from './utils';
-
-// Path has to match the value of the Dockerfile label com.saucelabs.job-info !
-const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
-
-async function createJob(runCfg: RunnerConfig | CucumberRunnerConfig, testComposer: TestComposer, hasPassed: boolean, startTime: string, endTime: string, metrics: Metrics[]) {
-  const cwd = process.cwd();
-
-  const job = await createJobReport(runCfg, testComposer, hasPassed, startTime, endTime);
-
-  if (!job) {
-    throw new Error('Unable to create job. Assets won\'t be uploaded.');
-  }
-
-  const containerLogFiles = LOG_FILES.filter((path) => fs.existsSync(path));
-
-  // Take the 1st webm video we find and translate it video.mp4
-  // We need to translate all .webm to .mp4 and combine them into one video.mp4 due to platform expectations.
-  const webmFiles = glob.sync(path.join(runCfg.assetsDir, '**', '*.webm'));
-  let videoLocation;
-  if (webmFiles.length > 0) {
-    videoLocation = path.join(runCfg.assetsDir, 'video.mp4');
-    try {
-      await utils.exec(`ffmpeg -i ${webmFiles[0]} ${videoLocation}`, {suppressLogs: true});
-    } catch (e) {
-      videoLocation = null;
-      console.error(`Failed to convert ${webmFiles[0]} to mp4: '${e}'`);
-    }
-  }
-  const assets = glob.sync(path.join(runCfg.assetsDir, '**', '*.*'));
-
-  const files: { filename: string, data: stream.Readable }[] = [
-    {
-      filename: 'console.log',
-      data: fs.createReadStream(path.join(cwd, 'console.log')),
-    },
-    {
-      filename: 'sauce-test-report.json',
-      data: fs.createReadStream(path.join(runCfg.assetsDir, 'sauce-test-report.json')),
-    },
-  ];
-
-  if (fs.existsSync(path.join(runCfg.assetsDir, 'junit.xml'))) {
-    files.push({
-      filename: 'junit.xml',
-      data: fs.createReadStream(path.join(runCfg.assetsDir, 'junit.xml')),
-    });
-  }
-
-  for (const f of containerLogFiles) {
-    files.push(
-      {
-        filename: path.basename(f),
-        data: fs.createReadStream(f),
-      },
-    );
-  }
-
-  for (let f of assets) {
-    const fileType = path.extname(f);
-    let filename = path.basename(f);
-    if (fileType === '.png') {
-      filename = path.join(path.dirname(f), `${path.basename(path.dirname(f))}-${path.basename(f)}`);
-      fs.renameSync(f, filename);
-      f = filename;
-    }
-
-    files.push(
-      {
-        filename,
-        data: fs.createReadStream(f),
-      },
-    );
-  }
-
-  // Upload metrics
-  for (const [, mt] of Object.entries(metrics)) {
-    if (_.isEmpty(mt.data)) {
-      continue;
-    }
-    const r = new stream.Readable();
-    r.push(JSON.stringify(mt.data, null, 2));
-    r.push(null);
-
-    files.push(
-      {
-        filename: mt.name,
-        data: r,
-      },
-    );
-  }
-
-  if (videoLocation) {
-    files.push(
-      {
-        filename: path.basename(videoLocation),
-        data: fs.createReadStream(videoLocation),
-      }
-    );
-  }
-
-  await testComposer.uploadAssets(
-    job.id,
-    files
-  ).then(
-    (resp) => {
-      if (resp.errors) {
-        for (const err of resp.errors) {
-          console.error('Failed to upload asset:', err);
-        }
-      }
-    },
-    (e) => console.error('Failed to upload assets:', e.message)
-  );
-
-  return job;
-}
 
 function getPlatformName(platformName: string) {
   if (process.platform.toLowerCase() === 'linux') {
@@ -250,35 +129,6 @@ function generateJunitfile(sourceFile: string, suiteName: string, browserName: s
   fs.writeFileSync(sourceFile, xmlResult);
 }
 
-async function runReporter({runCfg, hasPassed, startTime, endTime, metrics}: {runCfg: RunnerConfig | CucumberRunnerConfig, hasPassed: boolean, startTime: string, endTime: string, metrics: Metrics[]}) {
-  let pkgVersion = 'unknown';
-  try {
-    const pkgData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf-8'));
-    pkgVersion = pkgData.version;
-    // eslint-disable-next-line no-empty
-  } catch (e) {
-  }
-
-  const testComposer = new TestComposer({
-    region: runCfg.sauce.region || 'us-west-1',
-    username: process.env.SAUCE_USERNAME || '',
-    accessKey: process.env.SAUCE_ACCESS_KEY || '',
-    headers: {'User-Agent': `playwright-runner/${pkgVersion}`}
-  });
-
-  let job;
-  try {
-    job = await createJob(runCfg, testComposer, hasPassed, startTime, endTime, metrics);
-    console.log(`\nOpen job details page: ${job.url}\n`);
-  } catch (e) {
-    if (e instanceof Error) {
-      console.log(`Failed to upload results to Sauce Labs. Reason: ${e.message}`);
-    }
-  } finally {
-    saucectl.updateExportedValue(SAUCECTL_OUTPUT_FILE, {jobDetailsUrl: job?.url, reportingSucceeded: !!job});
-  }
-}
-
 async function getCfg(runCfgPath: string, suiteName: string): Promise<RunnerConfig | CucumberRunnerConfig> {
   runCfgPath = utils.getAbsolutePath(runCfgPath);
   const runCfg = loadRunConfig(runCfgPath) as RunnerConfig;
@@ -330,23 +180,6 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     }
   }
 
-  // If it's a VM, don't try to upload the assets
-  if (process.env.SAUCE_VM) {
-    return result.hasPassed;
-  }
-
-  if (!(process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY)) {
-    console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY');
-    return result.hasPassed;
-  }
-
-  await runReporter({
-    runCfg,
-    hasPassed: result.hasPassed,
-    startTime: result.startTime,
-    endTime: result.endTime,
-    metrics: result.metrics
-  });
   return result.hasPassed;
 }
 
@@ -359,9 +192,6 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
   process.env.SAUCE_ARTIFACTS_DIRECTORY = runCfg.assetsDir;
   if (runCfg.suite.param.browserName === 'chrome') {
     excludeParams.push('browser');
-  }
-  if (!process.env.SAUCE_VM) {
-    process.env.BROWSER_PATH = DOCKER_CHROME_PATH;
   }
 
   if (runCfg.playwright.configFile) {

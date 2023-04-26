@@ -60,8 +60,6 @@ jobs:
 
       - name: Run tests
         run: npm run integration-test
-        env:
-          SAUCE_VM: true
 
   cucumber-build-and-test-local:
     runs-on: windows-latest
@@ -92,8 +90,6 @@ jobs:
           npm i
           node ../../../../ --suiteName "cucumber local test" --runCfgPath ./sauce-runner.json
           node ../../../../ --suiteName "cucumber config test" --runCfgPath ./sauce-runner.json
-        env:
-          SAUCE_VM: true
 
   build-windows-bundle:
     runs-on: windows-latest
