@@ -14,7 +14,7 @@
     "lint": "eslint tests/ src/",
     "test": "./bin/wait_display && DISPLAY=\"$(cat DISPLAY)\" node .",
     "unit-test": "npm run build && jest --env node",
-    "integration-test": "run run build && bash ./tests/run.sh",
+    "integration-test": "npm run build && bash ./tests/run.sh",
     "release": "release-it --github.release",
     "release:ci": "npm run release -- --ci --npm.skipChecks --no-git.requireCleanWorkingDir",
     "release:patch": "npm run release -- patch",
