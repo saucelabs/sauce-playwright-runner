@@ -59,7 +59,7 @@ jobs:
         run: npm run build
 
       - name: Run tests
-        run: npm run integration-tests
+        run: npm run integration-test
         env:
           SAUCE_VM: true
 
