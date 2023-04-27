@@ -8,15 +8,28 @@ on:
 env:
   SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
   SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
-  NODE_VERSION: 18
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  test:
+  vars:
     runs-on: ubuntu-latest
+    outputs:
+      nodeVersion: ${{ steps.nodeVersion.outputs.nodeVersion }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - id: nodeVersion
+        run: echo "nodeVersion=`cat .nvmrc | tr -d 'v'`" >> "$GITHUB_OUTPUT"
+
+  test:
+    needs: [vars]
+    runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -24,7 +37,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ needs.vars.outputs.nodeVersion }}
           cache: 'npm'
 
       - name: Install dependencies
@@ -36,41 +49,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
-  build-and-test-docker:
-    runs-on: ubuntu-latest
-    needs: [test]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Setup saucectl
-        uses: saucelabs/saucectl-run-action@v3
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          skip-run: true
-
-      - name: Build
-        run: |
-          npm ci
-          npm run build
-
-      # There is discrepencies between uid used to clone and uid in container,
-      # As a temporary measure, we chmod files to allow test outputs to be written.
-      - name: Workaround for container permissions
-        run: sudo chmod -R 777 tests/
-
-      # Run e2e tests (Docker)
-      - run: bash ./tests/run.sh
-        env:
-          SKIP_CI: true
-          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-        name: Build Saucectl and run E2E tests
-
   build-and-test-local:
     runs-on: windows-latest
-    needs: [test]
+    needs: [vars]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -78,7 +59,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ needs.vars.outputs.nodeVersion }}
           cache: 'npm'
 
       - name: Install Dependencies
@@ -90,33 +71,12 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Run basic-js
-        run: |
-          node . `
-            --suiteName basic-js `
-            --runCfgPath ./tests/fixtures/local/basic-js/sauce-runner.json
-        env:
-          SAUCE_VM: true
-
-      - name: Run basic-ts
-        run: |
-          node . `
-            --suiteName basic-ts `
-            --runCfgPath ./tests/fixtures/local/basic-ts/sauce-runner.json
-        env:
-          SAUCE_VM: true
-
-      - name: Run config-merging
-        run: |
-          node . `
-            --suiteName config-merging `
-            --runCfgPath ./tests/fixtures/local/config-merging/sauce-runner.json
-        env:
-          SAUCE_VM: true
+      - name: Run tests
+        run: npm run integration-test
 
   cucumber-build-and-test-local:
     runs-on: windows-latest
-    needs: [test]
+    needs: [vars]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -124,7 +84,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ needs.vars.outputs.nodeVersion }}
           cache: 'npm'
 
       - name: Install dependencies
@@ -143,12 +103,10 @@ jobs:
           npm i
           node ../../../../ --suiteName "cucumber local test" --runCfgPath ./sauce-runner.json
           node ../../../../ --suiteName "cucumber config test" --runCfgPath ./sauce-runner.json
-        env:
-          SAUCE_VM: true
 
   build-windows-bundle:
     runs-on: windows-latest
-    needs: [test]
+    needs: [vars, test]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -156,7 +114,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ needs.vars.outputs.nodeVersion }}
           cache: npm
 
       - name: Setup Python
@@ -195,7 +153,7 @@ jobs:
 
   build-macos-bundle:
     runs-on: macos-latest
-    needs: [test]
+    needs: [vars, test]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -203,7 +161,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ needs.vars.outputs.nodeVersion }}
           cache: npm
 
       - name: Set up Python
@@ -251,14 +209,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup nodejs
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
       - name: Setup saucectl
-        run: npm install -g saucectl
+        uses: saucelabs/saucectl-run-action@v3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          skip-run: true
 
       - name: Test on Sauce
         working-directory: ./tests/fixtures/cloud
@@ -268,7 +224,7 @@ jobs:
             BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
           fi
 
-          npx saucectl run \
+          saucectl run \
             --runner-version "url: ${BUNDLE_URL}" \
             --config .sauce/config.yml \
             --select-suite "${{ matrix.os }} - ${{ matrix.browser }}"
@@ -297,14 +253,12 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
       - name: Setup saucectl
-        run: npm install -g saucectl
+        uses: saucelabs/saucectl-run-action@v3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          skip-run: true
 
       - name: Run web-page
         run: |
@@ -327,14 +281,14 @@ jobs:
             BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
           fi
 
-          npx saucectl run \
+          saucectl run \
             --runner-version "url: ${BUNDLE_URL}" \
             --config .sauce/config-sc.yml \
             --tunnel-name github-playwright-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }} \
             --select-suite "${{ matrix.os }} - ${{ matrix.browser }}"
 
   cucumber-bundle-test:
-    needs: [build-windows-bundle, build-macos-bundle]
+    needs: [vars, build-windows-bundle, build-macos-bundle]
     strategy:
       fail-fast: false
       matrix:
@@ -347,11 +301,15 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ needs.vars.outputs.nodeVersion }}
           cache: npm
 
-      - name: Install saucectl
-        run: npm install -g saucectl
+      - name: Setup saucectl
+        uses: saucelabs/saucectl-run-action@v3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          skip-run: true
 
       - name: Test on Sauce
         working-directory: ./tests/fixtures/cloud/cucumber
@@ -363,6 +321,6 @@ jobs:
             BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
           fi
 
-          npx saucectl run \
+          saucectl run \
             --runner-version "url: ${BUNDLE_URL}" \
             --config .sauce/config_${{ matrix.os }}.yml

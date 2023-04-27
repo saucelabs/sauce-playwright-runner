@@ -8,14 +8,11 @@ sauce:
       - release team
       - other tag
     build: Release $CI_COMMIT_SHORT_SHA
-docker:
-  image: saucelabs/stt-playwright-node:local
 rootDir: .
 playwright:
   version: 1.29.2
 suites:
   - name: default
-    mode: docker
     params:
       browserName: webkit
     testMatch:

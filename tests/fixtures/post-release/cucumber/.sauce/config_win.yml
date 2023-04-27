@@ -9,9 +9,6 @@ sauce:
     build: "$BUILD_ID"
 defaults:
   timeout: 5m
-docker:
-  image: playwright
-  fileTransfer: copy
 playwright:
   version: 1.29.2
 rootDir: ./

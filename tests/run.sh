@@ -1,14 +1,5 @@
 #!/usr/bin/env bash
 
-# build image
-echo "Build docker images"
-
-if [[ -n "${CI}" ]]; then
-  docker build -t saucelabs/stt-playwright-node:local . > /dev/null 2>&1
-else
-  docker build -t saucelabs/stt-playwright-node:local .
-fi
-
 # suite=result
 tests=(basic-js=success basic-ts=success broken-tests=failure config-merging=success)
 
@@ -19,7 +10,7 @@ for i in ${tests[@]}; do
 
     echo "Running ${key}:"
     pushd ./tests/fixtures/local/${key}/ > /dev/null
-    saucectl run -c .sauce/config.yml > ${tmpfile} 2>&1
+    node ../../../../ -r ./sauce-runner.json -s "${key}" > ${tmpfile} 2>&1
     RETURN_CODE=${?}
     popd > /dev/null
 

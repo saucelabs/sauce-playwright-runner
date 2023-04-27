@@ -6,7 +6,7 @@ CHANGELOG=$(git --no-pager log --no-notes --no-decorate --oneline  v${1}...HEAD)
 ## Gather Framework version
 PLAYWRIGHT_VER=$(< package-lock.json jq -r '.dependencies["playwright"].version')
 PLAYWRIGHT_TEST_VER=$(< package-lock.json jq -r '.dependencies["@playwright/test"].version')
-NODEJS_VER=$(grep NODE_VERSION= Dockerfile | cut -d '=' -f 2)
+NODEJS_VER=$(cat .nvmrc | tr -d "v")
 
 ## Add Browser versions
 

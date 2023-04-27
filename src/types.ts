@@ -100,6 +100,9 @@ export interface CucumberSuite {
   name: string;
   env: Record<string, string>;
   preExec: string[];
+  param: {
+    browserName: string
+  },
   options: {
     config?: string;
     name?: string;
