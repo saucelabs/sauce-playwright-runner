@@ -224,7 +224,7 @@ jobs:
             --select-suite "${{ matrix.os }} - ${{ matrix.browser }}"
 
   bundle-test-with-sauce-connect:
-    needs: [test, build-windows-bundle, build-macos-bundle]
+    needs: [build-windows-bundle, build-macos-bundle]
     strategy:
       max-parallel: 3
       matrix:
@@ -247,14 +247,11 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Setup Node
-        uses: actions/setup-node@v3
+      - uses: saucelabs/saucectl-run-action@v3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
-          node-version: ${{ needs.test.outputs.nodeVersion }}
-          cache: npm
-
-      - name: Setup saucectl
-        run: npm install -g saucectl
+          skip-run: true
 
       - name: Run web-page
         run: |
@@ -277,7 +274,7 @@ jobs:
             BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
           fi
 
-          npx saucectl run \
+          saucectl run \
             --runner-version "url: ${BUNDLE_URL}" \
             --config .sauce/config-sc.yml \
             --tunnel-name github-playwright-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }} \
@@ -300,8 +297,11 @@ jobs:
           node-version: ${{ needs.test.outputs.nodeVersion }}
           cache: npm
 
-      - name: Install saucectl
-        run: npm install -g saucectl
+      - uses: saucelabs/saucectl-run-action@v3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          skip-run: true
 
       - name: Test on Sauce
         working-directory: ./tests/fixtures/cloud/cucumber
@@ -313,6 +313,6 @@ jobs:
             BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
           fi
 
-          npx saucectl run \
+          saucectl run \
             --runner-version "url: ${BUNDLE_URL}" \
             --config .sauce/config_${{ matrix.os }}.yml
