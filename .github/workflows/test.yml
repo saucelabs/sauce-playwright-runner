@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  vars:
     runs-on: ubuntu-latest
     outputs:
       nodeVersion: ${{ steps.nodeVersion.outputs.nodeVersion }}
@@ -26,10 +26,18 @@ jobs:
       - id: nodeVersion
         run: echo "nodeVersion=`cat .nvmrc | tr -d 'v'`" >> "$GITHUB_OUTPUT"
 
+  test:
+    needs: [vars]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ steps.nodeVersion.outputs.nodeVersion }}
+          node-version: ${{ needs.vars.outputs.nodeVersion }}
           cache: 'npm'
 
       - name: Install dependencies
@@ -43,7 +51,7 @@ jobs:
 
   build-and-test-local:
     runs-on: windows-latest
-    needs: [test]
+    needs: [vars]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -51,7 +59,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.test.outputs.nodeVersion }}
+          node-version: ${{ needs.vars.outputs.nodeVersion }}
           cache: 'npm'
 
       - name: Install Dependencies
@@ -68,7 +76,7 @@ jobs:
 
   cucumber-build-and-test-local:
     runs-on: windows-latest
-    needs: [test]
+    needs: [vars]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -76,7 +84,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.test.outputs.nodeVersion }}
+          node-version: ${{ needs.vars.outputs.nodeVersion }}
           cache: 'npm'
 
       - name: Install dependencies
@@ -98,7 +106,7 @@ jobs:
 
   build-windows-bundle:
     runs-on: windows-latest
-    needs: [test]
+    needs: [vars, test]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -106,7 +114,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.test.outputs.nodeVersion }}
+          node-version: ${{ needs.vars.outputs.nodeVersion }}
           cache: npm
 
       - name: Setup Python
@@ -145,7 +153,7 @@ jobs:
 
   build-macos-bundle:
     runs-on: macos-latest
-    needs: [test]
+    needs: [vars, test]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -153,7 +161,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.test.outputs.nodeVersion }}
+          node-version: ${{ needs.vars.outputs.nodeVersion }}
           cache: npm
 
       - name: Set up Python
@@ -188,7 +196,7 @@ jobs:
           gsutil cp ./playwright-macos-amd64.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
 
   bundle-test:
-    needs: [test, build-windows-bundle, build-macos-bundle]
+    needs: [build-windows-bundle, build-macos-bundle]
     strategy:
       max-parallel: 3
       matrix:
@@ -201,14 +209,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup nodejs
-        uses: actions/setup-node@v3
+      - uses: saucelabs/saucectl-run-action@v3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
-          node-version: ${{ needs.test.outputs.nodeVersion }}
-          cache: npm
-
-      - name: Setup saucectl
-        run: npm install -g saucectl
+          skip-run: true
 
       - name: Test on Sauce
         working-directory: ./tests/fixtures/cloud
@@ -218,7 +223,7 @@ jobs:
             BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
           fi
 
-          npx saucectl run \
+          saucectl run \
             --runner-version "url: ${BUNDLE_URL}" \
             --config .sauce/config.yml \
             --select-suite "${{ matrix.os }} - ${{ matrix.browser }}"
@@ -281,7 +286,7 @@ jobs:
             --select-suite "${{ matrix.os }} - ${{ matrix.browser }}"
 
   cucumber-bundle-test:
-    needs: [test, build-windows-bundle, build-macos-bundle]
+    needs: [vars, build-windows-bundle, build-macos-bundle]
     strategy:
       fail-fast: false
       matrix:
@@ -294,7 +299,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.test.outputs.nodeVersion }}
+          node-version: ${{ needs.vars.outputs.nodeVersion }}
           cache: npm
 
       - uses: saucelabs/saucectl-run-action@v3
