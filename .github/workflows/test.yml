@@ -209,7 +209,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - uses: saucelabs/saucectl-run-action@v3
+      - name: Setup saucectl
+        uses: saucelabs/saucectl-run-action@v3
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -252,7 +253,8 @@ jobs:
         with:
           python-version: '3.11'
 
-      - uses: saucelabs/saucectl-run-action@v3
+      - name: Setup saucectl
+        uses: saucelabs/saucectl-run-action@v3
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -302,7 +304,8 @@ jobs:
           node-version: ${{ needs.vars.outputs.nodeVersion }}
           cache: npm
 
-      - uses: saucelabs/saucectl-run-action@v3
+      - name: Setup saucectl
+        uses: saucelabs/saucectl-run-action@v3
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
