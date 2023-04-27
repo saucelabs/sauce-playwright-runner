@@ -12,12 +12,11 @@ on:
         required: false
         default: ''
 
-env:
-  NODE_VERSION: 18
-
 jobs:
-  create-release-draft:
+  create_release_draft:
     runs-on: ubuntu-latest
+    outputs:
+      nodeVersion: ${{ steps.nodeVersion.outputs.nodeVersion }}
     steps:
       - name: Check Tag
         id: prep
@@ -43,11 +42,14 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
+      - id: nodeVersion
+        run: echo "nodeVersion=`cat .nvmrc | tr -d 'v'`" >> "$GITHUB_OUTPUT"
+
       - name: Setup Node
         if: ${{ steps.prep.outputs.tag_name == '' }}
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ steps.nodeVersion.outputs.nodeVersion }}
           cache: npm
 
       - name: Setup Git
@@ -81,7 +83,7 @@ jobs:
 
   release-windows-bundle:
     runs-on: windows-latest
-    needs: [create-release-draft]
+    needs: [create_release_draft]
     steps:
       - name: Find Matching Draft Tag
         id: prep
@@ -133,7 +135,7 @@ jobs:
         if: ${{ steps.prep.outputs.asset_id == '' }}
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ needs.create_release_draft.outputs.nodeVersion }}
           cache: npm
 
       - name: Update Release Version
@@ -166,7 +168,7 @@ jobs:
 
   release-macos-bundle:
     runs-on: macos-latest
-    needs: [create-release-draft]
+    needs: [create_release_draft]
     steps:
       - name: Find Matching Draft Tag
         id: prep
@@ -204,7 +206,7 @@ jobs:
         if: ${{ steps.prep.outputs.asset_id == '' }}
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ needs.create_release_draft.outputs.nodeVersion }}
           cache: npm
 
       - name: Update Release Version
