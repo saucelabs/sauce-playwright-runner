@@ -14,20 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  vars:
-    runs-on: ubuntu-latest
-    outputs:
-      nodeVersion: ${{ steps.nodeVersion.outputs.nodeVersion }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - id: nodeVersion
-        run: echo "nodeVersion=`cat .nvmrc | tr -d 'v'`" >> "$GITHUB_OUTPUT"
-
   test:
-    needs: [vars]
     runs-on: ubuntu-latest
 
     steps:
@@ -37,7 +24,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.vars.outputs.nodeVersion }}
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Install dependencies
@@ -51,7 +38,6 @@ jobs:
 
   build-and-test-local:
     runs-on: windows-latest
-    needs: [vars]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -59,7 +45,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.vars.outputs.nodeVersion }}
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Install Dependencies
@@ -76,7 +62,6 @@ jobs:
 
   cucumber-build-and-test-local:
     runs-on: windows-latest
-    needs: [vars]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -84,7 +69,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.vars.outputs.nodeVersion }}
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Install dependencies
@@ -106,7 +91,7 @@ jobs:
 
   build-windows-bundle:
     runs-on: windows-latest
-    needs: [vars, test]
+    needs: [test]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -114,7 +99,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.vars.outputs.nodeVersion }}
+          node-version-file: '.nvmrc'
           cache: npm
 
       - name: Setup Python
@@ -153,7 +138,7 @@ jobs:
 
   build-macos-bundle:
     runs-on: macos-latest
-    needs: [vars, test]
+    needs: [test]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -161,7 +146,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.vars.outputs.nodeVersion }}
+          node-version-file: '.nvmrc'
           cache: npm
 
       - name: Set up Python
@@ -288,7 +273,7 @@ jobs:
             --select-suite "${{ matrix.os }} - ${{ matrix.browser }}"
 
   cucumber-bundle-test:
-    needs: [vars, build-windows-bundle, build-macos-bundle]
+    needs: [build-windows-bundle, build-macos-bundle]
     strategy:
       fail-fast: false
       matrix:
@@ -301,7 +286,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.vars.outputs.nodeVersion }}
+          node-version-file: '.nvmrc'
           cache: npm
 
       - name: Setup saucectl
