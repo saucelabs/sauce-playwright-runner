@@ -51,19 +51,18 @@ function generateJunitfile(sourceFile: string, suiteName: string, browserName: s
   let totalTime = 0;
   for (let i = 0; i < result.testsuites.testsuite.length; i++) {
     const testsuite = result.testsuites.testsuite[i] as any;
-    console.log('testsuite: ', testsuite);
     if (testsuite._attributes) {
       totalTests += +testsuite._attributes.tests || 0;
       totalFailures += +testsuite._attributes.failures || 0;
       totalErrs += +testsuite._attributes.errors || 0;
       totalSkipped += +testsuite._attributes.skipped || 0;
-      totalTime += +testsuite._attributes.time.toFixed(2) || 0;
+      totalTime += +testsuite._attributes.time || 0;
     }
 
     // _attributes
     testsuite._attributes = testsuite._attributes || {};
     testsuite._attributes.id = i;
-    const timestamp = new Date(+testsuite._attributes.timestamp);
+    const timestamp = new Date(testsuite._attributes.timestamp);
     testsuite._attributes.timestamp = timestamp.toISOString();
 
     // properties
@@ -105,7 +104,6 @@ function generateJunitfile(sourceFile: string, suiteName: string, browserName: s
     testsuites.push(testsuite);
   }
 
-  console.log('totalTime: ', totalTime);
   result = {
     _declaration: {
       _attributes: {
