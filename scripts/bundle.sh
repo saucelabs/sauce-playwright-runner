@@ -20,7 +20,7 @@ cp "$(which node)" bundle/
 pushd bundle/
 
 npm cache clean --force
-npm ci --omit=dev
+npm ci --production
 
 
 npx playwright install
