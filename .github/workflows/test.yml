@@ -108,12 +108,12 @@ jobs:
           python-version: '3.11'
 
       - name: Google Cloud Login
-        uses: 'google-github-actions/auth@v0'
+        uses: 'google-github-actions/auth@v1'
         with:
           credentials_json: '${{ secrets.GCS_RUNNER_SA_KEY }}'
 
       - name: Install gcloud SDK
-        uses: google-github-actions/setup-gcloud@v0
+        uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ secrets.GCS_RUNNER_PROJECT_ID }}
         env:
@@ -156,12 +156,12 @@ jobs:
 
       - name: Google Cloud Login
         id: 'auth'
-        uses: 'google-github-actions/auth@v0'
+        uses: 'google-github-actions/auth@v1'
         with:
           credentials_json: '${{ secrets.GCS_RUNNER_SA_KEY }}'
 
       - name: Install gcloud SDK
-        uses: google-github-actions/setup-gcloud@v0
+        uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ secrets.GCS_RUNNER_PROJECT_ID }}
         env:
