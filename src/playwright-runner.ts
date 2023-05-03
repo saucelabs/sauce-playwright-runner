@@ -62,7 +62,7 @@ function generateJunitfile(sourceFile: string, suiteName: string, browserName: s
     // _attributes
     testsuite._attributes = testsuite._attributes || {};
     testsuite._attributes.id = i;
-    const timestamp = new Date(+testsuite._attributes.timestamp);
+    const timestamp = new Date(testsuite._attributes.timestamp);
     testsuite._attributes.timestamp = timestamp.toISOString();
 
     // properties
