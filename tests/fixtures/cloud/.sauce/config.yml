@@ -13,7 +13,7 @@ playwright:
 
 npm:
   packages:
-    pretty-seconds: '3.0.0'
+    pretty-seconds: '^3.0.0'
 
 suites:
   # Windows 10 tests
