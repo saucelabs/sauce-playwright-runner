@@ -181,7 +181,7 @@ jobs:
           gsutil cp ./playwright-macos-amd64.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
 
   bundle-test:
-    needs: [build-macos-bundle]
+    needs: [build-windows-bundle, build-macos-bundle]
     strategy:
       max-parallel: 3
       matrix:
@@ -273,7 +273,7 @@ jobs:
             --select-suite "${{ matrix.os }} - ${{ matrix.browser }}"
 
   cucumber-bundle-test:
-    needs: [build-macos-bundle]
+    needs: [build-windows-bundle, build-macos-bundle]
     strategy:
       fail-fast: false
       matrix:
