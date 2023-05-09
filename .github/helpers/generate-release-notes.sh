@@ -4,8 +4,8 @@
 CHANGELOG=$(git --no-pager log --no-notes --no-decorate --oneline  v${1}...HEAD)
 
 ## Gather Framework version
-PLAYWRIGHT_VER=$(< package-lock.json jq -r '.dependencies["playwright"].version')
-PLAYWRIGHT_TEST_VER=$(< package-lock.json jq -r '.dependencies["@playwright/test"].version')
+PLAYWRIGHT_VER=$(npm list playwright --json --package-lock-only | jq --raw-output '.dependencies["playwright"].version')
+PLAYWRIGHT_TEST_VER=$(npm list @playwright/test --json --package-lock-only | jq --raw-output '.dependencies["@playwright/test"].version')
 NODEJS_VER=$(cat .nvmrc | tr -d "v")
 
 ## Add Browser versions
