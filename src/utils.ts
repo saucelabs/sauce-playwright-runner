@@ -80,3 +80,23 @@ export function setEnvironmentVariables (envVars: Record<string, string> = {}) {
     process.env[key] = value;
   }
 }
+
+export async function isEsm(projectPath?: string, configFile?: string) {
+  const packagePath = path.join(projectPath ?? '', 'package.json');
+  try {
+    const packageJson = await import(packagePath);
+    if (packageJson.type === 'module') {
+      return true;
+    }
+  } catch {
+    // NOTE: Don't care if we can't load package.json, maybe it was ignored?
+    // Proceed with checking the config file.
+  }
+
+  const configExt = path.extname(configFile ?? '');
+  if (configExt === '.mjs' || configExt === '.mts') {
+    return true;
+  }
+
+  return false;
+}
