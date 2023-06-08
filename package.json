@@ -9,7 +9,7 @@
   ],
   "main": "lib/playwright-recorder.js",
   "scripts": {
-    "build": "tsc && cp src/sauce.config.mjs lib/",
+    "build": "tsc && cp src/sauce.config.* lib/",
     "clean": "rm -rf lib",
     "lint": "eslint tests/ src/",
     "test": "./bin/wait_display && DISPLAY=\"$(cat DISPLAY)\" node .",
