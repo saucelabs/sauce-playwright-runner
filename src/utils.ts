@@ -87,7 +87,12 @@ export function setEnvironmentVariables (envVars: Record<string, string> = {}) {
  * if configured for ESM.
  */
 export async function isEsmProject(projectPath?: string) {
-  const packagePath = path.join(projectPath ?? '', 'package.json');
+  if (!projectPath) {
+    console.warn('Project path expected, but is undefined');
+    return false
+  }
+
+  const packagePath = path.join(projectPath, 'package.json');
   let packageJson: unknown;
   try {
     const contents = await readFile(packagePath, { encoding: 'utf-8' });
