@@ -1,4 +1,5 @@
 import * as path from 'node:path';
+import { readFile } from 'node:fs/promises';
 
 import shell from 'shelljs';
 import logger from '@wdio/logger';
@@ -89,7 +90,8 @@ export async function isEsmProject(projectPath?: string) {
   const packagePath = path.join(projectPath ?? '', 'package.json');
   let packageJson: unknown;
   try {
-    packageJson = await import(packagePath);
+    const contents = await readFile(packagePath, { encoding: 'utf-8' });
+    packageJson = JSON.parse(contents.toString());
   } catch {
     return false
   }
