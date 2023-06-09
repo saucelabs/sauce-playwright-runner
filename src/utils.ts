@@ -81,7 +81,11 @@ export function setEnvironmentVariables (envVars: Record<string, string> = {}) {
   }
 }
 
-export async function isEsm(projectPath?: string, configFile?: string) {
+/**
+ * Attempt a best guess whether the project to be run has an ESM or CommonJS
+ * config file.
+ */
+export async function isEsmProject(projectPath?: string) {
   const packagePath = path.join(projectPath ?? '', 'package.json');
   try {
     const packageJson = await import(packagePath);
@@ -89,13 +93,7 @@ export async function isEsm(projectPath?: string, configFile?: string) {
       return true;
     }
   } catch {
-    // NOTE: Don't care if we can't load package.json, maybe it was ignored?
-    // Proceed with checking the config file.
-  }
-
-  const configExt = path.extname(configFile ?? '');
-  if (configExt === '.mjs' || configExt === '.mts') {
-    return true;
+    // NOTE: Don't care if we can't load package.json, maybe it was ignored.
   }
 
   return false;
