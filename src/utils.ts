@@ -91,7 +91,7 @@ export async function isEsmProject(projectPath?: string) {
   let packageJson: unknown;
   try {
     const contents = await readFile(packagePath, { encoding: 'utf-8' });
-    packageJson = JSON.parse(contents.toString());
+    packageJson = JSON.parse(contents);
   } catch {
     return false
   }
