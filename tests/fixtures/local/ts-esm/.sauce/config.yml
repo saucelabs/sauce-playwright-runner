@@ -1,0 +1,22 @@
+apiVersion: v1alpha
+kind: playwright
+sauce:
+  region: us-west-1
+  metadata:
+    tags:
+      - e2e
+      - release team
+      - other tag
+    build: Release $CI_COMMIT_SHORT_SHA
+rootDir: .
+playwright:
+  version: 1.29.2
+suites:
+  - name: default
+    params:
+      browserName: webkit
+      screenshotOnFailure: false
+      slowMo: 1000
+      headful: false
+    testMatch:
+      - ".*.spec.ts"
