@@ -1,3 +1,4 @@
+// @ts-check
 const process = require('process');
 const _ = require('lodash');
 const fs = require('fs');
@@ -27,8 +28,8 @@ for (const file of configFiles) {
 
 const overrides = {
   use: {
-    headless: process.env.SAUCE_VM ? process.env.HEADLESS === 'true' : true,
-    video: process.env.SAUCE_VM ? 'off' : 'on',
+    headless: process.env.HEADLESS === 'true',
+    video: 'off',
     launchOptions: {},
   },
   reporter: [
@@ -44,7 +45,7 @@ const overrides = {
       },
     ],
   ],
-  testIgnore: process.env.TEST_IGNORE,
+  testIgnore: process.env.TEST_IGNORE?.split(','),
 };
 
 // Values that are arrays are merged at the very end (see arrMerger()), but primitives are not.
@@ -59,7 +60,7 @@ if (process.env.BROWSER_NAME !== 'chrome') {
   // it knows what to do and where to pick them up.
   overrides.use.browserName = process.env.BROWSER_NAME; // override browserName with suite browserName
 } else {
-  // Google chrome is provided by the sauce VM (or docker image). So we have to let playwright know where to look.
+  // Google chrome is provided by the sauce VM. So we have to let playwright know where to look.
   overrides.use.channel = 'chrome';
   overrides.use.launchOptions.executablePath = process.env.BROWSER_PATH;
 }
