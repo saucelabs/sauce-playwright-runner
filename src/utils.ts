@@ -82,8 +82,8 @@ export function setEnvironmentVariables (envVars: Record<string, string> = {}) {
 }
 
 /**
- * Attempt a best guess whether the project to be run has an ESM or CommonJS
- * config file.
+ * Check project's module type from an included package.json and return true
+ * if configured for ESM.
  */
 export async function isEsmProject(projectPath?: string) {
   const packagePath = path.join(projectPath ?? '', 'package.json');
