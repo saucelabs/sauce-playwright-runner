@@ -87,14 +87,17 @@ export function setEnvironmentVariables (envVars: Record<string, string> = {}) {
  */
 export async function isEsmProject(projectPath?: string) {
   const packagePath = path.join(projectPath ?? '', 'package.json');
+  let packageJson: unknown;
   try {
-    const packageJson = await import(packagePath);
-    if (packageJson.type === 'module') {
-      return true;
-    }
+    packageJson = await import(packagePath);
   } catch {
-    // NOTE: Don't care if we can't load package.json, maybe it was ignored.
+    return false
   }
 
-  return false;
+  return (
+    packageJson &&
+    typeof packageJson === 'object' &&
+    'type' in packageJson &&
+    packageJson.type === 'module'
+  );
 }
