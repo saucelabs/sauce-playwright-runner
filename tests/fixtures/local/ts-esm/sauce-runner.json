@@ -4,7 +4,7 @@
     },
     "suites": [
         {
-            "name": "basic-ts",
+            "name": "ts-esm",
             "param": {
               "browserName": "chromium",
               "headless": true
