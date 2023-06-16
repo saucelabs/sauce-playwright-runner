@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 import { test, expect } from '@playwright/test';
+import config from '../playwright.config.js';
 
 test('is a basic test with the page', async ({ page }) => {
   await page.goto('https://playwright.dev/');
   expect(await page.innerText('.navbar__title')).toBe('Playwright');
+  expect(config.use?.video).toEqual('off');
 });

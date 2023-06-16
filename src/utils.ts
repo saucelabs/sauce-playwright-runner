@@ -1,4 +1,5 @@
 import * as path from 'node:path';
+import { readFile } from 'node:fs/promises';
 
 import shell from 'shelljs';
 import logger from '@wdio/logger';
@@ -79,4 +80,31 @@ export function setEnvironmentVariables (envVars: Record<string, string> = {}) {
   for (const [key, value] of Object.entries(envVars)) {
     process.env[key] = value;
   }
+}
+
+/**
+ * Check project's module type from an included package.json and return true
+ * if configured for ESM.
+ */
+export async function isEsmProject(projectPath?: string) {
+  if (!projectPath) {
+    console.warn('Project path expected, but is undefined');
+    return false
+  }
+
+  const packagePath = path.join(projectPath, 'package.json');
+  let packageJson: unknown;
+  try {
+    const contents = await readFile(packagePath, { encoding: 'utf-8' });
+    packageJson = JSON.parse(contents);
+  } catch {
+    return false
+  }
+
+  return (
+    packageJson &&
+    typeof packageJson === 'object' &&
+    'type' in packageJson &&
+    packageJson.type === 'module'
+  );
 }

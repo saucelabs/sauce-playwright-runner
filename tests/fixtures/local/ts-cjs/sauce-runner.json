@@ -1,0 +1,15 @@
+{
+    "playwright": {
+        "version": "1.12.3"
+    },
+    "suites": [
+        {
+            "name": "ts-cjs",
+            "param": {
+              "browserName": "chromium",
+              "headless": true
+            },
+            "testMatch": ".*.spec.ts"
+        }
+    ]
+}

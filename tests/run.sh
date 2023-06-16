@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # suite=result
-tests=(basic-js=success basic-ts=success broken-tests=failure config-merging=success)
+tests=(basic-js=success broken-tests=failure config-merging=success ts-esm=success ts-cjs=success)
 
 for i in ${tests[@]}; do
     key=$(echo ${i} | cut -d '=' -f 1)
