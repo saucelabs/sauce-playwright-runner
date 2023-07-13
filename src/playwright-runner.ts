@@ -298,6 +298,8 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
     };
   }
 
+  console.log('procArgs: ', procArgs);
+
   const playwrightProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd: runCfg.projectPath, env});
 
   const playwrightPromise = new Promise<number | null>((resolve, reject) => {
