@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import {spawn, exec} from 'node:child_process';
+import {spawn, execSync} from 'node:child_process';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 
@@ -298,17 +298,7 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
     };
   }
 
-  exec('ls; find .', (err, stdout, stderr) => {
-    if (err) {
-      // node couldn't execute the command
-      return;
-    }
-  
-    // the *entire* stdout and stderr (buffered)
-    console.log(`stdout: ${stdout}`);
-    console.log(`stderr: ${stderr}`);
-  });
-  console.log('procArgs: ', procArgs);
+  console.log(execSync('find .').toString())
 
   const playwrightProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd: runCfg.projectPath, env});
 
