@@ -42,21 +42,21 @@ suites:
 
   ## Windows 11 Tests
   - name: "Win11 - Chromium"
-    platformName: "Windows 10"
+    platformName: "Windows 11"
     params:
       browserName: "chromium"
     testMatch:
       - "tests/.*.test.js"
 
   - name: "Win11 - Firefox"
-    platformName: "Windows 10"
+    platformName: "Windows 11"
     params:
       browserName: "firefox"
     testMatch:
       - "tests/.*.test.js"
 
   - name: "Win11 - Webkit"
-    platformName: "Windows 10"
+    platformName: "Windows 11"
     params:
       browserName: "webkit"
     testMatch:
