@@ -227,10 +227,6 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
     playwrightBin, 'test'
   ];
 
-  // Default value for timeout (30min)
-  if (!suite.param.globalTimeout) {
-    suite.param.timeout = 1800000;
-  }
   let args: Record<string, unknown> = _.defaultsDeep(defaultArgs, utils.replaceLegacyKeys(suite.param));
 
   // There is a conflict if the playwright project has a `browser` defined,
