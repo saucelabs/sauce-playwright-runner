@@ -4,8 +4,8 @@ export PLAYWRIGHT_BROWSERS_PATH=$PWD/bundle/Cache/
 echo $PLAYWRIGHT_BROWSERS_PATH
 NODE_VERSION=$(node --version)
 NODE_URL="https://nodejs.org/dist/$NODE_VERSION/node-$NODE_VERSION-win-x64.zip"
-NODE_TAR_FILE="node-$NODE_VERSION-darwin-x64.tar.gz"
-NODE_DIR="node-$NODE_VERSION-darwin-x64"
+NODE_TAR_FILE="node-$NODE_VERSION-win-x64.zip"
+NODE_DIR="node-$NODE_VERSION-win-x64"
 
 rm -rf ./bundle/
 mkdir ./bundle/
