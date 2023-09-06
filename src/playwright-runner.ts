@@ -169,7 +169,6 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   console.log(`Sauce Playwright Runner ${packageInfo.version}`);
   console.log(`Running Playwright ${packageInfo.dependencies?.playwright || ''}`);
 
-  nodeBin = `${path.dirname(nodeBin)}/node/bin/${path.basename(nodeBin)}`;
   console.log('nodeBin: ', nodeBin)
 
   let result: RunResult;
@@ -281,6 +280,7 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
 
   // Define node/npm path for execution
   const npmBin = path.join(path.dirname(nodeBin), 'npm');
+  console.log('npmBin: ', npmBin)
   const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
 
   // runCfg.path must be set for prepareNpmEnv to find node_modules. :(
