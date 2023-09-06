@@ -2,6 +2,7 @@
 import {spawn} from 'node:child_process';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
+import * as os from 'node:os';
 
 import _ from 'lodash';
 import {getArgs, prepareNpmEnv, loadRunConfig, escapeXML, preExec} from 'sauce-testrunner-utils';
@@ -167,6 +168,14 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   const packageInfo = await import(path.join(__dirname, '..', 'package.json'));
   console.log(`Sauce Playwright Runner ${packageInfo.version}`);
   console.log(`Running Playwright ${packageInfo.dependencies?.playwright || ''}`);
+
+  const currentPATH = process.env.PATH || '';
+  const platform = os.platform();
+  if (platform === 'darwin') {
+    process.env.PATH = `${currentPATH}:${path.resolve(path.dirname(nodeBin))}`
+  } else if (platform === 'win32') {
+    process.env.PATH = `${currentPATH};${path.resolve(path.dirname(nodeBin))}`
+  }
 
   let result: RunResult;
   if (runCfg.Kind === 'playwright-cucumberjs') {
