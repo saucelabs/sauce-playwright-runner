@@ -169,7 +169,15 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   console.log(`Sauce Playwright Runner ${packageInfo.version}`);
   console.log(`Running Playwright ${packageInfo.dependencies?.playwright || ''}`);
 
+  const platform = os.platform();
+  const currentPATH = process.env.PATH || '';
+  if (platform === 'win32') {
+    process.env.PATH = `${currentPATH};${path.resolve(path.dirname(nodeBin))}`;
+  } else {
+    process.env.PATH = `${currentPATH}:${path.resolve(path.dirname(nodeBin))}`;
+  }
   console.log('nodeBin: ', nodeBin)
+  console.log('path: ', process.env.PATH)
 
   let result: RunResult;
   if (runCfg.Kind === 'playwright-cucumberjs') {
