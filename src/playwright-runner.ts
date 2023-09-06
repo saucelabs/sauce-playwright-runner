@@ -169,7 +169,7 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   console.log(`Sauce Playwright Runner ${packageInfo.version}`);
   console.log(`Running Playwright ${packageInfo.dependencies?.playwright || ''}`);
 
-  nodeBin = `${nodeBin}/node/bin/`;
+  nodeBin = `${path.dirname(nodeBin)}/node/bin/${path.basename(nodeBin)}`;
   console.log('nodeBin: ', nodeBin)
 
   let result: RunResult;
