@@ -19,7 +19,7 @@ cp -r bin/ bundle/bin/
 cp package.json bundle/package.json
 cp package-lock.json bundle/package-lock.json
 wget $NODE_URL
-tar xf $NODE_TAR_FILE
+unzip $NODE_TAR_FILE
 mv $NODE_DIR bundle/node
 
 pushd bundle/
