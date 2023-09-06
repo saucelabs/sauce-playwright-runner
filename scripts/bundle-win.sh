@@ -18,7 +18,7 @@ cp -r ./lib/ ./bundle/lib/
 cp -r bin/ bundle/bin/
 cp package.json bundle/package.json
 cp package-lock.json bundle/package-lock.json
-wget $NODE_URL
+curl -o $NODE_TAR_FILE $NODE_URL
 unzip $NODE_TAR_FILE
 mv $NODE_DIR bundle/node
 
