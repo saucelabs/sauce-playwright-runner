@@ -15,8 +15,8 @@ cp -r bin/ bundle/bin/
 cp package.json bundle/package.json
 cp package-lock.json bundle/package-lock.json
 cp "$(which node)" bundle/
-cp "$(which npm)" bundle/
-cp "$(which npx)" bundle/
+cp -L "$(which npm)" bundle/
+cp -L "$(which npx)" bundle/
 
 pushd bundle/
 
