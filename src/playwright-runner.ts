@@ -169,14 +169,8 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   console.log(`Sauce Playwright Runner ${packageInfo.version}`);
   console.log(`Running Playwright ${packageInfo.dependencies?.playwright || ''}`);
 
-  const currentPATH = process.env.PATH || '';
-  const platform = os.platform();
-  if (platform === 'darwin') {
-    process.env.PATH = `${currentPATH}:${path.resolve(path.dirname(nodeBin))}`
-  } else if (platform === 'win32') {
-    process.env.PATH = `${currentPATH};${path.resolve(path.dirname(nodeBin))}`
-  }
-  console.log('env var: ', process.env.PATH)
+  nodeBin = `${nodeBin}/node/bin/`;
+  console.log('nodeBin: ', nodeBin)
 
   let result: RunResult;
   if (runCfg.Kind === 'playwright-cucumberjs') {
@@ -286,9 +280,8 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
   const metrics: Metrics[] = [];
 
   // Define node/npm path for execution
-	const npmBin = path.join(path.resolve(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
-  const npxBin = path.join(path.resolve(nodeBin), 'node_modules', 'npm', 'bin', 'npx-cli.js');
-  const nodeCtx = { nodePath: nodeBin, npmPath: npmBin, npxPath: npxBin };
+  const npmBin = path.join(path.dirname(nodeBin), 'npm');
+  const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
 
   // runCfg.path must be set for prepareNpmEnv to find node_modules. :(
   const npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
