@@ -16,7 +16,7 @@ cp package.json bundle/package.json
 cp package-lock.json bundle/package-lock.json
 wget "https://nodejs.org/dist/v18.17.1/node-v18.17.1-darwin-arm64.tar.gz"
 tar xf node-v18.17.1-darwin-arm64.tar.gz
-mv node-v18.17.1-darwin-arm64 node
+mv node-v18.17.1-darwin-arm64 bundle/node
 
 pushd bundle/
 
