@@ -174,8 +174,8 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   if (os.platform() === 'win32') {
     nodeBin = path.join(nodeDir, 'node_dir', 'node.exe');
   } else {
-    // The previous bundled nodeBin(/Users/chef/payload/bundle/bundle/node) should be resolved on Mac platform.
-    // Otherwise, `npx` would point to `/Users/chef/payload/bundle/lib/`.
+    // The previous bundled nodeBin(/Users/chef/payload/bundle/bundle/node) should be removed on Mac platform.
+    // Otherwise, `npx` would be point to `/Users/chef/payload/bundle/lib/` according to the `node` path, which is wrong.
     fs.unlink(nodeBin, (err) => {
       if (err) throw err;
       console.log('previous bundled nodeBin was deleted');
