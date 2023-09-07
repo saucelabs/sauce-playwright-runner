@@ -287,7 +287,10 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
   const metrics: Metrics[] = [];
 
   // Define node/npm path for execution
-  const npmBin = path.join(path.dirname(nodeBin), 'npm');
+  let npmBin = path.join(path.dirname(nodeBin), 'npm');
+  if (os.platform() === 'win32') {
+    npmBin = path.join(path.dirname(nodeBin), 'npm.cmd');
+  }
   console.log('npmBin: ', npmBin)
   const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
 
