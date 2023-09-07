@@ -172,7 +172,7 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   const platform = os.platform();
   const currentPATH = process.env.PATH || '';
   if (platform === 'win32') {
-    process.env.PATH = `${currentPATH};${path.resolve(path.dirname(nodeBin))}`;
+    //process.env.PATH = `${currentPATH};${path.resolve(path.dirname(nodeBin))}`;
   } else {
     process.env.PATH = `${currentPATH}:${path.resolve(path.dirname(nodeBin))}`;
   }
