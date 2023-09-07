@@ -174,6 +174,10 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   if (os.platform() === 'win32') {
     nodeBin = path.join(nodeDir, 'node_dir', 'node.exe');
   } else {
+    fs.unlink(nodeBin, (err) => {
+      if (err) throw err;
+      console.log('previous nodeBin was deleted');
+    }); 
     nodeBin = path.join(nodeDir, 'node_dir', 'bin', 'node');
   }
   console.log('nodeBin: ', nodeBin)
