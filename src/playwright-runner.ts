@@ -172,9 +172,9 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   // Modify nodeBin location to downloaded node binaries.
   const nodeDir = path.resolve(path.dirname(nodeBin));
   if (os.platform() === 'win32') {
-    nodeBin = path.join(nodeDir, 'node', 'node.exe');
+    nodeBin = path.join(nodeDir, 'node_dir', 'node.exe');
   } else {
-    nodeBin = path.join(nodeDir, 'node', 'bin', 'node');
+    nodeBin = path.join(nodeDir, 'node_dir', 'bin', 'node');
   }
   const currentPATH = process.env.PATH || '';
   process.env.PATH = `${currentPATH}${path.delimiter}${path.resolve(path.dirname(nodeBin))}`
