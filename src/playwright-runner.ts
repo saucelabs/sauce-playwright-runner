@@ -176,8 +176,10 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   } else {
     nodeBin = path.join(nodeDir, 'node_dir', 'bin', 'node');
   }
+  console.log('nodeBin: ', nodeBin)
   const currentPATH = process.env.PATH || '';
   process.env.PATH = `${currentPATH}${path.delimiter}${path.resolve(path.dirname(nodeBin))}`
+  console.log('PATH: ', process.env.PATH)
 
   let result: RunResult;
   if (runCfg.Kind === 'playwright-cucumberjs') {
