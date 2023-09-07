@@ -2,6 +2,7 @@
 import {spawn} from 'node:child_process';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
+import * as os from 'node:os';
 
 import _ from 'lodash';
 import {getArgs, prepareNpmEnv, loadRunConfig, escapeXML, preExec} from 'sauce-testrunner-utils';
@@ -168,6 +169,13 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   console.log(`Sauce Playwright Runner ${packageInfo.version}`);
   console.log(`Running Playwright ${packageInfo.dependencies?.playwright || ''}`);
 
+  // Modify nodeBin location to downloaded node binaries.
+  const nodeDir = path.resolve(path.dirname(nodeBin));
+  if (os.platform() === 'win32') {
+    nodeBin = path.join(nodeDir, 'node', 'node.exe');
+  } else {
+    nodeBin = path.join(nodeDir, 'node', 'bin', 'node');
+  }
   const currentPATH = process.env.PATH || '';
   process.env.PATH = `${currentPATH}${path.delimiter}${path.resolve(path.dirname(nodeBin))}`
 
