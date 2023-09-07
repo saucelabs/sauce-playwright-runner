@@ -287,7 +287,7 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
   const metrics: Metrics[] = [];
 
   // Define node/npm path for execution
-  const npmBin = path.join(path.dirname(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
+  const npmBin = path.join(__dirname, '..', 'node_modules', 'npm', 'bin', 'npm-cli.js');
   const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
 
   // runCfg.path must be set for prepareNpmEnv to find node_modules. :(

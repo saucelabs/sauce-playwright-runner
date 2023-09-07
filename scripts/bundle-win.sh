@@ -20,7 +20,7 @@ cp package-lock.json bundle/package-lock.json
 cp $(which node) bundle/
 curl -o $NODE_TAR_FILE $NODE_URL
 unzip $NODE_TAR_FILE
-mv $NODE_DIR bundle/nodeBin
+mv $NODE_DIR bundle/node_dir
 
 pushd bundle/
 
