@@ -174,16 +174,16 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   if (os.platform() === 'win32') {
     nodeBin = path.join(nodeDir, 'node_dir', 'node.exe');
   } else {
+    // The previous bundled nodeBin(/Users/chef/payload/bundle/bundle/node) should be resolved on Mac platform.
+    // Otherwise, `npx` would point to `/Users/chef/payload/bundle/lib/`.
     fs.unlink(nodeBin, (err) => {
       if (err) throw err;
-      console.log('previous nodeBin was deleted');
+      console.log('previous bundled nodeBin was deleted');
     }); 
     nodeBin = path.join(nodeDir, 'node_dir', 'bin', 'node');
   }
-  console.log('nodeBin: ', nodeBin)
   const currentPATH = process.env.PATH || '';
   process.env.PATH = `${currentPATH}${path.delimiter}${path.resolve(path.dirname(nodeBin))}`
-  console.log('PATH: ', process.env.PATH)
 
   let result: RunResult;
   if (runCfg.Kind === 'playwright-cucumberjs') {
