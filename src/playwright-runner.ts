@@ -2,6 +2,7 @@
 import {spawn} from 'node:child_process';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
+import * as os from 'node:os';
 
 import _ from 'lodash';
 import {getArgs, prepareNpmEnv, loadRunConfig, escapeXML, preExec} from 'sauce-testrunner-utils';
@@ -168,6 +169,22 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   console.log(`Sauce Playwright Runner ${packageInfo.version}`);
   console.log(`Running Playwright ${packageInfo.dependencies?.playwright || ''}`);
 
+  // Modify nodeBin location to downloaded node binaries.
+  const nodeDir = path.resolve(path.dirname(nodeBin));
+  if (os.platform() === 'win32') {
+    nodeBin = path.join(nodeDir, 'node_dir', 'node.exe');
+  } else {
+    // The previous bundled nodeBin(/Users/chef/payload/bundle/bundle/node) should be removed on Mac platform.
+    // Otherwise, `npx` would be point to `/Users/chef/payload/bundle/lib/` according to the `node` path, which is wrong.
+    fs.unlink(nodeBin, (err) => {
+      if (err) throw err;
+      console.log('previous bundled nodeBin was deleted');
+    }); 
+    nodeBin = path.join(nodeDir, 'node_dir', 'bin', 'node');
+  }
+  const currentPATH = process.env.PATH || '';
+  process.env.PATH = `${currentPATH}${path.delimiter}${path.resolve(path.dirname(nodeBin))}`
+
   let result: RunResult;
   if (runCfg.Kind === 'playwright-cucumberjs') {
     result = await runCucumber(nodeBin, runCfg);
@@ -276,7 +293,7 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
   const metrics: Metrics[] = [];
 
   // Define node/npm path for execution
-  const npmBin = path.join(path.dirname(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
+  const npmBin = path.join(__dirname, '..', 'node_modules', 'npm', 'bin', 'npm-cli.js');
   const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
 
   // runCfg.path must be set for prepareNpmEnv to find node_modules. :(

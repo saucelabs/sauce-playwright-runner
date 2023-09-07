@@ -2,6 +2,10 @@ set -e
 echo "Using: $(which node)"
 export PLAYWRIGHT_BROWSERS_PATH=$PWD/bundle/Cache/
 echo $PLAYWRIGHT_BROWSERS_PATH
+NODE_VERSION=$(node --version)
+NODE_URL="https://nodejs.org/dist/$NODE_VERSION/node-$NODE_VERSION-win-x64.zip"
+NODE_TAR_FILE="node-$NODE_VERSION-win-x64.zip"
+NODE_DIR="node-$NODE_VERSION-win-x64"
 
 rm -rf ./bundle/
 mkdir ./bundle/
@@ -10,12 +14,13 @@ mkdir ./bundle/
 npm ci
 npm run build
 cp -r ./lib/ ./bundle/lib/
-
 cp -r bin/ bundle/bin/
 cp package.json bundle/package.json
 cp package-lock.json bundle/package-lock.json
-cp "$(which node)" bundle/
-
+cp $(which node) bundle/
+curl -o $NODE_TAR_FILE $NODE_URL
+unzip $NODE_TAR_FILE
+mv $NODE_DIR bundle/node_dir
 
 pushd bundle/
 

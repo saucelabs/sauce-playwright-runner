@@ -123,7 +123,7 @@ jobs:
         run: npm version --no-git-tag-version 1.0.0
 
       - name: Bundle Directory
-        run: bash ./scripts/bundle.sh
+        run: bash ./scripts/bundle-win.sh
 
       - name: Archive Bundle
         uses: azure/powershell@v1
@@ -171,7 +171,7 @@ jobs:
         run: npm version --no-git-tag-version 1.0.0
 
       - name: Bundle Directory
-        run: bash ./scripts/bundle.sh
+        run: bash ./scripts/bundle-mac.sh
 
       - name: Archive Bundle
         run: zip --symlinks -r playwright-macos-amd64.zip bundle/
