@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import {spawn} from 'node:child_process';
+import {spawn, execSync} from 'node:child_process';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 
@@ -313,6 +313,9 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
     console.error(`Could not complete job. Reason: ${e}`);
   }
   const endTime = new Date().toISOString()
+
+  const output = execSync('find __assets__');
+  console.log('assets details: ', output.toString());
 
   return {
     startTime,
