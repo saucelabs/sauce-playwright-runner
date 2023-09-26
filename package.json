@@ -35,7 +35,7 @@
     "@saucelabs/playwright-reporter": "0.4.3",
     "@saucelabs/testcomposer": "^1.0.0",
     "@wdio/logger": "7.26.0",
-    "dotenv": "16.0.3",
+    "dotenv": "16.3.1",
     "glob": "^8.0.0",
     "lodash": "4.17.21",
     "playwright": "1.38.1",
