@@ -255,8 +255,8 @@ jobs:
         with:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
-          tunnelIdentifier: github-playwright-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }}
-          scVersion: 4.7.1
+          tunnelName: github-playwright-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }}
+          scVersion: 4.9.1
 
       - name: Test on Sauce
         working-directory: ./tests/fixtures/cloud
