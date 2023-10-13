@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {spawn} from 'node:child_process';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
