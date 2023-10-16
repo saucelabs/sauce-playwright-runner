@@ -80,12 +80,9 @@ export async function runCucumber(nodeBin: string, runCfg: CucumberRunnerConfig)
   // Install NPM dependencies
   await prepareNpmEnv(runCfg, nodeCtx);
 
-  const startTime = new Date().toISOString();
   // Run suite preExecs
   if (!await preExec.run(runCfg.suite, runCfg.preExecTimeout)) {
     return {
-      startTime,
-      endTime: new Date().toISOString(),
       hasPassed: false,
     };
   }
@@ -110,11 +107,8 @@ export async function runCucumber(nodeBin: string, runCfg: CucumberRunnerConfig)
   } catch (e) {
     console.error(`Could not complete job. Reason: ${e}`);
   }
-  const endTime = new Date().toISOString();
 
   return {
-    startTime,
-    endTime,
     hasPassed: passed,
   };
 }

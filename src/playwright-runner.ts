@@ -278,12 +278,9 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
   // runCfg.path must be set for prepareNpmEnv to find node_modules. :(
   await prepareNpmEnv(runCfg, nodeCtx);
 
-  const startTime = new Date().toISOString();
   // Run suite preExecs
   if (!await preExec.run(suite, runCfg.preExecTimeout)) {
     return {
-      startTime,
-      endTime: new Date().toISOString(),
       hasPassed: false,
     };
   }
@@ -306,11 +303,8 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
   } catch (e) {
     console.error(`Could not complete job. Reason: ${e}`);
   }
-  const endTime = new Date().toISOString()
 
   return {
-    startTime,
-    endTime,
     hasPassed,
   };
 }

@@ -3,9 +3,7 @@ import type { Region } from '@saucelabs/testcomposer';
 export type Browser = 'chromium' | 'firefox' | 'webkit' | 'chrome';
 
 export interface RunResult {
-  startTime: string;
   hasPassed: boolean;
-  endTime: string;
 }
 
 export interface RunnerConfig {
