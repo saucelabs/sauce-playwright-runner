@@ -2,7 +2,7 @@ import {spawn} from 'node:child_process';
 import * as path from 'node:path';
 import {prepareNpmEnv, preExec} from 'sauce-testrunner-utils';
 
-import type {CucumberRunnerConfig, RunResult} from './types';
+import type {CucumberRunnerConfig} from './types';
 import * as utils from './utils';
 
 function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
@@ -62,7 +62,7 @@ function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
   return procArgs;
 }
 
-export async function runCucumber(nodeBin: string, runCfg: CucumberRunnerConfig): Promise<RunResult> {
+export async function runCucumber(nodeBin: string, runCfg: CucumberRunnerConfig): Promise<boolean> {
   process.env.BROWSER_NAME = runCfg.suite.browserName;
   process.env.BROWSER_OPTIONS = runCfg.suite.browserOptions;
   process.env.SAUCE_SUITE_NAME = runCfg.suite.name;
@@ -82,9 +82,7 @@ export async function runCucumber(nodeBin: string, runCfg: CucumberRunnerConfig)
 
   // Run suite preExecs
   if (!await preExec.run(runCfg.suite, runCfg.preExecTimeout)) {
-    return {
-      hasPassed: false,
-    };
+    return false;
   }
 
   const cucumberBin = path.join(runCfg.projectPath, 'node_modules', '@cucumber', 'cucumber', 'bin', 'cucumber-js');
@@ -101,25 +99,19 @@ export async function runCucumber(nodeBin: string, runCfg: CucumberRunnerConfig)
     }, timeout * 1000);
   });
 
-  let passed = false;
-  const cucumberPromise = new Promise<boolean>((resolve, reject) => {
-    proc.on('error', (err) => {
-      reject(err);
-    });
+  const cucumberPromise = new Promise<boolean>((resolve) => {
     proc.on('close', (code) => {
       resolve(code === 0);
     });
   });
 
   try {
-    passed = await Promise.race([timeoutPromise, cucumberPromise]);
+    return await Promise.race([timeoutPromise, cucumberPromise]);
   } catch (e) {
-    console.error(`Could not complete job. Reason: ${e}`);
+    console.error(`Failed to run Cucumber.js: ${e}`);
   }
 
-  return {
-    hasPassed: passed,
-  };
+  return false;
 }
 
 function buildFormatOption(cfg: CucumberRunnerConfig) {

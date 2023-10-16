@@ -11,7 +11,6 @@ import {runCucumber} from './cucumber-runner';
 import type {
   CucumberRunnerConfig,
   RunnerConfig,
-  RunResult,
 } from './types';
 import * as utils from './utils';
 
@@ -167,11 +166,11 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   console.log(`Sauce Playwright Runner ${packageInfo.version}`);
   console.log(`Running Playwright ${packageInfo.dependencies?.playwright || ''}`);
 
-  let result: RunResult;
+  let passed = false;
   if (runCfg.Kind === 'playwright-cucumberjs') {
-    result = await runCucumber(nodeBin, runCfg);
+    passed = await runCucumber(nodeBin, runCfg);
   } else {
-    result = await runPlaywright(nodeBin, runCfg);
+    passed = await runPlaywright(nodeBin, runCfg);
     try {
       generateJunitFile(runCfg.junitFile, runCfg.suite.name, runCfg.suite.param.browser, runCfg.suite.platformName);
     } catch (err) {
@@ -179,10 +178,10 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     }
   }
 
-  return result.hasPassed;
+  return passed;
 }
 
-async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<RunResult> {
+async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<boolean> {
   const excludeParams = ['screenshot-on-failure', 'video', 'slow-mo', 'headless', 'headed'];
 
   process.env.BROWSER_NAME = runCfg.suite.param.browserName;
@@ -280,9 +279,7 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
 
   // Run suite preExecs
   if (!await preExec.run(suite, runCfg.preExecTimeout)) {
-    return {
-      hasPassed: false,
-    };
+    return false;
   }
 
   const playwrightProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd: runCfg.projectPath, env});
@@ -297,25 +294,19 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
     }, timeout * 1000);
   });
 
-  const playwrightPromise = new Promise<boolean>((resolve, reject) => {
-    playwrightProc.on('error', (err) => {
-      reject(err);
-    });
+  const playwrightPromise = new Promise<boolean>((resolve) => {
     playwrightProc.on('close', (code) => {
       resolve(code === 0);
     });
   });
 
-  let passed = false;
   try {
-    passed = await Promise.race([timeoutPromise, playwrightPromise]);
+    return await Promise.race([timeoutPromise, playwrightPromise]);
   } catch (e) {
     console.error(`Failed to run Playwright: ${e}`);
   }
 
-  return {
-    hasPassed: passed,
-  };
+  return false;
 }
 
 if (require.main === module) {
