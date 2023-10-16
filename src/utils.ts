@@ -1,11 +1,6 @@
 import * as path from 'node:path';
 import { readFile } from 'node:fs/promises';
-
-import shell from 'shelljs';
-import logger from '@wdio/logger';
 import { SuiteConfig } from './types';
-
-const log = logger('utils');
 
 export function getAbsolutePath (pathToDir: string) {
   if (path.isAbsolute(pathToDir)) {
@@ -29,23 +24,6 @@ export function toHyphenated (str: string) {
     }
   }
   return out.join('');
-}
-
-export function exec (expression: string, {suppressLogs = false}) {
-  const COMMAND_TIMEOUT = 5000;
-  const cp = shell.exec(expression, { async: true, silent: true });
-  if (!suppressLogs) {
-    cp.stdout?.on('data', (data) => log.info(`${data}`));
-    cp.stderr?.on('data', (data) => log.info(`${data}`));
-  }
-
-  return new Promise((resolve) => {
-    const timeout = setTimeout(resolve, COMMAND_TIMEOUT);
-    cp.on('close', (code) => {
-      clearTimeout(timeout);
-      resolve(code);
-    });
-  });
 }
 
 export function replaceLegacyKeys (config: SuiteConfig) {
