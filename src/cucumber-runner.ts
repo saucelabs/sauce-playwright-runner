@@ -13,7 +13,7 @@ function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
   const procArgs = [
     cucumberBin,
     ...paths,
-    '--publish-quiet',
+    '--publish-quiet', // Deprecated in 9.4.0. Will be removed in 11.0.0 or later.
     '--force-exit',
     '--require-module', 'ts-node/register',
     '--format', '@saucelabs/cucumber-reporter',
