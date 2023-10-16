@@ -10,7 +10,7 @@ export function playwrightRecorder() {
   // console.log is saved out of reportsDir since it is cleared on startup.
   const ws = fs.createWriteStream(path.join(process.cwd(), 'console.log'), { flags: 'w+', mode: 0o644 });
   const stripAsciiTransform = new Transform({
-    transform (chunk, _, callback) {
+    transform(chunk, _, callback) {
       // list reporter uses escape codes to rewrite lines, strip them to make console output more readable
       callback(null, chunk.toString().replace(escapeSequenceRegex, ''));
     },

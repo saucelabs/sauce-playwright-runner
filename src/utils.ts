@@ -1,13 +1,8 @@
 import * as path from 'node:path';
-import { readFile } from 'node:fs/promises';
+import {readFile} from 'node:fs/promises';
+import {SuiteConfig} from './types';
 
-import shell from 'shelljs';
-import logger from '@wdio/logger';
-import { SuiteConfig } from './types';
-
-const log = logger('utils');
-
-export function getAbsolutePath (pathToDir: string) {
+export function getAbsolutePath(pathToDir: string) {
   if (path.isAbsolute(pathToDir)) {
     return pathToDir;
   }
@@ -17,7 +12,7 @@ export function getAbsolutePath (pathToDir: string) {
 /**
  * Convert a camel-case or snake-case string into a hyphenated one
  */
-export function toHyphenated (str: string) {
+export function toHyphenated(str: string) {
   const out: string[] = [];
   for (let i = 0; i < str.length; i++) {
     const char = str.charAt(i);
@@ -31,24 +26,7 @@ export function toHyphenated (str: string) {
   return out.join('');
 }
 
-export function exec (expression: string, {suppressLogs = false}) {
-  const COMMAND_TIMEOUT = 5000;
-  const cp = shell.exec(expression, { async: true, silent: true });
-  if (!suppressLogs) {
-    cp.stdout?.on('data', (data) => log.info(`${data}`));
-    cp.stderr?.on('data', (data) => log.info(`${data}`));
-  }
-
-  return new Promise((resolve) => {
-    const timeout = setTimeout(resolve, COMMAND_TIMEOUT);
-    cp.on('close', (code) => {
-      clearTimeout(timeout);
-      resolve(code);
-    });
-  });
-}
-
-export function replaceLegacyKeys (config: SuiteConfig) {
+export function replaceLegacyKeys(config: SuiteConfig) {
   const args: Record<string, unknown> = {};
 
   let k: keyof SuiteConfig;
@@ -73,7 +51,7 @@ export function replaceLegacyKeys (config: SuiteConfig) {
   return args;
 }
 
-export function setEnvironmentVariables (envVars: Record<string, string> = {}) {
+export function setEnvironmentVariables(envVars: Record<string, string> = {}) {
   if (!envVars) {
     return;
   }
@@ -95,7 +73,7 @@ export async function isEsmProject(projectPath?: string) {
   const packagePath = path.join(projectPath, 'package.json');
   let packageJson: unknown;
   try {
-    const contents = await readFile(packagePath, { encoding: 'utf-8' });
+    const contents = await readFile(packagePath, {encoding: 'utf-8'});
     packageJson = JSON.parse(contents);
   } catch {
     return false

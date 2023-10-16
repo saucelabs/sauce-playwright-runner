@@ -34,7 +34,7 @@ function generateJunitfile(sourceFile: string, suiteName: string, browserName: s
   if (!xmlData) {
     return;
   }
-  let result = convert.xml2js(xmlData, {compact: true}) as any;
+  let result : any = convert.xml2js(xmlData, {compact: true});
   if (!result.testsuites || !result.testsuites.testsuite) {
     return;
   }
@@ -43,7 +43,7 @@ function generateJunitfile(sourceFile: string, suiteName: string, browserName: s
     result.testsuites.testsuite = [result.testsuites.testsuite];
   }
 
-  const testsuites: any[] = [];
+  const testsuites = [];
   let totalTests = 0;
   let totalErrs = 0;
   let totalFailures = 0;

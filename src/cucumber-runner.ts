@@ -1,11 +1,11 @@
-import { spawn } from 'node:child_process';
+import {spawn} from 'node:child_process';
 import * as path from 'node:path';
-import { prepareNpmEnv, preExec } from 'sauce-testrunner-utils';
+import {prepareNpmEnv, preExec} from 'sauce-testrunner-utils';
 
-import type { CucumberRunnerConfig, Metrics, RunResult } from './types';
+import type {CucumberRunnerConfig, Metrics, RunResult} from './types';
 import * as utils from './utils';
 
-function buildArgs (runCfg: CucumberRunnerConfig, cucumberBin: string) {
+function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
   const paths: string[] = [];
   runCfg.suite.options.paths.forEach((p) => {
     paths.push(path.join(runCfg.projectPath, p));
@@ -62,7 +62,7 @@ function buildArgs (runCfg: CucumberRunnerConfig, cucumberBin: string) {
   return procArgs;
 }
 
-export async function runCucumber (nodeBin: string, runCfg: CucumberRunnerConfig): Promise<RunResult> {
+export async function runCucumber(nodeBin: string, runCfg: CucumberRunnerConfig): Promise<RunResult> {
   process.env.BROWSER_NAME = runCfg.suite.browserName;
   process.env.BROWSER_OPTIONS = runCfg.suite.browserOptions;
   process.env.SAUCE_SUITE_NAME = runCfg.suite.name;
@@ -75,7 +75,7 @@ export async function runCucumber (nodeBin: string, runCfg: CucumberRunnerConfig
 
   // Define node/npm path for execution
   const npmBin = path.join(path.dirname(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
-  const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
+  const nodeCtx = {nodePath: nodeBin, npmPath: npmBin};
 
   // Install NPM dependencies
   const metrics: Metrics[] = [];
@@ -123,7 +123,7 @@ export async function runCucumber (nodeBin: string, runCfg: CucumberRunnerConfig
   };
 }
 
-function buildFormatOption (cfg: CucumberRunnerConfig) {
+function buildFormatOption(cfg: CucumberRunnerConfig) {
   return {
     upload: false,
     suiteName: cfg.suite.name,

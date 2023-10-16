@@ -1,7 +1,7 @@
 // @ts-check
 import * as fs from 'node:fs';
 import * as process from 'node:process';
-import { pathToFileURL } from 'node:url';
+import {pathToFileURL} from 'node:url';
 import _ from 'lodash';
 
 let userConfig = {};
