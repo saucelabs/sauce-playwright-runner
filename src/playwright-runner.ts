@@ -23,7 +23,7 @@ function getPlatformName(platformName: string) {
   return platformName;
 }
 
-function generateJunitfile(sourceFile: string, suiteName: string, browserName: string, platformName: string) {
+function generateJunitFile(sourceFile: string, suiteName: string, browserName: string, platformName: string) {
   if (!fs.existsSync(sourceFile)) {
     return;
   }
@@ -173,7 +173,7 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   } else {
     result = await runPlaywright(nodeBin, runCfg);
     try {
-      generateJunitfile(runCfg.junitFile, runCfg.suite.name, runCfg.suite.param.browser, runCfg.suite.platformName);
+      generateJunitFile(runCfg.junitFile, runCfg.suite.name, runCfg.suite.param.browser, runCfg.suite.platformName);
     } catch (err) {
       console.error(`Failed to generate junit file: ${err}`);
     }
