@@ -26,12 +26,6 @@ for (const file of configFiles) {
   }
 }
 
-// Set a default timeout of 30 minutes if one is not provided. This protects
-// against tests that hang and never finish.
-if (!userConfig.globalTimeout) {
-  userConfig.globalTimeout = 1000 * 60 * 30; // 30 minutes
-}
-
 const overrides = {
   use: {
     headless: process.env.HEADLESS === 'true',
