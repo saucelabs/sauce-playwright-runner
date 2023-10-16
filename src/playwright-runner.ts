@@ -10,7 +10,6 @@ import * as convert from 'xml-js';
 import {runCucumber} from './cucumber-runner';
 import type {
   CucumberRunnerConfig,
-  Metrics,
   RunnerConfig,
   RunResult,
 } from './types';
@@ -272,16 +271,12 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
 
   utils.setEnvironmentVariables(env);
 
-  // Install NPM dependencies
-  const metrics: Metrics[] = [];
-
   // Define node/npm path for execution
   const npmBin = path.join(path.dirname(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
   const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
 
   // runCfg.path must be set for prepareNpmEnv to find node_modules. :(
-  const npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
-  metrics.push(npmMetrics);
+  await prepareNpmEnv(runCfg, nodeCtx);
 
   const startTime = new Date().toISOString();
   // Run suite preExecs
@@ -290,7 +285,6 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
       startTime,
       endTime: new Date().toISOString(),
       hasPassed: false,
-      metrics,
     };
   }
 
@@ -318,7 +312,6 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
     startTime,
     endTime,
     hasPassed,
-    metrics,
   };
 }
 

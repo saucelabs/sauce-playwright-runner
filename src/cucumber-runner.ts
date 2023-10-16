@@ -2,7 +2,7 @@ import {spawn} from 'node:child_process';
 import * as path from 'node:path';
 import {prepareNpmEnv, preExec} from 'sauce-testrunner-utils';
 
-import type {CucumberRunnerConfig, Metrics, RunResult} from './types';
+import type {CucumberRunnerConfig, RunResult} from './types';
 import * as utils from './utils';
 
 function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
@@ -78,9 +78,7 @@ export async function runCucumber(nodeBin: string, runCfg: CucumberRunnerConfig)
   const nodeCtx = {nodePath: nodeBin, npmPath: npmBin};
 
   // Install NPM dependencies
-  const metrics: Metrics[] = [];
-  const npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
-  metrics.push(npmMetrics);
+  await prepareNpmEnv(runCfg, nodeCtx);
 
   const startTime = new Date().toISOString();
   // Run suite preExecs
@@ -89,7 +87,6 @@ export async function runCucumber(nodeBin: string, runCfg: CucumberRunnerConfig)
       startTime,
       endTime: new Date().toISOString(),
       hasPassed: false,
-      metrics,
     };
   }
 
@@ -119,7 +116,6 @@ export async function runCucumber(nodeBin: string, runCfg: CucumberRunnerConfig)
     startTime,
     endTime,
     hasPassed: passed,
-    metrics,
   };
 }
 
