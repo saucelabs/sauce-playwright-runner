@@ -2,7 +2,7 @@ import {spawn} from 'node:child_process';
 import * as path from 'node:path';
 import {prepareNpmEnv, preExec} from 'sauce-testrunner-utils';
 
-import type {CucumberRunnerConfig, Metrics, RunResult} from './types';
+import type {CucumberRunnerConfig} from './types';
 import * as utils from './utils';
 
 function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
@@ -62,7 +62,7 @@ function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
   return procArgs;
 }
 
-export async function runCucumber(nodeBin: string, runCfg: CucumberRunnerConfig): Promise<RunResult> {
+export async function runCucumber(nodeBin: string, runCfg: CucumberRunnerConfig): Promise<boolean> {
   process.env.BROWSER_NAME = runCfg.suite.browserName;
   process.env.BROWSER_OPTIONS = runCfg.suite.browserOptions;
   process.env.SAUCE_SUITE_NAME = runCfg.suite.name;
@@ -78,49 +78,40 @@ export async function runCucumber(nodeBin: string, runCfg: CucumberRunnerConfig)
   const nodeCtx = {nodePath: nodeBin, npmPath: npmBin};
 
   // Install NPM dependencies
-  const metrics: Metrics[] = [];
-  const npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
-  metrics.push(npmMetrics);
+  await prepareNpmEnv(runCfg, nodeCtx);
 
-  const startTime = new Date().toISOString();
   // Run suite preExecs
   if (!await preExec.run(runCfg.suite, runCfg.preExecTimeout)) {
-    return {
-      startTime,
-      endTime: new Date().toISOString(),
-      hasPassed: false,
-      metrics,
-    };
+    return false;
   }
 
   const cucumberBin = path.join(runCfg.projectPath, 'node_modules', '@cucumber', 'cucumber', 'bin', 'cucumber-js');
   const procArgs = buildArgs(runCfg, cucumberBin);
   const proc = spawn(nodeBin, procArgs, {stdio: 'inherit', env: process.env});
 
-  let passed = false;
-  const procPromise = new Promise<number | null>((resolve, reject) => {
-    proc.on('error', (err) => {
-      reject(err);
-    });
+  // saucectl suite.timeout is in nanoseconds, convert to seconds
+  const timeout = (runCfg.suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default
+
+  const timeoutPromise = new Promise<boolean>((resolve) => {
+    setTimeout(() => {
+      console.error(`Job timed out after ${timeout} seconds`);
+      resolve(false);
+    }, timeout * 1000);
+  });
+
+  const cucumberPromise = new Promise<boolean>((resolve) => {
     proc.on('close', (code) => {
-      resolve(code);
+      resolve(code === 0);
     });
   });
 
   try {
-    const exitCode = await procPromise;
-    passed = exitCode === 0;
+    return await Promise.race([timeoutPromise, cucumberPromise]);
   } catch (e) {
-    console.error(`Could not complete job. Reason: ${e}`);
+    console.error(`Failed to run Cucumber.js: ${e}`);
   }
-  const endTime = new Date().toISOString();
 
-  return {
-    startTime,
-    endTime,
-    hasPassed: passed,
-    metrics,
-  };
+  return false;
 }
 
 function buildFormatOption(cfg: CucumberRunnerConfig) {

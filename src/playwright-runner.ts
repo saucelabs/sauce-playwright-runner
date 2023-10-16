@@ -10,9 +10,7 @@ import * as convert from 'xml-js';
 import {runCucumber} from './cucumber-runner';
 import type {
   CucumberRunnerConfig,
-  Metrics,
   RunnerConfig,
-  RunResult,
 } from './types';
 import * as utils from './utils';
 
@@ -24,7 +22,7 @@ function getPlatformName(platformName: string) {
   return platformName;
 }
 
-function generateJunitfile(sourceFile: string, suiteName: string, browserName: string, platformName: string) {
+function generateJunitFile(sourceFile: string, suiteName: string, browserName: string, platformName: string) {
   if (!fs.existsSync(sourceFile)) {
     return;
   }
@@ -168,22 +166,22 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   console.log(`Sauce Playwright Runner ${packageInfo.version}`);
   console.log(`Running Playwright ${packageInfo.dependencies?.playwright || ''}`);
 
-  let result: RunResult;
+  let passed = false;
   if (runCfg.Kind === 'playwright-cucumberjs') {
-    result = await runCucumber(nodeBin, runCfg);
+    passed = await runCucumber(nodeBin, runCfg);
   } else {
-    result = await runPlaywright(nodeBin, runCfg);
+    passed = await runPlaywright(nodeBin, runCfg);
     try {
-      generateJunitfile(runCfg.junitFile, runCfg.suite.name, runCfg.suite.param.browser, runCfg.suite.platformName);
+      generateJunitFile(runCfg.junitFile, runCfg.suite.name, runCfg.suite.param.browser, runCfg.suite.platformName);
     } catch (err) {
       console.error(`Failed to generate junit file: ${err}`);
     }
   }
 
-  return result.hasPassed;
+  return passed;
 }
 
-async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<RunResult> {
+async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<boolean> {
   const excludeParams = ['screenshot-on-failure', 'video', 'slow-mo', 'headless', 'headed'];
 
   process.env.BROWSER_NAME = runCfg.suite.param.browserName;
@@ -272,54 +270,43 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
 
   utils.setEnvironmentVariables(env);
 
-  // Install NPM dependencies
-  const metrics: Metrics[] = [];
-
   // Define node/npm path for execution
   const npmBin = path.join(path.dirname(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
   const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
 
   // runCfg.path must be set for prepareNpmEnv to find node_modules. :(
-  const npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
-  metrics.push(npmMetrics);
+  await prepareNpmEnv(runCfg, nodeCtx);
 
-  const startTime = new Date().toISOString();
   // Run suite preExecs
   if (!await preExec.run(suite, runCfg.preExecTimeout)) {
-    return {
-      startTime,
-      endTime: new Date().toISOString(),
-      hasPassed: false,
-      metrics,
-    };
+    return false;
   }
 
   const playwrightProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd: runCfg.projectPath, env});
 
-  const playwrightPromise = new Promise<number | null>((resolve, reject) => {
-    playwrightProc.on('error', (err) => {
-      reject(err);
-    });
+  // saucectl suite.timeout is in nanoseconds, convert to seconds
+  const timeout = (runCfg.suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default
+
+  const timeoutPromise = new Promise<boolean>((resolve) => {
+    setTimeout(() => {
+      console.error(`Job timed out after ${timeout} seconds`);
+      resolve(false);
+    }, timeout * 1000);
+  });
+
+  const playwrightPromise = new Promise<boolean>((resolve) => {
     playwrightProc.on('close', (code) => {
-      resolve(code);
+      resolve(code === 0);
     });
   });
 
-  let hasPassed = false;
   try {
-    const exitCode = await playwrightPromise;
-    hasPassed = exitCode === 0;
+    return await Promise.race([timeoutPromise, playwrightPromise]);
   } catch (e) {
-    console.error(`Could not complete job. Reason: ${e}`);
+    console.error(`Failed to run Playwright: ${e}`);
   }
-  const endTime = new Date().toISOString()
 
-  return {
-    startTime,
-    endTime,
-    hasPassed,
-    metrics,
-  };
+  return false;
 }
 
 if (require.main === module) {
