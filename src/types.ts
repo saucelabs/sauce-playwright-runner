@@ -47,6 +47,7 @@ export interface Suite {
   env?: Record<string, string>;
   preExec: string[];
   testIgnore?: string[];
+  timeout?: number;
 }
 
 export interface SuiteConfig {
@@ -102,4 +103,5 @@ export interface CucumberSuite {
     parallel?: number;
     paths: string[];
   };
+  timeout?: number;
 }

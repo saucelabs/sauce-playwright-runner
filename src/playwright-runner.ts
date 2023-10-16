@@ -287,25 +287,34 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<Run
 
   const playwrightProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd: runCfg.projectPath, env});
 
-  const playwrightPromise = new Promise<number | null>((resolve, reject) => {
+  // saucectl suite.timeout is in nanoseconds, convert to seconds
+  const timeout = (runCfg.suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default
+
+  const timeoutPromise = new Promise<boolean>((resolve) => {
+    setTimeout(() => {
+      console.error(`Job timed out after ${timeout} seconds`);
+      resolve(false);
+    }, timeout * 1000);
+  });
+
+  const playwrightPromise = new Promise<boolean>((resolve, reject) => {
     playwrightProc.on('error', (err) => {
       reject(err);
     });
     playwrightProc.on('close', (code) => {
-      resolve(code);
+      resolve(code === 0);
     });
   });
 
-  let hasPassed = false;
+  let passed = false;
   try {
-    const exitCode = await playwrightPromise;
-    hasPassed = exitCode === 0;
+    passed = await Promise.race([timeoutPromise, playwrightPromise]);
   } catch (e) {
-    console.error(`Could not complete job. Reason: ${e}`);
+    console.error(`Failed to run Playwright: ${e}`);
   }
 
   return {
-    hasPassed,
+    hasPassed: passed,
   };
 }
 

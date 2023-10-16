@@ -91,19 +91,28 @@ export async function runCucumber(nodeBin: string, runCfg: CucumberRunnerConfig)
   const procArgs = buildArgs(runCfg, cucumberBin);
   const proc = spawn(nodeBin, procArgs, {stdio: 'inherit', env: process.env});
 
+  // saucectl suite.timeout is in nanoseconds, convert to seconds
+  const timeout = (runCfg.suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default
+
+  const timeoutPromise = new Promise<boolean>((resolve) => {
+    setTimeout(() => {
+      console.error(`Job timed out after ${timeout} seconds`);
+      resolve(false);
+    }, timeout * 1000);
+  });
+
   let passed = false;
-  const procPromise = new Promise<number | null>((resolve, reject) => {
+  const cucumberPromise = new Promise<boolean>((resolve, reject) => {
     proc.on('error', (err) => {
       reject(err);
     });
     proc.on('close', (code) => {
-      resolve(code);
+      resolve(code === 0);
     });
   });
 
   try {
-    const exitCode = await procPromise;
-    passed = exitCode === 0;
+    passed = await Promise.race([timeoutPromise, cucumberPromise]);
   } catch (e) {
     console.error(`Could not complete job. Reason: ${e}`);
   }
