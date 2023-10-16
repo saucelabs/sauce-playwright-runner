@@ -1,7 +1,5 @@
 import type { Region } from '@saucelabs/testcomposer';
 
-export type Browser = 'chromium' | 'firefox' | 'webkit' | 'chrome';
-
 export interface RunnerConfig {
   // NOTE: Kind is serialized by saucectl with a capital 'K' ¯\_(ツ)_/¯
   Kind: 'playwright';
