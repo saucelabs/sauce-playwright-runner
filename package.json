@@ -8,6 +8,7 @@
     "lib"
   ],
   "main": "lib/playwright-recorder.js",
+  "type": "commonjs",
   "scripts": {
     "build": "tsc && cp src/sauce.config.* lib/",
     "clean": "rm -rf lib",
