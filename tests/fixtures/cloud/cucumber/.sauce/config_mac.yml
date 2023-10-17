@@ -24,11 +24,6 @@ suites:
       format:
         - "json:my-cucumber.json"
 
-notifications:
-  slack:
-    channels: ["devx-slack-notifications"]
-    send: fail
-
 npm:
   dependencies:
     - "@cucumber/cucumber"
