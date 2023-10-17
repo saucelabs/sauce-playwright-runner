@@ -60,36 +60,33 @@ jobs:
       - name: Run tests
         run: npm run integration-test
 
-# Disable this job and test
-#  cucumber-build-and-test-local:
-#    runs-on: windows-latest
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v3
-#
-#      - name: Setup Node
-#        uses: actions/setup-node@v3
-#        with:
-#          node-version-file: '.nvmrc'
-#          cache: 'npm'
-#
-#      - name: Install Dependencies
-#        run: |
-#          npm ci
-#          npm i @cucumber/cucumber
-#          npx playwright install
-#          npx playwright install-deps
-#
-#      - name: Build
-#        run: npm run build
-#
-#      - name: Local Tests
-#        working-directory: tests/fixtures/local/cucumber/
-#        run: |
-#          npm i
-#          node ../../../../ --suiteName "cucumber local test" --runCfgPath ./sauce-runner.json
-#          node ../../../../ --suiteName "cucumber config test" --runCfgPath ./sauce-runner.json
-#
+  cucumber-build-and-test-local:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: |
+          npm ci
+          npx playwright install
+          npx playwright install-deps
+
+      - name: Build
+        run: npm run build
+
+      - name: Local Tests
+        working-directory: tests/fixtures/local/cucumber/
+        run: |
+          npm i
+          node ../../../../ --suiteName "cucumber local test" --runCfgPath ./sauce-runner.json
+          node ../../../../ --suiteName "cucumber config test" --runCfgPath ./sauce-runner.json
 
   build-windows-bundle:
     runs-on: windows-latest
