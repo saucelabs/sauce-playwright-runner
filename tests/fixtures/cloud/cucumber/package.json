@@ -2,6 +2,7 @@
   "dependencies": {
     "@cucumber/cucumber": "^10.0.0",
     "@saucelabs/cucumber-reporter": "^0.4.1",
+    "@wdio/logger": "^8.16.17",
     "pretty-seconds": "^3.0.1",
     "ts-node": "10.9.1",
     "typescript": "^5.2.2"
