@@ -1,23 +1,5 @@
 import type { Region } from '@saucelabs/testcomposer';
 
-export type Browser = 'chromium' | 'firefox' | 'webkit' | 'chrome';
-
-export interface Metrics {
-  name: string;
-  data: {
-    install: {duration: number};
-    rebuild?: {duration: number};
-    setup: {duration: number};
-  };
-}
-
-export interface RunResult {
-  startTime: string;
-  hasPassed: boolean;
-  endTime: string;
-  metrics: Metrics[];
-}
-
 export interface RunnerConfig {
   // NOTE: Kind is serialized by saucectl with a capital 'K' ¯\_(ツ)_/¯
   Kind: 'playwright';
@@ -59,6 +41,7 @@ export interface Suite {
   env?: Record<string, string>;
   preExec: string[];
   testIgnore?: string[];
+  timeout?: number;
 }
 
 export interface SuiteConfig {
@@ -114,4 +97,5 @@ export interface CucumberSuite {
     parallel?: number;
     paths: string[];
   };
+  timeout?: number;
 }
