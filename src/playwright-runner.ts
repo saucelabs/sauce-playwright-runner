@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {spawn} from 'node:child_process';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
@@ -162,7 +163,8 @@ async function getCfg(runCfgPath: string, suiteName: string): Promise<RunnerConf
 async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   const runCfg = await getCfg(runCfgPath, suiteName);
 
-  const packageInfo = await import(path.join(__dirname, '..', 'package.json'));
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const packageInfo = require(path.join(__dirname, '..', 'package.json'));
   console.log(`Sauce Playwright Runner ${packageInfo.version}`);
   console.log(`Running Playwright ${packageInfo.dependencies?.playwright || ''}`);
 

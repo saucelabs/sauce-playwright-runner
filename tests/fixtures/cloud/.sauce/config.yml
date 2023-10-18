@@ -103,9 +103,3 @@ suites:
       browserName: "webkit"
     testMatch:
       - "tests/no-sc/.*.test.js"
-
-notifications:
-  slack:
-    channels: ["devx-slack-notifications"]
-    send: fail
-

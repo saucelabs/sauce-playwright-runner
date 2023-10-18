@@ -30,11 +30,6 @@ suites:
     params:
       browserName: "firefox"
 
-notifications:
-  slack:
-    channels: ["devx"]
-    send: fail
-
 npm:
   packages:
     pretty-seconds: '^3.0.0'
