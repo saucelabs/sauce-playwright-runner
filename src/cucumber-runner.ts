@@ -1,8 +1,8 @@
-import {spawn} from 'node:child_process';
+import { spawn } from 'node:child_process';
 import * as path from 'node:path';
-import {prepareNpmEnv, preExec} from 'sauce-testrunner-utils';
+import { prepareNpmEnv, preExec } from 'sauce-testrunner-utils';
 
-import type {CucumberRunnerConfig} from './types';
+import type { CucumberRunnerConfig } from './types';
 import * as utils from './utils';
 
 function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
@@ -15,9 +15,12 @@ function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
     ...paths,
     '--publish-quiet', // Deprecated in 9.4.0. Will be removed in 11.0.0 or later.
     '--force-exit',
-    '--require-module', 'ts-node/register',
-    '--format', '@saucelabs/cucumber-reporter',
-    '--format-options', JSON.stringify(buildFormatOption(runCfg)),
+    '--require-module',
+    'ts-node/register',
+    '--format',
+    '@saucelabs/cucumber-reporter',
+    '--format-options',
+    JSON.stringify(buildFormatOption(runCfg)),
   ];
   if (runCfg.suite.options.config) {
     procArgs.push('-c');
@@ -62,7 +65,10 @@ function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
   return procArgs;
 }
 
-export async function runCucumber(nodeBin: string, runCfg: CucumberRunnerConfig): Promise<boolean> {
+export async function runCucumber(
+  nodeBin: string,
+  runCfg: CucumberRunnerConfig,
+): Promise<boolean> {
   process.env.BROWSER_NAME = runCfg.suite.browserName;
   process.env.BROWSER_OPTIONS = runCfg.suite.browserOptions;
   process.env.SAUCE_SUITE_NAME = runCfg.suite.name;
@@ -74,20 +80,33 @@ export async function runCucumber(nodeBin: string, runCfg: CucumberRunnerConfig)
   });
 
   // Define node/npm path for execution
-  const npmBin = path.join(path.dirname(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
-  const nodeCtx = {nodePath: nodeBin, npmPath: npmBin};
+  const npmBin = path.join(
+    path.dirname(nodeBin),
+    'node_modules',
+    'npm',
+    'bin',
+    'npm-cli.js',
+  );
+  const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
 
   // Install NPM dependencies
   await prepareNpmEnv(runCfg, nodeCtx);
 
   // Run suite preExecs
-  if (!await preExec.run(runCfg.suite, runCfg.preExecTimeout)) {
+  if (!(await preExec.run(runCfg.suite, runCfg.preExecTimeout))) {
     return false;
   }
 
-  const cucumberBin = path.join(runCfg.projectPath, 'node_modules', '@cucumber', 'cucumber', 'bin', 'cucumber-js');
+  const cucumberBin = path.join(
+    runCfg.projectPath,
+    'node_modules',
+    '@cucumber',
+    'cucumber',
+    'bin',
+    'cucumber-js',
+  );
   const procArgs = buildArgs(runCfg, cucumberBin);
-  const proc = spawn(nodeBin, procArgs, {stdio: 'inherit', env: process.env});
+  const proc = spawn(nodeBin, procArgs, { stdio: 'inherit', env: process.env });
 
   // saucectl suite.timeout is in nanoseconds, convert to seconds
   const timeout = (runCfg.suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default

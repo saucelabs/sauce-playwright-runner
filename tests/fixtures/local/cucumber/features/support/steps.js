@@ -1,11 +1,11 @@
 const { Before, When, Then } = require('@cucumber/cucumber');
-const { chromium, firefox, webkit} = require('playwright');
+const { chromium, firefox, webkit } = require('playwright');
 
 Before(async function () {
   const opts = {
     recordVideo: {
-      dir: 'assets'
-    }
+      dir: 'assets',
+    },
   };
   switch (process.env.BROWSER_NAME) {
     case 'firefox':
@@ -29,4 +29,3 @@ When('I open {string} with chrome', async function (string) {
 Then('Close browser', async function () {
   await this.browser.close();
 });
-

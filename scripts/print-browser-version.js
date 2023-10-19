@@ -5,7 +5,7 @@
 const playwright = require('playwright');
 const process = require('process');
 
-async function browserVersion (browserType) {
+async function browserVersion(browserType) {
   if (!browserType) {
     return '';
   }

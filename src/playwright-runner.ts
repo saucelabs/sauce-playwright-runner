@@ -1,18 +1,20 @@
 #!/usr/bin/env node
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import {spawn} from 'node:child_process';
+import { spawn } from 'node:child_process';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 
 import _ from 'lodash';
-import {getArgs, prepareNpmEnv, loadRunConfig, escapeXML, preExec} from 'sauce-testrunner-utils';
+import {
+  getArgs,
+  prepareNpmEnv,
+  loadRunConfig,
+  escapeXML,
+  preExec,
+} from 'sauce-testrunner-utils';
 import * as convert from 'xml-js';
 
-import {runCucumber} from './cucumber-runner';
-import type {
-  CucumberRunnerConfig,
-  RunnerConfig,
-} from './types';
+import { runCucumber } from './cucumber-runner';
+import type { CucumberRunnerConfig, RunnerConfig } from './types';
 import * as utils from './utils';
 
 function getPlatformName(platformName: string) {
@@ -23,17 +25,21 @@ function getPlatformName(platformName: string) {
   return platformName;
 }
 
-function generateJunitFile(sourceFile: string, suiteName: string, browserName: string, platformName: string) {
+function generateJunitFile(
+  sourceFile: string,
+  suiteName: string,
+  browserName: string,
+  platformName: string,
+) {
   if (!fs.existsSync(sourceFile)) {
     return;
   }
-
 
   const xmlData = fs.readFileSync(sourceFile, 'utf8');
   if (!xmlData) {
     return;
   }
-  let result : any = convert.xml2js(xmlData, {compact: true});
+  let result: any = convert.xml2js(xmlData, { compact: true });
   if (!result.testsuites || !result.testsuites.testsuite) {
     return;
   }
@@ -71,15 +77,15 @@ function generateJunitFile(sourceFile: string, suiteName: string, browserName: s
           _attributes: {
             name: 'platformName',
             value: getPlatformName(platformName),
-          }
+          },
         },
         {
           _attributes: {
             name: 'browserName',
             value: browserName,
-          }
-        }
-      ]
+          },
+        },
+      ],
     };
 
     // testcases
@@ -107,8 +113,8 @@ function generateJunitFile(sourceFile: string, suiteName: string, browserName: s
     _declaration: {
       _attributes: {
         version: '1.0',
-        encoding: 'utf-8'
-      }
+        encoding: 'utf-8',
+      },
     },
     testsuites: {
       _attributes: {
@@ -120,19 +126,22 @@ function generateJunitFile(sourceFile: string, suiteName: string, browserName: s
         time: totalTime,
       },
       testsuite: testsuites,
-    }
+    },
   };
 
-  const opts = {compact: true, spaces: 4, textFn: escapeXML};
+  const opts = { compact: true, spaces: 4, textFn: escapeXML };
   const xmlResult = convert.js2xml(result, opts);
   fs.writeFileSync(sourceFile, xmlResult);
 }
 
-async function getCfg(runCfgPath: string, suiteName: string): Promise<RunnerConfig | CucumberRunnerConfig> {
+async function getCfg(
+  runCfgPath: string,
+  suiteName: string,
+): Promise<RunnerConfig | CucumberRunnerConfig> {
   runCfgPath = utils.getAbsolutePath(runCfgPath);
   const runCfg = loadRunConfig(runCfgPath) as RunnerConfig;
 
-  const suite = _.find(runCfg.suites, ({name}) => name === suiteName);
+  const suite = _.find(runCfg.suites, ({ name }) => name === suiteName);
   if (!suite) {
     throw new Error(`Could not find suite named '${suiteName}'`);
   }
@@ -147,7 +156,10 @@ async function getCfg(runCfgPath: string, suiteName: string): Promise<RunnerConf
     fs.mkdirSync(runCfg.assetsDir);
   }
   runCfg.junitFile = path.join(runCfg.assetsDir, 'junit.xml');
-  runCfg.sauceReportFile = path.join(runCfg.assetsDir, 'sauce-test-report.json');
+  runCfg.sauceReportFile = path.join(
+    runCfg.assetsDir,
+    'sauce-test-report.json',
+  );
   runCfg.preExecTimeout = 300;
   runCfg.path = runCfgPath;
   runCfg.projectPath = projectPath;
@@ -163,10 +175,11 @@ async function getCfg(runCfgPath: string, suiteName: string): Promise<RunnerConf
 async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   const runCfg = await getCfg(runCfgPath, suiteName);
 
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const packageInfo = require(path.join(__dirname, '..', 'package.json'));
   console.log(`Sauce Playwright Runner ${packageInfo.version}`);
-  console.log(`Running Playwright ${packageInfo.dependencies?.playwright || ''}`);
+  console.log(
+    `Running Playwright ${packageInfo.dependencies?.playwright || ''}`,
+  );
 
   let passed = false;
   if (runCfg.Kind === 'playwright-cucumberjs') {
@@ -174,7 +187,12 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   } else {
     passed = await runPlaywright(nodeBin, runCfg);
     try {
-      generateJunitFile(runCfg.junitFile, runCfg.suite.name, runCfg.suite.param.browser, runCfg.suite.platformName);
+      generateJunitFile(
+        runCfg.junitFile,
+        runCfg.suite.name,
+        runCfg.suite.param.browser,
+        runCfg.suite.platformName,
+      );
     } catch (err) {
       console.error(`Failed to generate junit file: ${err}`);
     }
@@ -183,8 +201,17 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   return passed;
 }
 
-async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<boolean> {
-  const excludeParams = ['screenshot-on-failure', 'video', 'slow-mo', 'headless', 'headed'];
+async function runPlaywright(
+  nodeBin: string,
+  runCfg: RunnerConfig,
+): Promise<boolean> {
+  const excludeParams = [
+    'screenshot-on-failure',
+    'video',
+    'slow-mo',
+    'headless',
+    'headed',
+  ];
 
   process.env.BROWSER_NAME = runCfg.suite.param.browserName;
   process.env.HEADLESS = runCfg.suite.param.headless === true ? 'true' : '';
@@ -195,11 +222,16 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<boo
   }
 
   if (runCfg.playwright.configFile) {
-    const playwrightCfgFile = path.join(runCfg.projectPath, runCfg.playwright.configFile);
+    const playwrightCfgFile = path.join(
+      runCfg.projectPath,
+      runCfg.playwright.configFile,
+    );
     if (fs.existsSync(playwrightCfgFile)) {
       process.env.PLAYWRIGHT_CFG_FILE = playwrightCfgFile;
     } else {
-      throw new Error(`Could not find playwright config file: '${playwrightCfgFile}'`);
+      throw new Error(
+        `Could not find playwright config file: '${playwrightCfgFile}'`,
+      );
     }
   }
   const suite = runCfg.suite;
@@ -210,10 +242,9 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<boo
 
   // Copy our runner's playwright config to a custom location in order to
   // preserve the customer's config which we may want to load in the future
-  const configFileName =
-    await utils.isEsmProject(runCfg.projectPath) ?
-      'sauce.config.mjs' :
-      'sauce.config.cjs';
+  const configFileName = (await utils.isEsmProject(runCfg.projectPath))
+    ? 'sauce.config.mjs'
+    : 'sauce.config.cjs';
   const configFile = path.join(runCfg.projectPath, configFileName);
   fs.copyFileSync(path.join(__dirname, configFileName), configFile);
 
@@ -222,12 +253,20 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<boo
     config: configFile,
   };
 
-  const playwrightBin = path.join(__dirname, '..', 'node_modules', '@playwright', 'test', 'cli.js');
-  const procArgs = [
-    playwrightBin, 'test'
-  ];
+  const playwrightBin = path.join(
+    __dirname,
+    '..',
+    'node_modules',
+    '@playwright',
+    'test',
+    'cli.js',
+  );
+  const procArgs = [playwrightBin, 'test'];
 
-  let args: Record<string, unknown> = _.defaultsDeep(defaultArgs, utils.replaceLegacyKeys(suite.param));
+  let args: Record<string, unknown> = _.defaultsDeep(
+    defaultArgs,
+    utils.replaceLegacyKeys(suite.param),
+  );
 
   // There is a conflict if the playwright project has a `browser` defined,
   // since the job is launched with the browser set by saucectl, which is now set as the job's metadata.
@@ -273,18 +312,28 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<boo
   utils.setEnvironmentVariables(env);
 
   // Define node/npm path for execution
-  const npmBin = path.join(path.dirname(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
+  const npmBin = path.join(
+    path.dirname(nodeBin),
+    'node_modules',
+    'npm',
+    'bin',
+    'npm-cli.js',
+  );
   const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
 
   // runCfg.path must be set for prepareNpmEnv to find node_modules. :(
   await prepareNpmEnv(runCfg, nodeCtx);
 
   // Run suite preExecs
-  if (!await preExec.run(suite, runCfg.preExecTimeout)) {
+  if (!(await preExec.run(suite, runCfg.preExecTimeout))) {
     return false;
   }
 
-  const playwrightProc = spawn(nodeBin, procArgs, {stdio: 'inherit', cwd: runCfg.projectPath, env});
+  const playwrightProc = spawn(nodeBin, procArgs, {
+    stdio: 'inherit',
+    cwd: runCfg.projectPath,
+    env,
+  });
 
   // saucectl suite.timeout is in nanoseconds, convert to seconds
   const timeout = (runCfg.suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default
@@ -312,7 +361,7 @@ async function runPlaywright(nodeBin: string, runCfg: RunnerConfig): Promise<boo
 }
 
 if (require.main === module) {
-  const {nodeBin, runCfgPath, suiteName} = getArgs();
+  const { nodeBin, runCfgPath, suiteName } = getArgs();
   run(nodeBin, runCfgPath, suiteName)
     .then((passed) => {
       process.exit(passed ? 0 : 1);
@@ -322,4 +371,3 @@ if (require.main === module) {
       process.exit(1);
     });
 }
-

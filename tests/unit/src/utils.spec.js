@@ -3,26 +3,30 @@ const utils = require('../../../lib/utils');
 describe('utils', function () {
   describe('.replaceLegacyKeys', function () {
     it('should correct vars', function () {
-      const tests = [{
-        input: {
-          browserName: 'chromium',
+      const tests = [
+        {
+          input: {
+            browserName: 'chromium',
+          },
+          output: {
+            browser: 'chromium',
+          },
         },
-        output: {
-          browser: 'chromium',
-        }
-      }, {
-        input: {
-          video: true,
+        {
+          input: {
+            video: true,
+          },
+          output: {},
         },
-        output: {},
-      }, {
-        input: {
-          headful: true,
+        {
+          input: {
+            headful: true,
+          },
+          output: {
+            headed: true,
+          },
         },
-        output: {
-          headed: true,
-        }
-      }];
+      ];
       for (const tt of tests) {
         const output = utils.replaceLegacyKeys(tt.input);
         expect(output).toMatchObject(tt.output);

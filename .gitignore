@@ -1,5 +1,4 @@
 # JS files
-/*.js
 !jest.config.js
 !playwright.config.js
 tests/fixtures/typescript/

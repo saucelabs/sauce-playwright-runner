@@ -1,6 +1,6 @@
 import * as path from 'node:path';
-import {readFile} from 'node:fs/promises';
-import {SuiteConfig} from './types';
+import { readFile } from 'node:fs/promises';
+import { SuiteConfig } from './types';
 
 export function getAbsolutePath(pathToDir: string) {
   if (path.isAbsolute(pathToDir)) {
@@ -67,16 +67,16 @@ export function setEnvironmentVariables(envVars: Record<string, string> = {}) {
 export async function isEsmProject(projectPath?: string) {
   if (!projectPath) {
     console.warn('Project path expected, but is undefined');
-    return false
+    return false;
   }
 
   const packagePath = path.join(projectPath, 'package.json');
   let packageJson: unknown;
   try {
-    const contents = await readFile(packagePath, {encoding: 'utf-8'});
+    const contents = await readFile(packagePath, { encoding: 'utf-8' });
     packageJson = JSON.parse(contents);
   } catch {
-    return false
+    return false;
   }
 
   return (
