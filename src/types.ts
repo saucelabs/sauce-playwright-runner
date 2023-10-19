@@ -84,8 +84,8 @@ export interface CucumberSuite {
   env: Record<string, string>;
   preExec: string[];
   param: {
-    browserName: string
-  },
+    browserName: string;
+  };
   options: {
     config?: string;
     name?: string;

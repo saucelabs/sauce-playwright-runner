@@ -7,8 +7,8 @@ Before(async function () {
   const opts = {
     headless: false,
     recordVideo: {
-      dir: 'assets'
-    }
+      dir: 'assets',
+    },
   };
   switch (process.env.BROWSER_NAME) {
     case 'firefox':
@@ -35,4 +35,3 @@ When('I open {string} with chromium', async function (string) {
 Then('Close chromium', async function () {
   await this.browser.close();
 });
-

@@ -8,7 +8,10 @@ const escapeSequenceRegex = new RegExp('[\\u001b]\\[2K|[\\u001b]\\[0G', 'g');
 
 export function playwrightRecorder() {
   // console.log is saved out of reportsDir since it is cleared on startup.
-  const ws = fs.createWriteStream(path.join(process.cwd(), 'console.log'), { flags: 'w+', mode: 0o644 });
+  const ws = fs.createWriteStream(path.join(process.cwd(), 'console.log'), {
+    flags: 'w+',
+    mode: 0o644,
+  });
   const stripAsciiTransform = new Transform({
     transform(chunk, _, callback) {
       // list reporter uses escape codes to rewrite lines, strip them to make console output more readable
@@ -17,7 +20,10 @@ export function playwrightRecorder() {
   });
 
   const [nodeBin] = process.argv;
-  const child = childProcess.spawn(nodeBin, [path.join(__dirname, 'playwright-runner.js'), ...process.argv.slice(2)]);
+  const child = childProcess.spawn(nodeBin, [
+    path.join(__dirname, 'playwright-runner.js'),
+    ...process.argv.slice(2),
+  ]);
 
   child.stdout.pipe(process.stdout);
   child.stderr.pipe(process.stderr);

@@ -1,4 +1,3 @@
-// @ts-check
 const process = require('process');
 const _ = require('lodash');
 const fs = require('fs');
@@ -6,9 +5,9 @@ const fs = require('fs');
 let userConfig = {};
 
 // Prefer ts over js to match default behaviour of playwright-test
-const configFiles = process.env.PLAYWRIGHT_CFG_FILE ?
-  [process.env.PLAYWRIGHT_CFG_FILE] :
-  ['./playwright.config.ts', './playwright.config.js'];
+const configFiles = process.env.PLAYWRIGHT_CFG_FILE
+  ? [process.env.PLAYWRIGHT_CFG_FILE]
+  : ['./playwright.config.ts', './playwright.config.js'];
 
 for (const file of configFiles) {
   if (fs.existsSync(file)) {
@@ -40,7 +39,8 @@ const overrides = {
     ['junit'],
     // outputFile is set by playwright-runner.js as an env variable. The runner needs to process it
     // so better for it to set the output path
-    ['@saucelabs/playwright-reporter',
+    [
+      '@saucelabs/playwright-reporter',
       {
         upload: false,
       },
