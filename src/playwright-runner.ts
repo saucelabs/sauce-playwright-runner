@@ -25,7 +25,7 @@ function getPlatformName(platformName: string) {
   return platformName;
 }
 
-function generateJunitFile(
+function generateJUnitFile(
   sourceFile: string,
   suiteName: string,
   browserName: string,
@@ -181,21 +181,20 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     `Running Playwright ${packageInfo.dependencies?.playwright || ''}`,
   );
 
-  let passed = false;
   if (runCfg.Kind === 'playwright-cucumberjs') {
-    passed = await runCucumber(nodeBin, runCfg);
-  } else {
-    passed = await runPlaywright(nodeBin, runCfg);
-    try {
-      generateJunitFile(
-        runCfg.junitFile,
-        runCfg.suite.name,
-        runCfg.suite.param.browser,
-        runCfg.suite.platformName,
-      );
-    } catch (err) {
-      console.error(`Failed to generate junit file: ${err}`);
-    }
+    return await runCucumber(nodeBin, runCfg);
+  }
+
+  const passed = await runPlaywright(nodeBin, runCfg);
+  try {
+    generateJUnitFile(
+      runCfg.junitFile,
+      runCfg.suite.name,
+      runCfg.suite.param.browser,
+      runCfg.suite.platformName,
+    );
+  } catch (e) {
+    console.warn('Skipping JUnit file generation:', e);
   }
 
   return passed;
