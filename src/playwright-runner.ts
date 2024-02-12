@@ -32,6 +32,9 @@ function generateJUnitFile(
   platformName: string,
 ) {
   if (!fs.existsSync(sourceFile)) {
+    console.warn(
+      `JUnit file generation skipped as the original JUnit file (${sourceFile}) from Playwright was not located.`,
+    );
     return;
   }
 
