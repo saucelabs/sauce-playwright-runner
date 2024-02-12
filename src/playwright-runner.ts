@@ -33,17 +33,21 @@ function generateJUnitFile(
 ) {
   if (!fs.existsSync(sourceFile)) {
     console.warn(
-      `JUnit file generation skipped as the original JUnit file (${sourceFile}) from Playwright was not located.`,
+      `JUnit file generation skipped: the original JUnit file (${sourceFile}) from Playwright was not located.`,
     );
     return;
   }
 
   const xmlData = fs.readFileSync(sourceFile, 'utf8');
   if (!xmlData) {
+    console.warn(
+      `JUnit file generation skipped: failed to read the Playwright original JUnit file(${sourceFile}).`,
+    );
     return;
   }
   let result: any = convert.xml2js(xmlData, { compact: true });
   if (!result.testsuites || !result.testsuites.testsuite) {
+    console.warn('JUnit file generation skipped: no test suites detected.');
     return;
   }
 
