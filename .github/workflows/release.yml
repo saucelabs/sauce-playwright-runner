@@ -180,9 +180,11 @@ jobs:
               exit 1
           fi
 
+          # Check if the asset has already been uploaded by verifying if `ASSET_ID` is not empty.
+          # This prevents the re-upload of the bundled asset during step retries.
           ASSET_ID=$(curl -s -H "Authorization: token ${{ github.token }}" \
                       https://api.github.com/repos/${{ github.repository }}/releases | \
-                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .assets | .[] | select(.name == \"sauce-playwright-macos.zip\") | .id | select(. != null)")
+                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .assets | .[] | select(.name == \"playwright-macos-amd64.zip\") | .id | select(. != null)")
 
 
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
@@ -252,7 +254,6 @@ jobs:
             https://api.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }} \
             -d '{"draft":"false"}'
 
-  # Post Deploy Tests
   post-release-windows-tests:
     runs-on: ubuntu-latest
     needs: publish-release
