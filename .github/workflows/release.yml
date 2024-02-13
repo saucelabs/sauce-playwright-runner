@@ -182,7 +182,7 @@ jobs:
 
           ASSET_ID=$(curl -s -H "Authorization: token ${{ github.token }}" \
                       https://api.github.com/repos/${{ github.repository }}/releases | \
-                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .assets | .[] | select(.name == \"sauce-testcafe-macos.zip\") | .id | select(. != null)")
+                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .assets | .[] | select(.name == \"sauce-playwright-macos.zip\") | .id | select(. != null)")
 
 
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
