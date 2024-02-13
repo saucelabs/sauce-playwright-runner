@@ -25,22 +25,29 @@ function getPlatformName(platformName: string) {
   return platformName;
 }
 
-function generateJunitFile(
+function generateJUnitFile(
   sourceFile: string,
   suiteName: string,
   browserName: string,
   platformName: string,
 ) {
   if (!fs.existsSync(sourceFile)) {
+    console.warn(
+      `JUnit file generation skipped: the original JUnit file (${sourceFile}) from Playwright was not located.`,
+    );
     return;
   }
 
   const xmlData = fs.readFileSync(sourceFile, 'utf8');
   if (!xmlData) {
+    console.warn(
+      `JUnit file generation skipped: failed to read the Playwright original JUnit file(${sourceFile}).`,
+    );
     return;
   }
   let result: any = convert.xml2js(xmlData, { compact: true });
   if (!result.testsuites || !result.testsuites.testsuite) {
+    console.warn('JUnit file generation skipped: no test suites detected.');
     return;
   }
 
@@ -181,21 +188,20 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     `Running Playwright ${packageInfo.dependencies?.playwright || ''}`,
   );
 
-  let passed = false;
   if (runCfg.Kind === 'playwright-cucumberjs') {
-    passed = await runCucumber(nodeBin, runCfg);
-  } else {
-    passed = await runPlaywright(nodeBin, runCfg);
-    try {
-      generateJunitFile(
-        runCfg.junitFile,
-        runCfg.suite.name,
-        runCfg.suite.param.browser,
-        runCfg.suite.platformName,
-      );
-    } catch (err) {
-      console.error(`Failed to generate junit file: ${err}`);
-    }
+    return await runCucumber(nodeBin, runCfg);
+  }
+
+  const passed = await runPlaywright(nodeBin, runCfg);
+  try {
+    generateJUnitFile(
+      runCfg.junitFile,
+      runCfg.suite.name,
+      runCfg.suite.param.browser,
+      runCfg.suite.platformName,
+    );
+  } catch (e) {
+    console.warn('Skipping JUnit file generation:', e);
   }
 
   return passed;
