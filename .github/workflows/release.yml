@@ -81,6 +81,7 @@ jobs:
     needs: [create-release-draft]
     steps:
       - name: Find Matching Draft Tag
+        description: Retrieves the `asset_id` of the uploaded bundle. An non-empty `asset_id` indicates that the asset has been successfully uploaded, thus avoiding redundant uploads of the bundle on subsequent retries of this step.
         id: prep
         run: |
           $res = Invoke-WebRequest -Uri "https://api.github.com/repos/${{ github.repository }}/releases" -Headers @{'Authorization' = "token ${{ github.token }}"}
@@ -103,8 +104,6 @@ jobs:
               exit 1
           }
 
-          # Check if the asset has already been uploaded by verifying if asset_id is not empty.
-          # This prevents the re-upload of the bundled asset during step retries.
           $selectedAsset = $null
           Foreach ($asset in $selectedRelease.assets) {
             if ($asset.name -eq "playwright-windows-amd64.zip") {
@@ -168,6 +167,7 @@ jobs:
     needs: [create-release-draft]
     steps:
       - name: Find Matching Draft Tag
+        description: Retrieves the `asset_id` of the uploaded bundle. An non-empty `asset_id` indicates that the asset has been successfully uploaded, thus avoiding redundant uploads of the bundle on subsequent retries of this step.
         id: prep
         run: |
           VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
@@ -182,8 +182,6 @@ jobs:
               exit 1
           fi
 
-          # Check if the asset has already been uploaded by verifying if `ASSET_ID` is not empty.
-          # This prevents the re-upload of the bundled asset during step retries.
           ASSET_ID=$(curl -s -H "Authorization: token ${{ github.token }}" \
                       https://api.github.com/repos/${{ github.repository }}/releases | \
                       jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .assets | .[] | select(.name == \"playwright-macos-amd64.zip\") | .id | select(. != null)")
