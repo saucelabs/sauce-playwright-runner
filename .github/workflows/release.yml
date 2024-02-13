@@ -81,7 +81,7 @@ jobs:
     needs: [create-release-draft]
     steps:
       - name: Find Matching Draft Tag
-        description: Retrieves the `asset_id` of the uploaded bundle. An non-empty `asset_id` indicates that the asset has been successfully uploaded, thus avoiding redundant uploads of the bundle on subsequent retries of this step.
+        description: Fetches the `asset_id` of the uploaded bundle. A non-empty `asset_id` signals a successful upload, preventing duplicate uploads in retry attempts.
         id: prep
         run: |
           $res = Invoke-WebRequest -Uri "https://api.github.com/repos/${{ github.repository }}/releases" -Headers @{'Authorization' = "token ${{ github.token }}"}
@@ -167,7 +167,7 @@ jobs:
     needs: [create-release-draft]
     steps:
       - name: Find Matching Draft Tag
-        description: Retrieves the `asset_id` of the uploaded bundle. An non-empty `asset_id` indicates that the asset has been successfully uploaded, thus avoiding redundant uploads of the bundle on subsequent retries of this step.
+        description: Fetches the `asset_id` of the uploaded bundle. A non-empty `asset_id` signals a successful upload, preventing duplicate uploads in retry attempts.
         id: prep
         run: |
           VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
