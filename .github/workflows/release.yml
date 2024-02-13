@@ -81,6 +81,7 @@ jobs:
     needs: [create-release-draft]
     steps:
       - name: Find Matching Draft Tag
+        description: Fetches the `asset_id` of the uploaded bundle. A non-empty `asset_id` signals a successful upload, preventing duplicate uploads in retry attempts.
         id: prep
         run: |
           $res = Invoke-WebRequest -Uri "https://api.github.com/repos/${{ github.repository }}/releases" -Headers @{'Authorization' = "token ${{ github.token }}"}
@@ -166,6 +167,7 @@ jobs:
     needs: [create-release-draft]
     steps:
       - name: Find Matching Draft Tag
+        description: Fetches the `asset_id` of the uploaded bundle. A non-empty `asset_id` signals a successful upload, preventing duplicate uploads in retry attempts.
         id: prep
         run: |
           VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
@@ -182,7 +184,7 @@ jobs:
 
           ASSET_ID=$(curl -s -H "Authorization: token ${{ github.token }}" \
                       https://api.github.com/repos/${{ github.repository }}/releases | \
-                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .assets | .[] | select(.name == \"sauce-testcafe-macos.zip\") | .id | select(. != null)")
+                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .assets | .[] | select(.name == \"playwright-macos-amd64.zip\") | .id | select(. != null)")
 
 
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
@@ -252,7 +254,6 @@ jobs:
             https://api.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }} \
             -d '{"draft":"false"}'
 
-  # Post Deploy Tests
   post-release-windows-tests:
     runs-on: ubuntu-latest
     needs: publish-release
