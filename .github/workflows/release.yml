@@ -103,7 +103,7 @@ jobs:
               exit 1
           }
 
-          # Check if the asset has already been uploaded by verifying if `ASSET_ID` is not empty.
+          # Check if the asset has already been uploaded by verifying if asset_id is not empty.
           # This prevents the re-upload of the bundled asset during step retries.
           $selectedAsset = $null
           Foreach ($asset in $selectedRelease.assets) {
