@@ -8,3 +8,5 @@ updates:
       interval: weekly
     # Disable version updates. We only want security.
     open-pull-requests-limit: 0
+    labels:
+      - dependencies
