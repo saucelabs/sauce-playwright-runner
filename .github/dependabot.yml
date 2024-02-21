@@ -1,0 +1,12 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: '/'
+    commit-message:
+      prefix: 'deps: '
+    schedule:
+      interval: weekly
+    # Disable version updates. We only want security.
+    open-pull-requests-limit: 0
+    labels:
+      - dependencies
