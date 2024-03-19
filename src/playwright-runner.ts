@@ -10,6 +10,7 @@ import {
   loadRunConfig,
   escapeXML,
   preExec,
+  zip,
 } from 'sauce-testrunner-utils';
 import * as convert from 'xml-js';
 
@@ -179,6 +180,22 @@ async function getCfg(
   return runCfg;
 }
 
+function zipArtifacts(runCfg: RunnerConfig | CucumberRunnerConfig) {
+  if (!runCfg.artifacts || !runCfg.artifacts.retain) {
+    return;
+  }
+  Object.keys(runCfg.artifacts.retain).forEach((source) => {
+    const dest = path.join(runCfg.assetsDir, runCfg.artifacts.retain[source]);
+    try {
+      zip(path.dirname(runCfg.path), source, dest);
+    } catch (err) {
+      console.error(
+        `Zip file creation failed for destination: "${dest}", source: "${source}". Error: ${err}.`,
+      );
+    }
+  });
+}
+
 async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   const runCfg = await getCfg(runCfgPath, suiteName);
 
@@ -203,6 +220,7 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   } catch (e) {
     console.warn('Skipping JUnit file generation:', e);
   }
+  zipArtifacts(runCfg);
 
   return passed;
 }
