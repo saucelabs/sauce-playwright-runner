@@ -76,7 +76,7 @@ export interface CucumberRunnerConfig {
   path: string;
   preExecTimeout: number;
   projectPath: string;
-  artifacts: Artifacts;
+  artifacts?: Artifacts;
 }
 
 export interface CucumberSuite {
@@ -103,7 +103,7 @@ export interface CucumberSuite {
 }
 
 export interface Artifacts {
-  retain: {
+  retain?: {
     [key: string]: string;
   };
 }
