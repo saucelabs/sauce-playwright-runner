@@ -18,7 +18,7 @@ export interface RunnerConfig {
     version: string;
   };
 
-  // WARN: The following properties are set dynamcially by the runner and are not
+  // WARN: The following properties are set dynamically by the runner and are not
   // deserialized from the runner config json. They should technically be marked
   // as optional, but the runners treat them as required so type them as such.
   assetsDir: string;
@@ -31,6 +31,7 @@ export interface RunnerConfig {
   suite: Suite;
 
   args: Record<string, unknown>;
+  artifacts: Artifacts;
 }
 
 export interface Suite {
@@ -75,6 +76,7 @@ export interface CucumberRunnerConfig {
   path: string;
   preExecTimeout: number;
   projectPath: string;
+  artifacts?: Artifacts;
 }
 
 export interface CucumberSuite {
@@ -98,4 +100,10 @@ export interface CucumberSuite {
     paths: string[];
   };
   timeout?: number;
+}
+
+export interface Artifacts {
+  retain?: {
+    [key: string]: string;
+  };
 }
