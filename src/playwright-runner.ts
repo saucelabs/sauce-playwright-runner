@@ -274,12 +274,13 @@ async function runPlaywright(
   fs.copyFileSync(path.join(__dirname, configFileName), configFile);
 
   const defaultArgs = {
-    output:
-      suite.env?.SAUCE_SYNC_WEB_ASSETS !== 'true'
-        ? runCfg.playwrightOutputFolder
-        : null,
     config: configFile,
   };
+
+  if (suite.env?.SAUCE_SYNC_WEB_ASSETS !== 'true') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (defaultArgs as any).output = runCfg.playwrightOutputFolder;
+  }
 
   const playwrightBin = path.join(
     __dirname,
