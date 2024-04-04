@@ -277,7 +277,11 @@ async function runPlaywright(
     config: configFile,
   };
 
-  if (suite.env?.SAUCE_SYNC_WEB_ASSETS !== 'true') {
+  // Set the Playwright output folder if SAUCE_SYNC_WEB_ASSETS is not enabled.
+  if (
+    !suite.env?.SAUCE_SYNC_WEB_ASSETS ||
+    suite.env.SAUCE_SYNC_WEB_ASSETS.toLowerCase() !== 'true'
+  ) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (defaultArgs as any).output = runCfg.playwrightOutputFolder;
   }
