@@ -32,7 +32,6 @@ export interface RunnerConfig {
 
   args: Record<string, unknown>;
   artifacts: Artifacts;
-  env?: Record<string, string>;
 }
 
 export interface Suite {
