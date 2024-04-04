@@ -274,7 +274,9 @@ async function runPlaywright(
   fs.copyFileSync(path.join(__dirname, configFileName), configFile);
 
   const defaultArgs = {
-    output: runCfg.playwrightOutputFolder,
+    output: process.env.SAUCE_ENABLE_SYNC_ASSETS
+      ? undefined
+      : runCfg.playwrightOutputFolder,
     config: configFile,
   };
 
@@ -332,6 +334,8 @@ async function runPlaywright(
     PLAYWRIGHT_JUNIT_OUTPUT_NAME: runCfg.junitFile,
     SAUCE_REPORT_OUTPUT_NAME: runCfg.sauceReportFile,
     FORCE_COLOR: '0',
+    SAUCE_SYNC_ASSETS_DIR:
+      process.env.SAUCE_ENABLE_SYNC_ASSETS === 'true' ? runCfg.assetsDir : '',
   };
 
   utils.setEnvironmentVariables(env);
