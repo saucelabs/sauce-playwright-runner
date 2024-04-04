@@ -274,9 +274,10 @@ async function runPlaywright(
   fs.copyFileSync(path.join(__dirname, configFileName), configFile);
 
   const defaultArgs = {
-    output: process.env.SAUCE_ENABLE_SYNC_ASSETS
-      ? undefined
-      : runCfg.playwrightOutputFolder,
+    output:
+      process.env.SAUCE_ENABLE_SYNC_ASSETS === 'true'
+        ? undefined
+        : runCfg.playwrightOutputFolder,
     config: configFile,
   };
 
