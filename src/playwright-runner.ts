@@ -275,7 +275,7 @@ async function runPlaywright(
 
   const defaultArgs = {
     output:
-      process.env.SAUCE_ENABLE_SYNC_ASSETS === 'true'
+      process.env.SAUCE_SYNC_WEB_ASSETS === 'true'
         ? undefined
         : runCfg.playwrightOutputFolder,
     config: configFile,
@@ -335,8 +335,8 @@ async function runPlaywright(
     PLAYWRIGHT_JUNIT_OUTPUT_NAME: runCfg.junitFile,
     SAUCE_REPORT_OUTPUT_NAME: runCfg.sauceReportFile,
     FORCE_COLOR: '0',
-    SAUCE_SYNC_ASSETS_DIR:
-      process.env.SAUCE_ENABLE_SYNC_ASSETS === 'true' ? runCfg.assetsDir : '',
+    SAUCE_WEB_ASSETS_DIR:
+      process.env.SAUCE_SYNC_WEB_ASSETS === 'true' ? runCfg.assetsDir : '',
   };
 
   utils.setEnvironmentVariables(env);
