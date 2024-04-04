@@ -275,9 +275,9 @@ async function runPlaywright(
 
   const defaultArgs = {
     output:
-      suite.env?.SAUCE_SYNC_WEB_ASSETS === 'true'
-        ? undefined
-        : runCfg.playwrightOutputFolder,
+      suite.env?.SAUCE_SYNC_WEB_ASSETS !== 'true'
+        ? runCfg.playwrightOutputFolder
+        : undefined,
     config: configFile,
   };
 
