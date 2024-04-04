@@ -277,7 +277,7 @@ async function runPlaywright(
     output:
       suite.env?.SAUCE_SYNC_WEB_ASSETS !== 'true'
         ? runCfg.playwrightOutputFolder
-        : undefined,
+        : null,
     config: configFile,
   };
 
