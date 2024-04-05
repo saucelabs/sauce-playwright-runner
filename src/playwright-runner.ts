@@ -314,7 +314,8 @@ async function runPlaywright(
     if (
       excludeParams.includes(key.toLowerCase()) ||
       value === false ||
-      value == null
+      value === undefined ||
+      value === null
     ) {
       continue;
     }
