@@ -301,8 +301,6 @@ async function runPlaywright(
     utils.replaceLegacyKeys(suite.param),
   );
 
-  console.log('args: ', args);
-
   // There is a conflict if the playwright project has a `browser` defined,
   // since the job is launched with the browser set by saucectl, which is now set as the job's metadata.
   const isRunProject = Object.keys(args).find((k) => k === 'project');
@@ -313,7 +311,11 @@ async function runPlaywright(
   // eslint-disable-next-line prefer-const
   for (let [key, value] of Object.entries(args)) {
     key = utils.toHyphenated(key);
-    if (excludeParams.includes(key.toLowerCase()) || value === false) {
+    if (
+      excludeParams.includes(key.toLowerCase()) ||
+      value === undefined ||
+      value === null
+    ) {
       continue;
     }
     procArgs.push(`--${key}`);
