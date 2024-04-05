@@ -27,9 +27,9 @@ export interface RunnerConfig {
   preExecTimeout: number;
   path: string;
   projectPath: string;
-  playwrightOutputFolder: string;
+  playwrightOutputFolder?: string;
   // webAssetsDir contains assets compatible with the Sauce Labs web UI.
-  webAssetsDir: string;
+  webAssetsDir?: string;
   suite: Suite;
 
   args: Record<string, unknown>;

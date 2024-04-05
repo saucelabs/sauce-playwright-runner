@@ -177,7 +177,7 @@ async function getCfg(
   runCfg.sauce.region = runCfg.sauce.region || 'us-west-1';
   runCfg.playwrightOutputFolder =
     suite.env?.SAUCE_SYNC_WEB_ASSETS?.toLowerCase() === 'true'
-      ? ''
+      ? undefined
       : path.join(runCfg.assetsDir, 'test-results');
 
   runCfg.webAssetsDir =
@@ -300,6 +300,8 @@ async function runPlaywright(
     defaultArgs,
     utils.replaceLegacyKeys(suite.param),
   );
+
+  console.log('args: ', args);
 
   // There is a conflict if the playwright project has a `browser` defined,
   // since the job is launched with the browser set by saucectl, which is now set as the job's metadata.
