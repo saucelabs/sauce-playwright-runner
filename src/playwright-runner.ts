@@ -340,10 +340,7 @@ async function runPlaywright(
     PLAYWRIGHT_JUNIT_OUTPUT_NAME: runCfg.junitFile,
     SAUCE_REPORT_OUTPUT_NAME: runCfg.sauceReportFile,
     FORCE_COLOR: '0',
-    SAUCE_WEB_ASSETS_DIR:
-      suite.env?.SAUCE_SYNC_WEB_ASSETS.toLowerCase() === 'true'
-        ? runCfg.assetsDir
-        : '',
+    SAUCE_WEB_ASSETS_DIR: runCfg.webAssetsDir,
   };
 
   utils.setEnvironmentVariables(env);
