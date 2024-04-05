@@ -313,8 +313,8 @@ async function runPlaywright(
     key = utils.toHyphenated(key);
     if (
       excludeParams.includes(key.toLowerCase()) ||
-      value === undefined ||
-      value === null
+      value === false ||
+      value == null
     ) {
       continue;
     }
