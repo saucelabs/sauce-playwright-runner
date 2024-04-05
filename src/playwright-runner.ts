@@ -175,7 +175,15 @@ async function getCfg(
     runCfg.sauce = {};
   }
   runCfg.sauce.region = runCfg.sauce.region || 'us-west-1';
-  runCfg.playwrightOutputFolder = path.join(runCfg.assetsDir, 'test-results');
+  runCfg.playwrightOutputFolder =
+    suite.env?.SAUCE_SYNC_WEB_ASSETS?.toLowerCase() === 'true'
+      ? ''
+      : path.join(runCfg.assetsDir, 'test-results');
+
+  runCfg.webAssetsDir =
+    suite.env?.SAUCE_SYNC_WEB_ASSETS?.toLowerCase() === 'true'
+      ? runCfg.assetsDir
+      : '';
 
   return runCfg;
 }
@@ -274,17 +282,9 @@ async function runPlaywright(
   fs.copyFileSync(path.join(__dirname, configFileName), configFile);
 
   const defaultArgs = {
+    output: runCfg.playwrightOutputFolder,
     config: configFile,
   };
-
-  // Set the Playwright output folder if SAUCE_SYNC_WEB_ASSETS is not enabled.
-  if (
-    !suite.env?.SAUCE_SYNC_WEB_ASSETS ||
-    suite.env.SAUCE_SYNC_WEB_ASSETS.toLowerCase() !== 'true'
-  ) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (defaultArgs as any).output = runCfg.playwrightOutputFolder;
-  }
 
   const playwrightBin = path.join(
     __dirname,
