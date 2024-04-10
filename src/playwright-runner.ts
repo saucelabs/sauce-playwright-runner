@@ -175,7 +175,15 @@ async function getCfg(
     runCfg.sauce = {};
   }
   runCfg.sauce.region = runCfg.sauce.region || 'us-west-1';
-  runCfg.playwrightOutputFolder = path.join(runCfg.assetsDir, 'test-results');
+  runCfg.playwrightOutputFolder =
+    suite.env?.SAUCE_SYNC_WEB_ASSETS?.toLowerCase() === 'true'
+      ? undefined
+      : path.join(runCfg.assetsDir, 'test-results');
+
+  runCfg.webAssetsDir =
+    suite.env?.SAUCE_SYNC_WEB_ASSETS?.toLowerCase() === 'true'
+      ? runCfg.assetsDir
+      : '';
 
   return runCfg;
 }
@@ -303,7 +311,12 @@ async function runPlaywright(
   // eslint-disable-next-line prefer-const
   for (let [key, value] of Object.entries(args)) {
     key = utils.toHyphenated(key);
-    if (excludeParams.includes(key.toLowerCase()) || value === false) {
+    if (
+      excludeParams.includes(key.toLowerCase()) ||
+      value === false ||
+      value === undefined ||
+      value === null
+    ) {
       continue;
     }
     procArgs.push(`--${key}`);
@@ -332,6 +345,7 @@ async function runPlaywright(
     PLAYWRIGHT_JUNIT_OUTPUT_NAME: runCfg.junitFile,
     SAUCE_REPORT_OUTPUT_NAME: runCfg.sauceReportFile,
     FORCE_COLOR: '0',
+    SAUCE_WEB_ASSETS_DIR: runCfg.webAssetsDir,
   };
 
   utils.setEnvironmentVariables(env);

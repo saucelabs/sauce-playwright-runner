@@ -51,7 +51,9 @@ export function replaceLegacyKeys(config: SuiteConfig) {
   return args;
 }
 
-export function setEnvironmentVariables(envVars: Record<string, string> = {}) {
+export function setEnvironmentVariables(
+  envVars: Record<string, string | undefined> = {},
+) {
   if (!envVars) {
     return;
   }
