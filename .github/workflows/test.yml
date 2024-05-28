@@ -136,7 +136,8 @@ jobs:
           gsutil cp ./playwright-windows-amd64.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/playwright-windows-amd64-${{ github.run_id }}.zip
 
   build-macos-bundle:
-    runs-on: macos-latest
+    # macos-latest is arm only
+    runs-on: macos-13
     needs: [test]
     steps:
       - name: Checkout
