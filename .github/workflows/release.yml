@@ -163,7 +163,8 @@ jobs:
           gh release upload ${{ steps.prep.outputs.version }} playwright-windows-amd64.zip
 
   release-macos-bundle:
-    runs-on: macos-latest
+    # macos-latest is arm only
+    runs-on: macos-13
     needs: [create-release-draft]
     steps:
       - name: Find Matching Draft Tag
