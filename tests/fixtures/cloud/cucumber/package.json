@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@cucumber/cucumber": "10.8.0",
+    "@cucumber/cucumber": "9.6.0",
     "@saucelabs/cucumber-reporter": "^1.1.0",
     "pretty-seconds": "^3.0.1",
     "ts-node": "10.9.2",
