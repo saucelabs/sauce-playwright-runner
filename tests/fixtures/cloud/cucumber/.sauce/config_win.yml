@@ -33,7 +33,7 @@ suites:
       require:
         - "features/support/*.js"
       format:
-        - '"json":"my-cucumber.json"'
+        - "json:my-cucumber.json"
 
 npm:
   dependencies:
