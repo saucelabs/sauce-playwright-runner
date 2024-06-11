@@ -6,8 +6,8 @@ on:
       - main
 
 env:
-  SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
-  SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
+  SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+  SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -24,8 +24,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
+          node-version-file: ".nvmrc"
+          cache: "npm"
 
       - name: Install Dependencies
         run: npm ci
@@ -45,8 +45,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
+          node-version-file: ".nvmrc"
+          cache: "npm"
 
       - name: Install Dependencies
         run: |
@@ -69,8 +69,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
+          node-version-file: ".nvmrc"
+          cache: "npm"
 
       - name: Install Dependencies
         run: |
@@ -98,13 +98,13 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: npm
+          node-version-file: ".nvmrc"
+          cache: "npm"
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Google Cloud Login
         uses: 'google-github-actions/auth@v2'
@@ -146,17 +146,17 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: npm
+          node-version-file: ".nvmrc"
+          cache: "npm"
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.12"
 
       - name: Google Cloud Login
-        id: 'auth'
-        uses: 'google-github-actions/auth@v2'
+        id: "auth"
+        uses: google-github-actions/auth@v2
         with:
           credentials_json: '${{ secrets.GCS_RUNNER_SA_KEY }}'
 
@@ -236,7 +236,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.12"
 
       - name: Setup saucectl
         uses: saucelabs/saucectl-run-action@v4
@@ -256,7 +256,7 @@ jobs:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
           tunnelName: github-playwright-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }}
-          scVersion: 4.9.1
+          scVersion: 4.9.2
 
       - name: Test on Sauce
         working-directory: ./tests/fixtures/cloud
@@ -286,8 +286,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: npm
+          node-version-file: ".nvmrc"
+          cache: "npm"
 
       - name: Setup saucectl
         uses: saucelabs/saucectl-run-action@v4
