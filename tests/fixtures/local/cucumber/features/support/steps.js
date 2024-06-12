@@ -1,5 +1,6 @@
 const { Before, When, Then } = require('@cucumber/cucumber');
 const { chromium, firefox, webkit } = require('playwright');
+const { setTimeout } = require('node:timers');
 
 Before(async function () {
   const opts = {
