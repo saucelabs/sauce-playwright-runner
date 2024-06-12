@@ -32,6 +32,7 @@ module.exports = ts.config(
         exports: true,
         module: true,
         require: true,
+        process: true,
       },
     },
   },
