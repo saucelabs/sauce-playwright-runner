@@ -8,11 +8,6 @@ module.exports = ts.config(
   ...ts.configs.recommended,
   prettier,
   {
-    plugins: {
-      jest: jest,
-    },
-  },
-  {
     ignores: ['lib/**'],
   },
   {
@@ -23,6 +18,10 @@ module.exports = ts.config(
       'no-control-regex': 'off',
       'no-undef': 'warn',
     },
+  },
+  {
+    files: ['tests/**/*.*js', 'tests/**/*.*ts'],
+    ...jest.configs['flat/recommended'],
   },
   {
     languageOptions: {
