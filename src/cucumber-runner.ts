@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import * as path from 'node:path';
+import { setTimeout } from 'node:timers';
 import { prepareNpmEnv, preExec } from 'sauce-testrunner-utils';
 
 import type { CucumberRunnerConfig } from './types';

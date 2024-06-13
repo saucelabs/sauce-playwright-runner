@@ -8,11 +8,6 @@ module.exports = ts.config(
   ...ts.configs.recommended,
   prettier,
   {
-    plugins: {
-      jest: jest,
-    },
-  },
-  {
     ignores: ['lib/**'],
   },
   {
@@ -25,6 +20,10 @@ module.exports = ts.config(
     },
   },
   {
+    files: ['tests/**/*.*js', 'tests/**/*.*ts'],
+    ...jest.configs['flat/recommended'],
+  },
+  {
     languageOptions: {
       globals: {
         __dirname: true,
@@ -32,6 +31,7 @@ module.exports = ts.config(
         exports: true,
         module: true,
         require: true,
+        process: true,
       },
     },
   },
