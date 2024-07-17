@@ -6,8 +6,6 @@ sauce:
       - pre-release tests
     build: Github Pre-Release
   region: us-west-1
-defaults:
-  mode: sauce
 playwright:
   version: 1.44.0
 

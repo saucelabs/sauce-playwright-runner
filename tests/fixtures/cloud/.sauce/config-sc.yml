@@ -8,8 +8,6 @@ sauce:
   region: us-west-1
   tunnel:
     name: github-playwright-sc-check-tunnel
-defaults:
-  mode: sauce
 playwright:
   version: 1.44.0
 
