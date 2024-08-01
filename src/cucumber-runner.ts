@@ -5,6 +5,7 @@ import { prepareNpmEnv, preExec } from 'sauce-testrunner-utils';
 
 import type { CucumberRunnerConfig } from './types';
 import * as utils from './utils';
+import { NodeContext } from 'sauce-testrunner-utils/lib/types';
 
 function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
   const paths: string[] = [];
@@ -88,7 +89,11 @@ export async function runCucumber(
     'bin',
     'npm-cli.js',
   );
-  const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
+  const nodeCtx: NodeContext = {
+    nodePath: nodeBin,
+    npmPath: npmBin,
+    useGlobals: !!runCfg.nodeVersion,
+  };
 
   // Install NPM dependencies
   await prepareNpmEnv(runCfg, nodeCtx);
