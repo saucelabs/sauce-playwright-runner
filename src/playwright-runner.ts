@@ -345,7 +345,7 @@ async function runPlaywright(
     ...suite.env,
     PLAYWRIGHT_JUNIT_OUTPUT_NAME: runCfg.junitFile,
     SAUCE_REPORT_OUTPUT_NAME: runCfg.sauceReportFile,
-    FORCE_COLOR: '0',
+    FORCE_COLOR: 'false',
     SAUCE_WEB_ASSETS_DIR: runCfg.webAssetsDir,
   };
 
