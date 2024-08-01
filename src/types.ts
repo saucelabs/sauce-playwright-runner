@@ -18,6 +18,8 @@ export interface RunnerConfig {
     version: string;
   };
 
+  nodeVersion?: string;
+
   // WARN: The following properties are set dynamically by the runner and are not
   // deserialized from the runner config json. They should technically be marked
   // as optional, but the runners treat them as required so type them as such.
@@ -72,6 +74,7 @@ export interface CucumberRunnerConfig {
     configFile?: string;
     version: string;
   };
+  nodeVersion?: string;
   suite: CucumberSuite;
   assetsDir: string;
   sauceReportFile: string;
