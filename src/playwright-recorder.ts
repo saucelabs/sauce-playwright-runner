@@ -4,7 +4,11 @@ import { Transform } from 'node:stream';
 import * as childProcess from 'node:child_process';
 import * as process from 'node:process';
 
-const escapeSequenceRegex = new RegExp('[\\u001b]\\[2K|[\\u001b]\\[0G', 'g');
+const escapeSequenceRegex = new RegExp(
+  // eslint-disable-next-line no-control-regex
+  '[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-ntqry=><~]))',
+  'g',
+);
 
 export function playwrightRecorder() {
   // console.log is saved out of reportsDir since it is cleared on startup.
