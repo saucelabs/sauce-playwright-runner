@@ -12,10 +12,13 @@ const escapeSequenceRegex = new RegExp(
 
 export function playwrightRecorder() {
   // console.log is saved out of reportsDir since it is cleared on startup.
-  const ws = fs.createWriteStream(path.join(process.cwd(), 'console2.log'), {
-    flags: 'w+',
-    mode: 0o644,
-  });
+  const ws = fs.createWriteStream(
+    path.join(process.cwd(), '__assets__', 'console2.log'),
+    {
+      flags: 'w+',
+      mode: 0o644,
+    },
+  );
   const stripAsciiTransform = new Transform({
     transform(chunk, _, callback) {
       // list reporter uses escape codes to rewrite lines, strip them to make console output more readable
