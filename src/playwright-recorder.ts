@@ -12,7 +12,7 @@ const escapeSequenceRegex = new RegExp(
 
 export function playwrightRecorder() {
   // console.log is saved out of reportsDir since it is cleared on startup.
-  const ws = fs.createWriteStream(path.join(process.cwd(), 'console.log'), {
+  const ws = fs.createWriteStream(path.join(process.cwd(), 'console2.log'), {
     flags: 'w+',
     mode: 0o644,
   });
@@ -29,9 +29,9 @@ export function playwrightRecorder() {
     ...process.argv.slice(2),
   ]);
 
-  //child.stdout.pipe(stripAsciiTransform).pipe(process.stdout);
-  //child.stderr.pipe(process.stderr);
-  child.stdout.pipe(stripAsciiTransform).pipe(ws);
+  child.stdout.pipe(stripAsciiTransform).pipe(process.stdout);
+  child.stderr.pipe(process.stderr);
+  child.stdout.pipe(ws);
   child.stderr.pipe(ws);
 
   child.on('exit', (exitCode) => {
