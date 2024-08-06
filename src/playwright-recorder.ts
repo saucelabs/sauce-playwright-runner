@@ -30,8 +30,9 @@ export function playwrightRecorder() {
   ]);
 
   child.stdout.pipe(stripAsciiTransform).pipe(process.stdout);
-  child.stderr.pipe(process.stderr);
   child.stdout.pipe(stripAsciiTransform).pipe(ws);
+  child.stderr.pipe(process.stderr);
+  child.stderr.pipe(ws);
 
   child.on('exit', (exitCode) => {
     ws.end();
