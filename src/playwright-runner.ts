@@ -18,6 +18,7 @@ import * as convert from 'xml-js';
 import { runCucumber } from './cucumber-runner';
 import type { CucumberRunnerConfig, RunnerConfig } from './types';
 import * as utils from './utils';
+import { NodeContext } from 'sauce-testrunner-utils/lib/types';
 
 function getPlatformName(platformName: string) {
   if (process.platform.toLowerCase() === 'linux') {
@@ -359,7 +360,11 @@ async function runPlaywright(
     'bin',
     'npm-cli.js',
   );
-  const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
+  const nodeCtx: NodeContext = {
+    nodePath: nodeBin,
+    npmPath: npmBin,
+    useGlobals: !!runCfg.nodeVersion,
+  };
 
   // runCfg.path must be set for prepareNpmEnv to find node_modules. :(
   await prepareNpmEnv(runCfg, nodeCtx);
