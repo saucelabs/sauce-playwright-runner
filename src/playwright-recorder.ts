@@ -11,13 +11,14 @@ const escapeSequenceRegex = new RegExp(
 );
 
 export function playwrightRecorder() {
-  const ws = fs.createWriteStream(
-    path.join(process.cwd(), '__assets__', 'console.log'),
-    {
-      flags: 'w+',
-      mode: 0o644,
-    },
-  );
+  const assetsPath = path.join(process.cwd(), '__assets__');
+  if (!fs.existsSync(assetsPath)) {
+    fs.mkdirSync(assetsPath);
+  }
+  const ws = fs.createWriteStream(path.join(assetsPath, 'console.log'), {
+    flags: 'w+',
+    mode: 0o644,
+  });
   const stripAsciiTransform = new Transform({
     transform(chunk, _, callback) {
       // list reporter uses escape codes to rewrite lines, strip them to make console output more readable
