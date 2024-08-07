@@ -15,7 +15,7 @@ export function playwrightRecorder() {
   if (!fs.existsSync(assetsPath)) {
     fs.mkdirSync(assetsPath);
   }
-  const ws = fs.createWriteStream(path.join(assetsPath, 'console2.log'), {
+  const ws = fs.createWriteStream(path.join(assetsPath, 'console.log'), {
     flags: 'w+',
     mode: 0o644,
   });
