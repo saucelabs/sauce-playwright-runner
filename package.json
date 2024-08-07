@@ -32,7 +32,7 @@
   "homepage": "https://github.com/saucelabs/sauce-playwright-runner",
   "dependencies": {
     "@playwright/test": "1.45.2",
-    "@saucelabs/playwright-reporter": "1.2.1",
+    "@saucelabs/playwright-reporter": "1.2.2",
     "@saucelabs/testcomposer": "3.0.0",
     "dotenv": "16.4.5",
     "lodash": "4.17.21",
