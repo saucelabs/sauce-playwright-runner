@@ -15,7 +15,7 @@ export function playwrightRecorder() {
   if (!fs.existsSync(assetsPath)) {
     fs.mkdirSync(assetsPath);
   }
-  const ws = fs.createWriteStream(path.join(assetsPath, 'console.log'), {
+  const ws = fs.createWriteStream(path.join(assetsPath, 'console2.log'), {
     flags: 'w+',
     mode: 0o644,
   });
@@ -28,7 +28,7 @@ export function playwrightRecorder() {
 
   const [nodeBin] = process.argv;
   const child = childProcess.spawn(nodeBin, [
-    path.join(__dirname, 'playwright-runner.js'),
+    path.join(__dirname, 'playwright-runer.js'),
     ...process.argv.slice(2),
   ]);
 
