@@ -28,7 +28,7 @@ export function playwrightRecorder() {
 
   const [nodeBin] = process.argv;
   const child = childProcess.spawn(nodeBin, [
-    path.join(__dirname, 'playwright-runer.js'),
+    path.join(__dirname, 'playwright-runner.js'),
     ...process.argv.slice(2),
   ]);
 
