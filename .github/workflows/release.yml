@@ -64,17 +64,31 @@ jobs:
         if: ${{ steps.prep.outputs.tag_name == '' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [ -z "${{ github.event.inputs.releaseType }}" ] && [ -z "${{ github.event.inputs.preReleaseFlavor }}" ];then
             echo "No release type provided."
             exit 1
           fi
 
+          RELEASE_TYPE="${{ github.event.inputs.releaseType }}"
+
           if [ -n "${{ github.event.inputs.preReleaseFlavor }}" ];then
-            PRE_RELEASE_ARGS="--preRelease=${{ github.event.inputs.preReleaseFlavor }} --github.preRelease"
+            LATEST_TAG=$(gh release list --limit 1 --json tagName --jq '.[] | .tagName')
+            # NOTE: Expected tag format is {VERSION}-{FLAVOR}.{FLAVOR_VERSION}
+            LATEST_FLAVOR=$(echo ${LATEST_TAG} | awk -F'-' '{ print $2 }' | awk -F'.' '{ print $1 }')
+
+            if [ "${LATEST_FLAVOR}" == "${{ github.event.inputs.preReleaseFlavor}}" ];then
+              # NOTE: If the inputted pre-release flavor matches the current pre-release flavor, we only
+              # want to increment the pre-release version instead of a full version bump.
+              PRE_RELEASE_ARGS="--preRelease"
+              RELEASE_TYPE=""
+            else
+              PRE_RELEASE_ARGS="--preRelease=${{ github.event.inputs.preReleaseFlavor }} --github.preRelease"
+            fi
           fi
 
-          npx release-it ${{ github.event.inputs.releaseType }} ${PRE_RELEASE_ARGS}
+          npx release-it ${RELEASE_TYPE} ${PRE_RELEASE_ARGS}
 
   release-windows-bundle:
     runs-on: windows-latest
