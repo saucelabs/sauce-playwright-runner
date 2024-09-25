@@ -285,6 +285,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           skip-run: true
+          saucectl-version: v0.184.1
 
       - name: Parse Release Version
         id: parse_version
@@ -318,6 +319,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           skip-run: true
+          saucectl-version: v0.184.1
 
       - name: Parse Release Version
         id: parse_version
@@ -351,6 +353,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           skip-run: true
+          saucectl-version: v0.184.1
 
       - name: Parse Release Version
         id: parse_version
@@ -385,6 +388,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           skip-run: true
+          saucectl-version: v0.184.1
 
       - name: Parse Release Version
         id: parse_version

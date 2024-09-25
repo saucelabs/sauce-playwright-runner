@@ -203,6 +203,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           skip-run: true
+          saucectl-version: v0.184.1
 
       - name: Test on Sauce
         working-directory: ./tests/fixtures/cloud
@@ -249,6 +250,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           skip-run: true
+          saucectl-version: v0.184.1
 
       - name: Run web-page
         run: |
@@ -300,6 +302,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           skip-run: true
+          saucectl-version: v0.184.1
 
       - name: Test on Sauce
         working-directory: ./tests/fixtures/cloud/cucumber
