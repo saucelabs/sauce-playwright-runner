@@ -40,13 +40,14 @@
     "xml-js": "1.6.11"
   },
   "devDependencies": {
-    "@eslint/js": "^9.9.1",
+    "@eslint/js": "^9.12.0",
     "@tsconfig/node20": "^20.1.4",
+    "@types/eslint__js": "^8.42.3",
     "@types/jest": "^29.5.12",
     "@types/lodash": "^4.17.7",
     "@types/node": "^20.16.1",
     "@types/shelljs": "^0.8.15",
-    "eslint": "^8.56.0",
+    "eslint": "^9.12.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-jest": "^28.8.0",
     "eslint-plugin-prettier": "^5.2.1",
@@ -58,6 +59,6 @@
     "pretty-quick": "^4.0.0",
     "release-it": "^17.6.0",
     "typescript": "^5.5.4",
-    "typescript-eslint": "^7.16.1"
+    "typescript-eslint": "^8.9.0"
   }
 }
