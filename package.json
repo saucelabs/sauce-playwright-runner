@@ -40,8 +40,6 @@
     "xml-js": "1.6.11"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.2",
-    "@babel/preset-env": "^7.25.4",
     "@eslint/js": "^9.9.1",
     "@tsconfig/node20": "^20.1.4",
     "@types/jest": "^29.5.12",
@@ -50,7 +48,6 @@
     "@types/shelljs": "^0.8.15",
     "@typescript-eslint/eslint-plugin": "^7.16.1",
     "@typescript-eslint/parser": "^7.16.1",
-    "babel-jest": "^29.7.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-jest": "^28.8.0",
