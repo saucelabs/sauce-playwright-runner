@@ -14,7 +14,7 @@ export default ts.config(
   {
     files: ['**/*.*js', '**/*.*ts'],
     rules: {
-      '@typescript-eslint/no-var-requires': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
       'no-control-regex': 'off',
       'no-undef': 'warn',
