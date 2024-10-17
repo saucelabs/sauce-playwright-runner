@@ -13,6 +13,7 @@
     "clean": "rm -rf lib",
     "lint": "prettier --check '**/*.{js,ts,mjs,cjs}' && eslint tests/ src/",
     "fmt": "prettier --write '**/*.{js,ts,mjs,cjs}'",
+    "prepare": "husky",
     "test": "npm run build && jest --env node",
     "integration-test": "npm run build && bash ./tests/run.sh",
     "release": "release-it --github.release",
