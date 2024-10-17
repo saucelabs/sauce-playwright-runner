@@ -59,6 +59,8 @@ jobs:
           npm ci
           npx playwright install
           npx playwright install-deps
+        env:
+          HUSKY: 0
 
       - name: Generate (Pre-)Release Draft
         if: ${{ steps.prep.outputs.tag_name == '' }}
@@ -365,6 +367,7 @@ jobs:
         working-directory: ./tests/fixtures/post-release/cucumber
         env:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
+          HUSKY: 0
         run: |
           npm ci --production
           saucectl run --runner-version "url: https://github.com/saucelabs/sauce-playwright-runner/releases/download/${{ steps.parse_version.outputs.version }}/playwright-windows-amd64.zip" --config ./.sauce/config_win.yml
@@ -399,6 +402,7 @@ jobs:
         working-directory: ./tests/fixtures/post-release/cucumber
         env:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
+          HUSKY: 0
         run: |
           npm ci --production
           saucectl run --runner-version "url: https://github.com/saucelabs/sauce-playwright-runner/releases/download/${{ steps.parse_version.outputs.version }}/playwright-macos-amd64.zip" --config ./.sauce/config_mac.yml
