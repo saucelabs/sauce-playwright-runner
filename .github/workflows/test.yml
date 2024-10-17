@@ -29,6 +29,8 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci
+        env:
+          HUSKY: 0
 
       - name: Lint
         run: npm run lint
@@ -53,6 +55,8 @@ jobs:
           npm ci
           npx playwright install
           npx playwright install-deps
+        env:
+          HUSKY: 0
 
       - name: Build
         run: npm run build
@@ -77,6 +81,8 @@ jobs:
           npm ci
           npx playwright install
           npx playwright install-deps
+        env:
+          HUSKY: 0
 
       - name: Build
         run: npm run build
@@ -314,3 +320,5 @@ jobs:
           saucectl run \
             --runner-version "url: ${BUNDLE_URL}" \
             --config .sauce/config_${{ matrix.os }}.yml
+        env:
+          HUSKY: 0
