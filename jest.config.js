@@ -1,7 +1,7 @@
 /** @type {import('jest').Config} */
 const config = {
   testMatch: ['**/tests/unit/**/*.[jt]s?(x)'],
-  collectCoverageFrom: ['src/**/*.js'],
+  collectCoverageFrom: ['src/**/*.ts'],
   collectCoverage: true,
   clearMocks: true,
   coverageProvider: 'v8',
