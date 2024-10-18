@@ -13,6 +13,7 @@
     "clean": "rm -rf lib",
     "lint": "prettier --check '**/*.{js,ts,mjs,cjs}' && eslint tests/ src/",
     "fmt": "prettier --write '**/*.{js,ts,mjs,cjs}'",
+    "prepare": "husky || true",
     "test": "npm run build && jest --env node",
     "integration-test": "npm run build && bash ./tests/run.sh",
     "release": "release-it --github.release",
@@ -40,18 +41,14 @@
     "xml-js": "1.6.11"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.2",
-    "@babel/preset-env": "^7.25.4",
-    "@eslint/js": "^9.9.1",
+    "@eslint/js": "^9.12.0",
     "@tsconfig/node20": "^20.1.4",
+    "@types/eslint__js": "^8.42.3",
     "@types/jest": "^29.5.12",
     "@types/lodash": "^4.17.7",
     "@types/node": "^20.16.1",
     "@types/shelljs": "^0.8.15",
-    "@typescript-eslint/eslint-plugin": "^7.16.1",
-    "@typescript-eslint/parser": "^7.16.1",
-    "babel-jest": "^29.7.0",
-    "eslint": "^8.56.0",
+    "eslint": "^9.12.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-jest": "^28.8.0",
     "eslint-plugin-prettier": "^5.2.1",
@@ -60,8 +57,10 @@
     "jest-circus": "^29.7.0",
     "jest-cli": "^29.7.0",
     "prettier": "^3.3.3",
+    "pretty-quick": "^4.0.0",
     "release-it": "^17.6.0",
+    "ts-jest": "^29.2.5",
     "typescript": "^5.5.4",
-    "typescript-eslint": "^7.16.1"
+    "typescript-eslint": "^8.9.0"
   }
 }
