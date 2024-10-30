@@ -1,9 +1,9 @@
 {
   "dependencies": {
-    "@cucumber/cucumber": "9.6.0",
-    "@saucelabs/cucumber-reporter": "^1.1.0",
+    "@cucumber/cucumber": "11.0.1",
+    "@saucelabs/cucumber-reporter": "^1.2.0",
     "pretty-seconds": "^3.0.1",
     "ts-node": "10.9.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.6.3"
   }
 }
