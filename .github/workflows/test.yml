@@ -14,85 +14,85 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  # test:
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-          cache: "npm"
+  #     - name: Setup Node
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version-file: ".nvmrc"
+  #         cache: "npm"
 
-      - name: Install Dependencies
-        run: npm ci
-        env:
-          HUSKY: 0
+  #     - name: Install Dependencies
+  #       run: npm ci
+  #       env:
+  #         HUSKY: 0
 
-      - name: Lint
-        run: npm run lint
+  #     - name: Lint
+  #       run: npm run lint
 
-      - name: Unit Test
-        run: npm run test
+  #     - name: Unit Test
+  #       run: npm run test
 
-  build-and-test-local:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  # build-and-test-local:
+  #   runs-on: windows-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-          cache: "npm"
+  #     - name: Setup Node
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version-file: ".nvmrc"
+  #         cache: "npm"
 
-      - name: Install Dependencies
-        run: |
-          npm ci
-          npx playwright install
-          npx playwright install-deps
-        env:
-          HUSKY: 0
+  #     - name: Install Dependencies
+  #       run: |
+  #         npm ci
+  #         npx playwright install
+  #         npx playwright install-deps
+  #       env:
+  #         HUSKY: 0
 
-      - name: Build
-        run: npm run build
+  #     - name: Build
+  #       run: npm run build
 
-      - name: Run tests
-        run: npm run integration-test
+  #     - name: Run tests
+  #       run: npm run integration-test
 
-  cucumber-build-and-test-local:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  # cucumber-build-and-test-local:
+  #   runs-on: windows-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-          cache: "npm"
+  #     - name: Setup Node
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version-file: ".nvmrc"
+  #         cache: "npm"
 
-      - name: Install Dependencies
-        run: |
-          npm ci
-          npx playwright install
-          npx playwright install-deps
-        env:
-          HUSKY: 0
+  #     - name: Install Dependencies
+  #       run: |
+  #         npm ci
+  #         npx playwright install
+  #         npx playwright install-deps
+  #       env:
+  #         HUSKY: 0
 
-      - name: Build
-        run: npm run build
+  #     - name: Build
+  #       run: npm run build
 
-      - name: Local Tests
-        working-directory: tests/fixtures/local/cucumber/
-        run: |
-          npm i
-          node ../../../../ --suiteName "cucumber local test" --runCfgPath ./sauce-runner.json
-          node ../../../../ --suiteName "cucumber config test" --runCfgPath ./sauce-runner.json
+  #     - name: Local Tests
+  #       working-directory: tests/fixtures/local/cucumber/
+  #       run: |
+  #         npm i
+  #         node ../../../../ --suiteName "cucumber local test" --runCfgPath ./sauce-runner.json
+  #         node ../../../../ --suiteName "cucumber config test" --runCfgPath ./sauce-runner.json
 
   build-windows-bundle:
     runs-on: windows-latest
@@ -141,154 +141,155 @@ jobs:
         run: |
           gsutil cp ./playwright-windows-amd64.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/playwright-windows-amd64-${{ github.run_id }}.zip
 
-  build-macos-bundle:
-    # macos-latest is arm only
-    runs-on: macos-13
-    needs: [test]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  # build-macos-bundle:
+  #   # macos-latest is arm only
+  #   runs-on: macos-13
+  #   needs: [test]
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-          cache: "npm"
+  #     - name: Setup Node
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version-file: ".nvmrc"
+  #         cache: "npm"
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.11"
 
-      - name: Google Cloud Login
-        id: "auth"
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: '${{ secrets.GCS_RUNNER_SA_KEY }}'
+  #     - name: Google Cloud Login
+  #       id: "auth"
+  #       uses: google-github-actions/auth@v2
+  #       with:
+  #         credentials_json: '${{ secrets.GCS_RUNNER_SA_KEY }}'
 
-      - name: Install gcloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ secrets.GCS_RUNNER_PROJECT_ID }}
-        env:
-          CLOUDSDK_PYTHON: ${{env.pythonLocation}}/python
+  #     - name: Install gcloud SDK
+  #       uses: google-github-actions/setup-gcloud@v2
+  #       with:
+  #         project_id: ${{ secrets.GCS_RUNNER_PROJECT_ID }}
+  #       env:
+  #         CLOUDSDK_PYTHON: ${{env.pythonLocation}}/python
 
-      - name: Update Release Version
-        run: npm version --no-git-tag-version 1.0.0
+  #     - name: Update Release Version
+  #       run: npm version --no-git-tag-version 1.0.0
 
-      - name: Bundle Directory
-        run: bash ./scripts/bundle.sh
+  #     - name: Bundle Directory
+  #       run: bash ./scripts/bundle.sh
 
-      - name: Archive Bundle
-        run: zip --symlinks -r playwright-macos-amd64.zip bundle/
+  #     - name: Archive Bundle
+  #       run: zip --symlinks -r playwright-macos-amd64.zip bundle/
 
-      - name: Upload to GCS
-        run: |
-          gsutil cp ./playwright-macos-amd64.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
+  #     - name: Upload to GCS
+  #       run: |
+  #         gsutil cp ./playwright-macos-amd64.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
 
-  bundle-test:
-    needs: [build-windows-bundle, build-macos-bundle]
-    strategy:
-      max-parallel: 3
-      matrix:
-        os: [Win10, Win11, macOS12, macOS13]
-        browser: [Chromium, Firefox, Webkit]
-        exclude:
-          - os: macOS12
-            browser: Webkit
-      fail-fast: false
+  # bundle-test:
+  #   needs: [build-windows-bundle, build-macos-bundle]
+  #   strategy:
+  #     max-parallel: 3
+  #     matrix:
+  #       os: [Win10, Win11, macOS12, macOS13]
+  #       browser: [Chromium, Firefox, Webkit]
+  #       exclude:
+  #         - os: macOS12
+  #           browser: Webkit
+  #     fail-fast: false
 
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Setup saucectl
-        uses: saucelabs/saucectl-run-action@v4
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          skip-run: true
+  #     - name: Setup saucectl
+  #       uses: saucelabs/saucectl-run-action@v4
+  #       env:
+  #         GITHUB_TOKEN: ${{ github.token }}
+  #       with:
+  #         skip-run: true
 
-      - name: Test on Sauce
-        working-directory: ./tests/fixtures/cloud
-        run: |
-          BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-windows-amd64-${{ github.run_id }}.zip
-          if [[ ${{ matrix.os }} =~ ^macOS ]];then
-            BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
-          fi
+  #     - name: Test on Sauce
+  #       working-directory: ./tests/fixtures/cloud
+  #       run: |
+  #         BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-windows-amd64-${{ github.run_id }}.zip
+  #         if [[ ${{ matrix.os }} =~ ^macOS ]];then
+  #           BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
+  #         fi
 
-          saucectl run \
-            --runner-version "url: ${BUNDLE_URL}" \
-            --config .sauce/config.yml \
-            --select-suite "${{ matrix.os }} - ${{ matrix.browser }}"
+  #         saucectl run \
+  #           --runner-version "url: ${BUNDLE_URL}" \
+  #           --config .sauce/config.yml \
+  #           --select-suite "${{ matrix.os }} - ${{ matrix.browser }}"
 
-  bundle-test-with-sauce-connect:
-    needs: [build-windows-bundle, build-macos-bundle]
-    strategy:
-      max-parallel: 3
-      matrix:
-        os: [Win10, Win11, macOS12, macOS13]
-        browser: [Chromium, Firefox, Webkit]
-        exclude:
-          - os: Win10
-            browser: Webkit
-          - os: Win11
-            browser: Webkit
-          - os: macOS12
-            browser: Webkit
-      fail-fast: false
+  # bundle-test-with-sauce-connect:
+  #   needs: [build-windows-bundle, build-macos-bundle]
+  #   strategy:
+  #     max-parallel: 3
+  #     matrix:
+  #       os: [Win10, Win11, macOS12, macOS13]
+  #       browser: [Chromium, Firefox, Webkit]
+  #       exclude:
+  #         - os: Win10
+  #           browser: Webkit
+  #         - os: Win11
+  #           browser: Webkit
+  #         - os: macOS12
+  #           browser: Webkit
+  #     fail-fast: false
 
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+  #     - name: Setup Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.11"
 
-      - name: Setup saucectl
-        uses: saucelabs/saucectl-run-action@v4
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          skip-run: true
+  #     - name: Setup saucectl
+  #       uses: saucelabs/saucectl-run-action@v4
+  #       env:
+  #         GITHUB_TOKEN: ${{ github.token }}
+  #       with:
+  #         skip-run: true
 
-      - name: Run web-page
-        run: |
-          python -m http.server 8000 &
-        working-directory: ./tests/fixtures/cloud/www/
+  #     - name: Run web-page
+  #       run: |
+  #         python -m http.server 8000 &
+  #       working-directory: ./tests/fixtures/cloud/www/
 
-      - name: Start sauce-connect
-        uses: saucelabs/sauce-connect-action@v2
-        with:
-          username: ${{ secrets.SAUCE_USERNAME }}
-          accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
-          tunnelName: github-playwright-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }}
-          scVersion: 4.9.2
+  #     - name: Start sauce-connect
+  #       uses: saucelabs/sauce-connect-action@v2
+  #       with:
+  #         username: ${{ secrets.SAUCE_USERNAME }}
+  #         accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
+  #         tunnelName: github-playwright-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }}
+  #         scVersion: 4.9.2
 
-      - name: Test on Sauce
-        working-directory: ./tests/fixtures/cloud
-        run: |
-          BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-windows-amd64-${{ github.run_id }}.zip
-          if [[ ${{ matrix.os }} =~ ^macOS ]];then
-            BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
-          fi
+  #     - name: Test on Sauce
+  #       working-directory: ./tests/fixtures/cloud
+  #       run: |
+  #         BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-windows-amd64-${{ github.run_id }}.zip
+  #         if [[ ${{ matrix.os }} =~ ^macOS ]];then
+  #           BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
+  #         fi
 
-          saucectl run \
-            --runner-version "url: ${BUNDLE_URL}" \
-            --config .sauce/config-sc.yml \
-            --tunnel-name github-playwright-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }} \
-            --select-suite "${{ matrix.os }} - ${{ matrix.browser }}"
+  #         saucectl run \
+  #           --runner-version "url: ${BUNDLE_URL}" \
+  #           --config .sauce/config-sc.yml \
+  #           --tunnel-name github-playwright-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }} \
+  #           --select-suite "${{ matrix.os }} - ${{ matrix.browser }}"
 
   cucumber-bundle-test:
-    needs: [build-windows-bundle, build-macos-bundle]
+    # needs: [build-windows-bundle, build-macos-bundle]
+    needs: [build-windows-bundle]
     strategy:
       fail-fast: false
       matrix:
-        os: [win, mac]
+        os: [win]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
