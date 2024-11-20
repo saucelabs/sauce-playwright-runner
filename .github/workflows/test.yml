@@ -232,10 +232,10 @@ jobs:
         working-directory: ./tests/fixtures/cloud/cucumber
         run: |
           npm ci --production
-          saucectl run --config .sauce/config_win.yml
+          # saucectl run --config .sauce/config_win.yml
 
           # BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-windows-amd64-${{ github.run_id }}.zip
 
-          # saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-windows-amd64-${{ github.run_id }}.zip" --config .sauce/config_${{ matrix.os }}.yml
+          saucectl run --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-windows-amd64-${{ github.run_id }}.zip" --config .sauce/config_${{ matrix.os }}.yml
         env:
           HUSKY: 0

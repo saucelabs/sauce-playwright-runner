@@ -36,9 +36,10 @@ suites:
         - "json:my-cucumber.json"
 
 npm:
-  dependencies:
-    - "@cucumber/cucumber"
-    - "@saucelabs/cucumber-reporter"
-    - "ts-node"
-    - "typescript"
-    - "pretty-seconds"
+  usePackageLock: true
+  # dependencies:
+  #   - "@cucumber/cucumber"
+  #   - "@saucelabs/cucumber-reporter"
+  #   - "ts-node"
+  #   - "typescript"
+  #   - "pretty-seconds"
