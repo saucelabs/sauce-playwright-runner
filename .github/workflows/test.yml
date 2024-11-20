@@ -16,7 +16,7 @@ concurrency:
 jobs:
   build-windows-bundle:
     runs-on: windows-latest
-    needs: [test]
+    # needs: [test]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
