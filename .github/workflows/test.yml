@@ -234,9 +234,6 @@ jobs:
           npm ci --production
 
           BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-windows-amd64-${{ github.run_id }}.zip
-          if [[ ${{ matrix.os }} = mac ]];then
-            BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
-          fi
 
           saucectl run \
             --runner-version "url: ${BUNDLE_URL}" \
