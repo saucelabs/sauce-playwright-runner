@@ -15,7 +15,6 @@ function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
   const procArgs = [
     cucumberBin,
     ...paths,
-    '--publish-quiet', // Deprecated in 9.4.0. Will be removed in 11.0.0 or later.
     '--force-exit',
     '--require-module',
     'ts-node/register',
@@ -50,20 +49,41 @@ function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
     procArgs.push('-t');
     procArgs.push(tag);
   });
+
+  function parseNewFormat(format: string, assetsDir: string) {
+    // Regex to validate and extract key and value from the new format.
+    // Example: "html":"file://hostname/formatter/report.html"
+    const match = format.match(/^"([^"]+)":"(.+)"$/);
+    if (!match) {
+      return null;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [_, key, value] = match;
+    return `"${key}":"${path.join(assetsDir, value)}"`;
+  }
+
   runCfg.suite.options.format?.forEach((format) => {
     procArgs.push('--format');
+
+    const newFormat = parseNewFormat(format, runCfg.assetsDir);
+    if (newFormat) {
+      return newFormat;
+    }
+
     const opts = format.split(':');
     if (opts.length === 2) {
-      procArgs.push(`${opts[0]}:${path.join(runCfg.assetsDir, opts[1])}`);
-    } else {
-      procArgs.push(format);
+      return `"${opts[0]}":"${path.join(runCfg.assetsDir, opts[1])}"`;
     }
+
+    return `"${format}"`;
   });
+
   if (runCfg.suite.options.parallel) {
     procArgs.push('--parallel');
     procArgs.push(runCfg.suite.options.parallel.toString(10));
   }
 
+  console.log('procArgs: ', procArgs);
   return procArgs;
 }
 
