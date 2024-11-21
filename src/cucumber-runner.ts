@@ -7,7 +7,7 @@ import type { CucumberRunnerConfig } from './types';
 import * as utils from './utils';
 import { NodeContext } from 'sauce-testrunner-utils/lib/types';
 
-function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
+export function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
   const paths: string[] = [];
   runCfg.suite.options.paths.forEach((p) => {
     paths.push(path.join(runCfg.projectPath, p));
@@ -50,32 +50,10 @@ function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
     procArgs.push(tag);
   });
 
-  function parseNewFormat(format: string, assetsDir: string) {
-    // Regex to validate and extract key and value from the new format.
-    // Example: "html":"file://hostname/formatter/report.html"
-    const match = format.match(/^"([^"]+)":"(.+)"$/);
-    if (!match) {
-      return null;
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [_, key, value] = match;
-    return `"${key}":"${path.join(assetsDir, value)}"`;
-  }
-
   runCfg.suite.options.format?.forEach((format) => {
+    const updatedFormat = normalizeFormat(format, runCfg.assetsDir);
     procArgs.push('--format');
-
-    const newFormat = parseNewFormat(format, runCfg.assetsDir);
-    if (newFormat) {
-      return newFormat;
-    }
-
-    const opts = format.split(':');
-    if (opts.length === 2) {
-      return `"${opts[0]}":"${path.join(runCfg.assetsDir, opts[1])}"`;
-    }
-
-    return `"${format}"`;
+    procArgs.push(updatedFormat);
   });
 
   if (runCfg.suite.options.parallel) {
@@ -85,6 +63,35 @@ function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
 
   console.log('procArgs: ', procArgs);
   return procArgs;
+}
+
+/**
+ * Normalizes a Cucumber format string by ensuring it is in the form of `"key":"value"`.
+ *
+ * @param {string} format - The input format string, which can be in various forms:
+ *                          - `"key:value"`
+ *                          - `"key":"value"`
+ *                          - `key:value`
+ * @param {string} assetDir - The asset directory.
+ * @throws {Error} If the input format is invalid (e.g., missing a colon separator).
+ * @returns {string} The normalized format string in the form of `"key":"value"`,
+ *                   with the asset directory prepended to relative paths.
+ *
+ * Example:
+ * Input: `"html:formatter/report.html"`, `"/project/assets"`
+ * Output: `"html":"/project/assets/formatter/report.html"`
+ */
+export function normalizeFormat(format: string, assetDir: string): string {
+  const match = format.match(/^"?([^:]+):"?([^"]+)"?$/);
+  if (!match) {
+    throw new Error(`Invalid format: ${format}`);
+  }
+
+  let [, key, value] = match;
+  key = key.replace(/^"|"$/g, '');
+  value = value.replace(/^"|"$/g, '');
+  const updatedPath = path.join(assetDir, value);
+  return `"${key}":"${updatedPath}"`;
 }
 
 export async function runCucumber(
