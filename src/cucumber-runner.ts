@@ -51,9 +51,8 @@ export function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
   });
 
   runCfg.suite.options.format?.forEach((format) => {
-    const updatedFormat = normalizeFormat(format, runCfg.assetsDir);
     procArgs.push('--format');
-    procArgs.push(updatedFormat);
+    procArgs.push(normalizeFormat(format, runCfg.assetsDir));
   });
 
   if (runCfg.suite.options.parallel) {
@@ -61,7 +60,6 @@ export function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
     procArgs.push(runCfg.suite.options.parallel.toString(10));
   }
 
-  console.log('procArgs: ', procArgs);
   return procArgs;
 }
 
@@ -89,6 +87,7 @@ export function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
  *   Output: `"progress-bar"`
  */
 export function normalizeFormat(format: string, assetDir: string): string {
+  // Checks if the format is structured; if not, returns it unchanged.
   const match = format.match(/^"?([^:]+):"?([^"]+)"?$/);
   if (!match) {
     return format;
