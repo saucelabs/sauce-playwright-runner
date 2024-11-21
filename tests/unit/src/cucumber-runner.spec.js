@@ -54,12 +54,8 @@ describe('normalizeFormat', () => {
     );
   });
 
-  it('should throw an error for invalid formats', () => {
-    expect(() =>
-      normalizeFormat(`html-formatter/report.html`, assetDir),
-    ).toThrow('Invalid format: html-formatter/report.html');
-    expect(() =>
-      normalizeFormat(`"htmlformatter/report.html"`, assetDir),
-    ).toThrow('Invalid format: "htmlformatter/report.html"');
+  it('should return simple strings as-is', () => {
+    expect(normalizeFormat(`"progress-bar"`, assetDir)).toBe('"progress-bar"');
+    expect(normalizeFormat(`progress-bar`, assetDir)).toBe('progress-bar');
   });
 });

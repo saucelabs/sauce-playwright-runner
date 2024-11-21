@@ -66,25 +66,32 @@ export function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
 }
 
 /**
- * Normalizes a Cucumber format string by ensuring it is in the form of `"key":"value"`.
+ * Normalizes a Cucumber-js format string.
  *
- * @param {string} format - The input format string, which can be in various forms:
+ * For structured inputs (`key:value` or `"key:value"`), returns a string in the
+ * form `"key":"value"`, with the asset directory prepended to relative paths.
+ * For simple inputs (e.g., `progress-bar`), returns the input as-is.
+ *
+ * @param {string} format - The input format string. Examples include:
  *                          - `"key:value"`
  *                          - `"key":"value"`
  *                          - `key:value`
- * @param {string} assetDir - The asset directory.
- * @throws {Error} If the input format is invalid (e.g., missing a colon separator).
- * @returns {string} The normalized format string in the form of `"key":"value"`,
- *                   with the asset directory prepended to relative paths.
+ *                          - `progress-bar`
+ * @param {string} assetDir - The directory to prepend to the value for relative paths.
+ * @returns {string} The normalized format string. For structured inputs, it returns
+ *                   a string in the form `"key":"value"`. For simple inputs, it
+ *                   returns the input unchanged.
  *
  * Example:
- * Input: `"html:formatter/report.html"`, `"/project/assets"`
- * Output: `"html":"/project/assets/formatter/report.html"`
+ * - Input: `"html":"formatter/report.html"`, `"/project/assets"`
+ *   Output: `"html":"/project/assets/formatter/report.html"`
+ * - Input: `"progress-bar"`, `"/project/assets"`
+ *   Output: `"progress-bar"`
  */
 export function normalizeFormat(format: string, assetDir: string): string {
   const match = format.match(/^"?([^:]+):"?([^"]+)"?$/);
   if (!match) {
-    throw new Error(`Invalid format: ${format}`);
+    return format;
   }
 
   let [, key, value] = match;
