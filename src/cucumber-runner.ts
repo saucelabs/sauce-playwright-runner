@@ -68,13 +68,13 @@ export function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
  *
  * For structured inputs (`key:value` or `"key:value"`), returns a string in the
  * form `"key":"value"`, with the asset directory prepended to relative paths.
- * For simple inputs (e.g., `progress-bar`), returns the input as-is.
+ * For simple inputs (e.g., `usage`), returns the input as-is.
  *
  * @param {string} format - The input format string. Examples include:
  *                          - `"key:value"`
  *                          - `"key":"value"`
  *                          - `key:value`
- *                          - `progress-bar`
+ *                          - `usage`
  * @param {string} assetDir - The directory to prepend to the value for relative paths.
  * @returns {string} The normalized format string. For structured inputs, it returns
  *                   a string in the form `"key":"value"`. For simple inputs, it
@@ -83,8 +83,8 @@ export function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
  * Example:
  * - Input: `"html":"formatter/report.html"`, `"/project/assets"`
  *   Output: `"html":"/project/assets/formatter/report.html"`
- * - Input: `"progress-bar"`, `"/project/assets"`
- *   Output: `"progress-bar"`
+ * - Input: `"usage"`, `"/project/assets"`
+ *   Output: `"usage"`
  */
 export function normalizeFormat(format: string, assetDir: string): string {
   // Checks if the format is structured; if not, returns it unchanged.
@@ -94,8 +94,8 @@ export function normalizeFormat(format: string, assetDir: string): string {
   }
 
   let [, key, value] = match;
-  key = key.replace(/^"|"$/g, '');
-  value = value.replace(/^"|"$/g, '');
+  key = key.replaceAll('"', '');
+  value = value.replaceAll('"', '');
   const updatedPath = path.join(assetDir, value);
   return `"${key}":"${updatedPath}"`;
 }

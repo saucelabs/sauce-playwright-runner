@@ -55,7 +55,7 @@ describe('normalizeFormat', () => {
   });
 
   it('should return simple strings as-is', () => {
-    expect(normalizeFormat(`"progress-bar"`, assetDir)).toBe('"progress-bar"');
-    expect(normalizeFormat(`progress-bar`, assetDir)).toBe('progress-bar');
+    expect(normalizeFormat(`"usage"`, assetDir)).toBe('"usage"');
+    expect(normalizeFormat(`usage`, assetDir)).toBe('usage');
   });
 });
