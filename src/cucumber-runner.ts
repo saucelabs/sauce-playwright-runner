@@ -104,8 +104,10 @@ export function normalizeFormat(format: string, assetDir: string): string {
   let [, key, value] = match;
   key = key.replaceAll('"', '');
   value = value.replaceAll('"', '');
-  const updatedPath = path.join(assetDir, value);
-  return `"${key}":"${updatedPath}"`;
+  if (value.startsWith('file://')) {
+    return `"${key}":"${value}"`;
+  }
+  return `"${key}":"${path.join(assetDir, value)}"`;
 }
 
 export async function runCucumber(

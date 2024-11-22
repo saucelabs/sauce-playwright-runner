@@ -36,22 +36,28 @@ describe('buildArgs', () => {
 describe('normalizeFormat', () => {
   const assetDir = '/project/assets';
 
-  it('should normalize formats with both quoted format type and path', () => {
+  it('should normalize format with both quoted format type and path', () => {
     expect(normalizeFormat(`"html":"formatter/report.html"`, assetDir)).toBe(
       `"html":"/project/assets/formatter/report.html"`,
     );
   });
 
-  it('should normalize formats with only one pair of quote', () => {
+  it('should normalize format with only one pair of quote', () => {
     expect(normalizeFormat(`"html:formatter/report.html"`, assetDir)).toBe(
       `"html":"/project/assets/formatter/report.html"`,
     );
   });
 
-  it('should normalize formats with no quotes', () => {
+  it('should normalize format with no quotes', () => {
     expect(normalizeFormat(`html:formatter/report.html`, assetDir)).toBe(
       `"html":"/project/assets/formatter/report.html"`,
     );
+  });
+
+  it('should normalize format with absolute path', () => {
+    expect(
+      normalizeFormat(`"html":"file:///tmp/formatter/report.html"`, assetDir),
+    ).toBe(`"html":"file:///tmp/formatter/report.html"`);
   });
 
   it('should return simple strings as-is', () => {
