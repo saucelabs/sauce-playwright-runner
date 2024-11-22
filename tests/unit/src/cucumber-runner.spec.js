@@ -26,7 +26,7 @@ describe('buildArgs', () => {
       '--require-module',
       'ts-node/register',
       '--format',
-      '@saucelabs/cucumber-reporter',
+      '"@saucelabs/cucumber-reporter":"sauce-test-report.json"',
       '--format-options',
       '{"upload":false,"outputFile":"/project/assets/sauce-test-report.json"}',
     ]);
