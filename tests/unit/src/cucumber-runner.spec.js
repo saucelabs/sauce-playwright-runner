@@ -54,9 +54,15 @@ describe('normalizeFormat', () => {
     );
   });
 
-  it('should normalize format with absolute path', () => {
+  it('should normalize formats with absolute path', () => {
     expect(
       normalizeFormat(`"html":"file:///tmp/formatter/report.html"`, assetDir),
+    ).toBe(`"html":"file:///tmp/formatter/report.html"`);
+    expect(
+      normalizeFormat(`"html:file:///tmp/formatter/report.html"`, assetDir),
+    ).toBe(`"html":"file:///tmp/formatter/report.html"`);
+    expect(
+      normalizeFormat(`html:file:///tmp/formatter/report.html`, assetDir),
     ).toBe(`"html":"file:///tmp/formatter/report.html"`);
   });
 
