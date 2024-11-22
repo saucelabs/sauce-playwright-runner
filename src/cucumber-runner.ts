@@ -75,8 +75,11 @@ export function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
  * Normalizes a Cucumber-js format string.
  *
  * For structured inputs (`key:value` or `"key:value"`), returns a string in the
- * form `"key":"value"`, with the asset directory prepended to relative paths.
- * For simple inputs (e.g., `usage`), returns the input as-is.
+ * form `"key":"value"`. If the value starts with `file://`, it is treated as an
+ * absolute path and no asset directory is prepended. Otherwise, the asset
+ * directory is prepended to relative paths.
+ *
+ * For simple inputs (e.g., `usage`), the input is returned unchanged.
  *
  * @param {string} format - The input format string. Examples include:
  *                          - `"key:value"`
@@ -84,13 +87,13 @@ export function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
  *                          - `key:value`
  *                          - `usage`
  * @param {string} assetDir - The directory to prepend to the value for relative paths.
- * @returns {string} The normalized format string. For structured inputs, it returns
- *                   a string in the form `"key":"value"`. For simple inputs, it
- *                   returns the input unchanged.
+ * @returns {string} The normalized format string.
  *
  * Example:
  * - Input: `"html":"formatter/report.html"`, `"/project/assets"`
  *   Output: `"html":"/project/assets/formatter/report.html"`
+ * - Input: `"html":"file://formatter/report.html"`, `"/project/assets"`
+ *   Output: `"html":"file://formatter/report.html"`
  * - Input: `"usage"`, `"/project/assets"`
  *   Output: `"usage"`
  */
