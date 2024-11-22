@@ -18,7 +18,7 @@ export function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
     '--force-exit',
     '--require-module',
     'ts-node/register',
-    // NOTE: The Cucumber formatter (--format) setting uses the "type:path" format.
+    // NOTE: The Cucumber formatter (--format) setting uses the "type":"path" format.
     // If the "path" is not provided, the output defaults to stdout.
     // Cucumber supports only one stdout formatter; if multiple are specified,
     // it will prioritize the last one listed.
