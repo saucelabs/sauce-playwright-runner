@@ -19,7 +19,7 @@ export function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
     '--require-module',
     'ts-node/register',
     '--format',
-    '@saucelabs/cucumber-reporter',
+    '"@saucelabs/cucumber-reporter":"sauce-test-report.json"',
     '--format-options',
     JSON.stringify(buildFormatOption(runCfg)),
   ];
