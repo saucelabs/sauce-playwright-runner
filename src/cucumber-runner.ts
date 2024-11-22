@@ -18,11 +18,14 @@ export function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
     '--force-exit',
     '--require-module',
     'ts-node/register',
-    // NOTE: Cucumber only supports a single stdout formatter. If multiple stdout
-    // formatters are specified, Cucumber will use the last one provided.
-    // To ensure the sauce test report file is always generated, redirect the output to
-    // sauce-test-report.json using the --format argument and specify the outputFile
-    // in --format-options simultaneously.
+    // NOTE: The Cucumber formatter (--format) setting follows the "type":"path" format.
+    // If the "path" is missing, the output defaults to stdout.
+    // Cucumber supports only one stdout formatter, and if multiple are specified,
+    // it will use the last one provided.
+    // To ensure the Sauce test report file is always generated,
+    // set the output to a file using the --format option,
+    // and use the --format-options flag to specify the outputFile.
+    // Both fields must be configured for the file to be created reliably.
     '--format',
     '"@saucelabs/cucumber-reporter":"sauce-test-report.json"',
     '--format-options',
