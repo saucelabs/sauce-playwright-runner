@@ -122,10 +122,6 @@ export function normalizeFormat(format: string, assetDir: string): string {
   key = key.replaceAll('"', '');
   value = value.replaceAll('"', '');
 
-  if (value.startsWith('file://')) {
-    return `"${key}":"${value}"`;
-  }
-
   return `"${key}":"${path.join(assetDir, value)}"`;
 }
 
