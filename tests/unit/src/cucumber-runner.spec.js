@@ -66,6 +66,15 @@ describe('normalizeFormat', () => {
     ).toBe(`"html":"file:///tmp/formatter/report.html"`);
   });
 
+  it('should normalize format with file path type', () => {
+    expect(
+      normalizeFormat(
+        `"file://formatter/implementation":"report.json"`,
+        assetDir,
+      ),
+    ).toBe(`"file://formatter/implementation":"/project/assets/report.json"`);
+  });
+
   it('should return simple strings as-is', () => {
     expect(normalizeFormat(`"usage"`, assetDir)).toBe('"usage"');
     expect(normalizeFormat(`usage`, assetDir)).toBe('usage');

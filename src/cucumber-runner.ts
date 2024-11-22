@@ -74,32 +74,46 @@ export function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
 /**
  * Normalizes a Cucumber-js format string.
  *
- * For structured inputs (`key:value` or `"key:value"`), returns a string in the
- * form `"key":"value"`. If the value starts with `file://`, it is treated as an
- * absolute path and no asset directory is prepended. Otherwise, the asset
- * directory is prepended to relative paths.
+ * For structured inputs (`key:value`, `"key:value"`, or `"key":"value"`), returns a string
+ * in the form `"key":"value"`. If the value starts with `file://`, it is treated as an
+ * absolute path, and no asset directory is prepended. Otherwise, the asset directory
+ * is prepended to relative paths.
  *
- * For simple inputs (e.g., `usage`), the input is returned unchanged.
+ * For simple inputs (e.g., `usage`) or other unstructured formats, the input is returned unchanged.
  *
  * @param {string} format - The input format string. Examples include:
  *                          - `"key:value"`
  *                          - `"key":"value"`
  *                          - `key:value`
  *                          - `usage`
+ *                          - `"file://implementation":"output_file"`
  * @param {string} assetDir - The directory to prepend to the value for relative paths.
  * @returns {string} The normalized format string.
  *
- * Example:
- * - Input: `"html":"formatter/report.html"`, `"/project/assets"`
+ * Examples:
+ * - Input: `"html:formatter/report.html"`, `"/project/assets"`
  *   Output: `"html":"/project/assets/formatter/report.html"`
  * - Input: `"html":"file://formatter/report.html"`, `"/project/assets"`
  *   Output: `"html":"file://formatter/report.html"`
  * - Input: `"usage"`, `"/project/assets"`
  *   Output: `"usage"`
+ * - Input: `"file://implementation":"output_file"`, `"/project/assets"`
+ *   Output: `"file://implementation":"/project/assets/output_file"`
  */
 export function normalizeFormat(format: string, assetDir: string): string {
-  // Checks if the format is structured; if not, returns it unchanged.
-  const match = format.match(/^"?([^:]+):"?([^"]+)"?$/);
+  // Try to match structured inputs in the format key:value, "key:value", or "key":"value".
+  let match = format.match(/^"?([^:]+):"?([^"]+)"?$/);
+
+  if (!match) {
+    // Check if the format uses a file path starting with "file://".
+    if (!format.startsWith('"file://')) {
+      return format;
+    }
+
+    // Match file-based structured inputs like "file://implementation":"output_file".
+    match = format.match(/^"([^"]+)":"([^"]+)"$/);
+  }
+
   if (!match) {
     return format;
   }
@@ -107,9 +121,11 @@ export function normalizeFormat(format: string, assetDir: string): string {
   let [, key, value] = match;
   key = key.replaceAll('"', '');
   value = value.replaceAll('"', '');
+
   if (value.startsWith('file://')) {
     return `"${key}":"${value}"`;
   }
+
   return `"${key}":"${path.join(assetDir, value)}"`;
 }
 
