@@ -29,7 +29,7 @@ describe('buildArgs', () => {
       '--require-module',
       'ts-node/register',
       '--format',
-      '"@saucelabs/cucumber-reporter":"sauce-test-report.json"',
+      '"@saucelabs/cucumber-reporter":"cucumber.log"',
       '--format-options',
       '{"upload":false,"build":"mybuild","outputFile":"/project/assets/sauce-test-report.json"}',
     ]);
