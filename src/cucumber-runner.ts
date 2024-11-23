@@ -74,12 +74,10 @@ export function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
 /**
  * Normalizes a Cucumber-js format string.
  *
- * For structured inputs (`key:value`, `"key:value"`, or `"key":"value"`), returns a string
- * in the form `"key":"value"`. If the value starts with `file://`, it is treated as an
- * absolute path, and no asset directory is prepended. Otherwise, the asset directory
- * is prepended to relative paths.
- *
- * For simple inputs (e.g., `usage`) or other unstructured formats, the input is returned unchanged.
+ * This function handles structured inputs in the format `key:value`, `"key:value"`,
+ * or `"key":"value"` and returns a normalized string in the form `"key":"value"`.
+ * For simple inputs (e.g., `usage`) or unstructured formats, the function returns the
+ * input unchanged.
  *
  * @param {string} format - The input format string. Examples include:
  *                          - `"key:value"`
@@ -93,19 +91,16 @@ export function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
  * Examples:
  * - Input: `"html:formatter/report.html"`, `"/project/assets"`
  *   Output: `"html":"/project/assets/formatter/report.html"`
- * - Input: `"html":"file://formatter/report.html"`, `"/project/assets"`
- *   Output: `"html":"file://formatter/report.html"`
  * - Input: `"usage"`, `"/project/assets"`
  *   Output: `"usage"`
  * - Input: `"file://implementation":"output_file"`, `"/project/assets"`
- *   Output: `"file://implementation":"/project/assets/output_file"`
+ *   Output: `"file://implementation":"output_file"` (unchanged)
  */
 export function normalizeFormat(format: string, assetDir: string): string {
   // Try to match structured inputs in the format key:value, "key:value", or "key":"value".
   let match = format.match(/^"?([^:]+):"?([^"]+)"?$/);
 
   if (!match) {
-    // Check if the format uses a file path starting with "file://".
     if (!format.startsWith('"file://')) {
       return format;
     }
