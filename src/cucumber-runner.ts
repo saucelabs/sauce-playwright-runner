@@ -204,5 +204,6 @@ function buildFormatOption(cfg: CucumberRunnerConfig) {
     build: cfg.sauce.metadata?.build,
     tags: cfg.sauce.metadata?.tags,
     outputFile: path.join(cfg.assetsDir, 'sauce-test-report.json'),
+    ...cfg.suite.options.formatOptions,
   };
 }
