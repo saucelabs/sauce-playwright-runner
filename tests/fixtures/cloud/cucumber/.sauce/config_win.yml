@@ -10,7 +10,7 @@ sauce:
 defaults:
   timeout: 5m
 playwright:
-  version: 1.43.1
+  version: 1.48.2
 rootDir: ./
 suites:
   - name: Cucumber - Win10 - Chromium
@@ -36,9 +36,10 @@ suites:
         - "json:my-cucumber.json"
 
 npm:
-  dependencies:
-    - "@cucumber/cucumber"
-    - "@saucelabs/cucumber-reporter"
-    - "ts-node"
-    - "typescript"
-    - "pretty-seconds"
+  usePackageLock: true
+  # dependencies:
+  #   - "@cucumber/cucumber"
+  #   - "@saucelabs/cucumber-reporter"
+  #   - "ts-node"
+  #   - "typescript"
+  #   - "pretty-seconds"

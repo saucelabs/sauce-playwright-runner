@@ -1,7 +1,7 @@
 {
   "dependencies": {
-    "@cucumber/cucumber": "9.6.0",
-    "@saucelabs/cucumber-reporter": "^1.2.0",
+    "@cucumber/cucumber": "11.1.0",
+    "@playwright/test": "1.48.2",
     "pretty-seconds": "^3.0.1",
     "ts-node": "10.9.2",
     "typescript": "^5.6.3"
