@@ -7,7 +7,7 @@ import type { CucumberRunnerConfig } from './types';
 import * as utils from './utils';
 import { NodeContext } from 'sauce-testrunner-utils/lib/types';
 
-function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
+export function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
   const paths: string[] = [];
   runCfg.suite.options.paths.forEach((p) => {
     paths.push(path.join(runCfg.projectPath, p));
@@ -15,12 +15,24 @@ function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
   const procArgs = [
     cucumberBin,
     ...paths,
-    '--publish-quiet', // Deprecated in 9.4.0. Will be removed in 11.0.0 or later.
     '--force-exit',
     '--require-module',
     'ts-node/register',
+    // NOTE: The Cucumber formatter (--format) option uses the "type":"path" format.
+    // If the "path" is not specified, the output defaults to stdout.
+    // Cucumber supports only one stdout formatter; if multiple are specified,
+    // the last one listed takes precedence.
+    //
+    // To ensure the Sauce test report file is reliably generated and not overridden
+    // by a user-specified stdout formatter, configure the following:
+    // 1. In the --format option, set the output to a file (e.g., cucumber.log) to
+    //    avoid writing to stdout.
+    // 2. Use the --format-options flag to explicitly specify the outputFile
+    //    (e.g., sauce-test-report.json).
+    //
+    // Both settings must be configured correctly to ensure the Sauce test report file is generated.
     '--format',
-    '@saucelabs/cucumber-reporter',
+    '"@saucelabs/cucumber-reporter":"cucumber.log"',
     '--format-options',
     JSON.stringify(buildFormatOption(runCfg)),
   ];
@@ -50,21 +62,76 @@ function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
     procArgs.push('-t');
     procArgs.push(tag);
   });
+
   runCfg.suite.options.format?.forEach((format) => {
     procArgs.push('--format');
-    const opts = format.split(':');
-    if (opts.length === 2) {
-      procArgs.push(`${opts[0]}:${path.join(runCfg.assetsDir, opts[1])}`);
-    } else {
-      procArgs.push(format);
-    }
+    procArgs.push(normalizeFormat(format, runCfg.assetsDir));
   });
+
   if (runCfg.suite.options.parallel) {
     procArgs.push('--parallel');
     procArgs.push(runCfg.suite.options.parallel.toString(10));
   }
 
   return procArgs;
+}
+
+/**
+ * Normalizes a Cucumber-js format string.
+ *
+ * This function handles structured inputs in the format `key:value`, `"key:value"`,
+ * or `"key":"value"` and returns a normalized string in the form `"key":"value"`.
+ * For simple inputs (e.g., `usage`) or unstructured formats, the function returns the
+ * input unchanged.
+ *
+ * If the input starts with `file://`, an error is thrown to indicate an invalid format.
+ *
+ * @param {string} format - The input format string. Examples include:
+ *                          - `"key:value"`
+ *                          - `"key":"value"`
+ *                          - `key:value`
+ *                          - `usage`
+ *                          - `"file://implementation":"output_file"`
+ * @param {string} assetDir - The directory to prepend to the value for relative paths.
+ * @returns {string} The normalized format string.
+ *
+ * Examples:
+ * - Input: `"html:formatter/report.html"`, `"/project/assets"`
+ *   Output: `"html":"/project/assets/formatter/report.html"`
+ * - Input: `"usage"`, `"/project/assets"`
+ *   Output: `"usage"`
+ * - Input: `"file://implementation":"output_file"`, `"/project/assets"`
+ *   Output: `"file://implementation":"output_file"` (unchanged)
+ */
+export function normalizeFormat(format: string, assetDir: string): string {
+  // Formats starting with file:// are not supported by the current implementation.
+  // Restrict users from using this format.
+  if (format.startsWith('file://')) {
+    throw new Error(
+      `Ambiguous colon usage detected. The provided format "${format}" is not allowed.`,
+    );
+  }
+  // Try to match structured inputs in the format key:value, "key:value", or "key":"value".
+  let match = format.match(/^"?([^:]+):"?([^"]+)"?$/);
+
+  if (!match) {
+    if (!format.startsWith('"file://')) {
+      return format;
+    }
+
+    // Match file-based structured inputs like "file://implementation":"output_file".
+    match = format.match(/^"([^"]+)":"([^"]+)"$/);
+  }
+
+  if (!match) {
+    return format;
+  }
+
+  let [, key, value] = match;
+  key = key.replaceAll('"', '');
+  value = value.replaceAll('"', '');
+
+  return `"${key}":"${path.join(assetDir, value)}"`;
 }
 
 export async function runCucumber(
@@ -142,9 +209,7 @@ export async function runCucumber(
 function buildFormatOption(cfg: CucumberRunnerConfig) {
   return {
     upload: false,
-    suiteName: cfg.suite.name,
-    build: cfg.sauce.metadata?.build,
-    tags: cfg.sauce.metadata?.tags,
     outputFile: path.join(cfg.assetsDir, 'sauce-test-report.json'),
+    ...cfg.suite.options.formatOptions,
   };
 }
