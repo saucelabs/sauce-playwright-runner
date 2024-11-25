@@ -31,12 +31,12 @@
   },
   "homepage": "https://github.com/saucelabs/sauce-playwright-runner",
   "dependencies": {
-    "@playwright/test": "1.48.2",
+    "@playwright/test": "1.49.0",
     "@saucelabs/playwright-reporter": "1.5.0",
     "@saucelabs/testcomposer": "3.0.2",
     "dotenv": "16.4.5",
     "lodash": "4.17.21",
-    "playwright": "1.48.2",
+    "playwright": "1.49.0",
     "sauce-testrunner-utils": "3.3.0",
     "xml-js": "1.6.11"
   },
