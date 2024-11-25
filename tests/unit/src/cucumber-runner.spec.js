@@ -14,7 +14,7 @@ describe('buildArgs', () => {
         options: {
           paths: ['features/test.feature'],
           formatOptions: {
-            build: 'mybuild',
+            myOption: 'test',
           },
         },
       },
@@ -31,7 +31,7 @@ describe('buildArgs', () => {
       '--format',
       '"@saucelabs/cucumber-reporter":"cucumber.log"',
       '--format-options',
-      '{"upload":false,"build":"mybuild","outputFile":"/project/assets/sauce-test-report.json"}',
+      '{"upload":false,"outputFile":"/project/assets/sauce-test-report.json","myOption":"test"}',
     ]);
   });
 });

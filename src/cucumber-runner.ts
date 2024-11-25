@@ -209,9 +209,6 @@ export async function runCucumber(
 function buildFormatOption(cfg: CucumberRunnerConfig) {
   return {
     upload: false,
-    suiteName: cfg.suite.name,
-    build: cfg.sauce.metadata?.build,
-    tags: cfg.sauce.metadata?.tags,
     outputFile: path.join(cfg.assetsDir, 'sauce-test-report.json'),
     ...cfg.suite.options.formatOptions,
   };
