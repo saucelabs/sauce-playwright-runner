@@ -69,7 +69,7 @@ describe('normalizeFormat', () => {
   it('should throw an error for an invalid file path type', () => {
     expect(() => {
       normalizeFormat(`file://formatter/implementation:report.json`, assetDir);
-    }).toThrow('Invalid format setting detected');
+    }).toThrow('Ambiguous colon usage detected');
   });
 
   it('should return simple strings as-is', () => {

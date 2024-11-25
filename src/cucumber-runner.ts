@@ -108,7 +108,7 @@ export function normalizeFormat(format: string, assetDir: string): string {
   // Restrict users from using this format.
   if (format.startsWith('file://')) {
     throw new Error(
-      `Invalid format setting detected. The provided format "${format}" is not allowed.`,
+      `Ambiguous colon usage detected. The provided format "${format}" is not allowed.`,
     );
   }
   // Try to match structured inputs in the format key:value, "key:value", or "key":"value".
