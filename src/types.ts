@@ -101,7 +101,7 @@ export interface CucumberSuite {
     import?: string[];
     tags?: string[];
     format?: string[];
-    formatOptions?: object;
+    formatOptions?: { [key: string]: string };
     parallel?: number;
     paths: string[];
   };
