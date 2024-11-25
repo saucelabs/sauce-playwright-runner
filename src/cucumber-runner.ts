@@ -84,6 +84,8 @@ export function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
  * For simple inputs (e.g., `usage`) or unstructured formats, the function returns the
  * input unchanged.
  *
+ * If the input starts with `file://`, an error is thrown to indicate an invalid format.
+ *
  * @param {string} format - The input format string. Examples include:
  *                          - `"key:value"`
  *                          - `"key":"value"`
@@ -102,6 +104,13 @@ export function buildArgs(runCfg: CucumberRunnerConfig, cucumberBin: string) {
  *   Output: `"file://implementation":"output_file"` (unchanged)
  */
 export function normalizeFormat(format: string, assetDir: string): string {
+  // Formats starting with file:// are not supported by the current implementation.
+  // Restrict users from using this format.
+  if (format.startsWith('file://')) {
+    throw new Error(
+      `Invalid format setting detected. The provided format "${format}" is not allowed.`,
+    );
+  }
   // Try to match structured inputs in the format key:value, "key:value", or "key":"value".
   let match = format.match(/^"?([^:]+):"?([^"]+)"?$/);
 
