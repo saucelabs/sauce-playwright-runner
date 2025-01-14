@@ -350,6 +350,7 @@ async function runPlaywright(
     SAUCE_WEB_ASSETS_DIR: runCfg.webAssetsDir,
   };
 
+  console.log('Setting environment variables.');
   utils.setEnvironmentVariables(env);
 
   // Define node/npm path for execution
@@ -374,6 +375,7 @@ async function runPlaywright(
     return false;
   }
 
+  console.log('Launching Playwright');
   const playwrightProc = spawn(nodeBin, procArgs, {
     stdio: 'inherit',
     cwd: runCfg.projectPath,
@@ -397,6 +399,7 @@ async function runPlaywright(
   });
 
   try {
+    console.log('Waiting for Playwright to finish...');
     return await Promise.race([timeoutPromise, playwrightPromise]);
   } catch (e) {
     console.error(`Failed to run Playwright: ${e}`);
