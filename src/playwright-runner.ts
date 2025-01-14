@@ -277,6 +277,7 @@ async function runPlaywright(
 
   // Copy our runner's playwright config to a custom location in order to
   // preserve the customer's config which we may want to load in the future
+  console.log('Copying Playwright config file.');
   const configFileName = (await utils.isEsmProject(runCfg.projectPath))
     ? 'sauce.config.mjs'
     : 'sauce.config.cjs';
@@ -288,6 +289,7 @@ async function runPlaywright(
     config: configFile,
   };
 
+  console.log('Constructing Playwright command arguments.');
   const playwrightBin = path.join(
     __dirname,
     '..',
@@ -368,6 +370,7 @@ async function runPlaywright(
   };
 
   // runCfg.path must be set for prepareNpmEnv to find node_modules. :(
+  console.log('Preparing NPM environment.');
   await prepareNpmEnv(runCfg, nodeCtx);
 
   // Run suite preExecs

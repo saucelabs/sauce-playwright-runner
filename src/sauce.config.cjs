@@ -1,3 +1,5 @@
+console.log('Top of sauce.config.cjs');
+
 const process = require('process');
 const _ = require('lodash');
 const fs = require('fs');
