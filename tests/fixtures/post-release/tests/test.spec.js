@@ -16,7 +16,7 @@
 const { test, expect } = require('@playwright/test');
 const prettySeconds = require('pretty-seconds');
 
-test('is a basic test with the page', async ({ page }) => {
+test('is a basic test with the page @tagged', async ({ page }) => {
   await page.goto('https://playwright.dev/');
   expect(prettySeconds(80)).toBe('1 minute and 20 seconds');
   expect(await page.innerText('.navbar__title')).toBe('Playwright');
