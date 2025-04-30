@@ -1,3 +1,5 @@
+console.log('Top of sauce.config.cjs');
+
 const process = require('process');
 const _ = require('lodash');
 const fs = require('fs');
@@ -13,6 +15,7 @@ for (const file of configFiles) {
   if (fs.existsSync(file)) {
     try {
       userConfig = require(file);
+      console.log('User config file loaded...');
       // it should put config just under root level to get it work with playwright.config.ts
       // there is no such issue with playwright.config.js
       if (userConfig.default) {
@@ -90,4 +93,5 @@ function arrMerger(objValue, srcValue) {
   }
 }
 
+console.log('Config merged!');
 module.exports = _.mergeWith(userConfig, overrides, arrMerger);
