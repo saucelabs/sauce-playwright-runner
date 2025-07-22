@@ -53,3 +53,14 @@ jobs:
             This PR was automatically generated to update dependencies to the latest version.
           branch: chore/monthly-dependency-update-${{ steps.date.outputs.year_month }}
           delete-branch: true
+
+      - name: Notify Slack about PR
+        if: steps.git-check.outputs.framework_update == 'true'
+        run: |
+          PR_TITLE="chore: Monthly npm dependency update: $FRAMEWORK_NAME"
+          PR_URL="https://github.com/${{ github.repository }}/pulls"
+          curl -X POST -H 'Content-type: application/json' --data "{
+            \"text\": \"🚀 A new pull request for $FRAMEWORK_NAME runner has been created: *${PR_TITLE}*.\n<${PR_URL}|View Pull Requests>\"
+          }" $SLACK_WEBHOOK_URL
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
