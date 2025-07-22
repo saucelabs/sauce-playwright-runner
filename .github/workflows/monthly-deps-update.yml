@@ -39,6 +39,7 @@ jobs:
           fi
 
       - name: Get year and month
+        if: steps.git-check.outputs.framework_update == 'true'
         id: date
         run: echo "year_month=$(date +'%Y-%m')" >> $GITHUB_OUTPUT
 
