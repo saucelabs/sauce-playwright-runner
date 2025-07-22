@@ -30,7 +30,7 @@ jobs:
         run: |
           npm install -g npm-check-updates
           if ncu $FRAMEWORK_NAME | tee /tmp/framework-update.txt | grep -q "^\s*$FRAMEWORK_NAME"; then
-            npx --yes npm-check-updates -u
+            ncu -u
             npm install
             echo "framework_update=true" >> $GITHUB_OUTPUT
           else
