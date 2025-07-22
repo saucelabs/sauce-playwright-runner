@@ -43,7 +43,6 @@
   "devDependencies": {
     "@eslint/js": "^9.31.0",
     "@tsconfig/node22": "^22.0.2",
-    "@types/eslint__js": "^9.14.0",
     "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.20",
     "@types/node": "^24.0.15",
