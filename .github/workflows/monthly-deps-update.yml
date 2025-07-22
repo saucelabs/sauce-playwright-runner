@@ -1,0 +1,55 @@
+name: Monthly Dependency Update
+
+on:
+  schedule:
+    - cron: '0 9 1 * *'
+  workflow_dispatch:
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+    name: Monthly dependency update
+    env:
+      FRAMEWORK_NAME: playwright
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          npm install -g npm-check-updates
+          if ncu $FRAMEWORK_NAME | tee /tmp/framework-update.txt | grep -q "^\s*$FRAMEWORK_NAME"; then
+            npx --yes npm-check-updates -u
+            npm install
+            echo "framework_update=true" >> $GITHUB_OUTPUT
+          else
+            echo "No $FRAMEWORK_NAME update"
+            echo "framework_update=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get year and month
+        id: date
+        run: echo "year_month=$(date +'%Y-%m')" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        if: steps.git-check.outputs.framework_update == 'true' 
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: monthly dependency update'
+          title: 'chore: Monthly npm dependency update'
+          body: |
+            This PR was automatically generated to update dependencies to the latest version.
+          branch: chore/monthly-dependency-update-${{ steps.date.outputs.year_month }}
+          delete-branch: true
