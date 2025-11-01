@@ -31,23 +31,23 @@
   },
   "homepage": "https://github.com/saucelabs/sauce-playwright-runner",
   "dependencies": {
-    "@playwright/test": "1.55.1",
+    "@playwright/test": "1.56.1",
     "@saucelabs/playwright-reporter": "1.6.0",
     "@saucelabs/testcomposer": "3.0.2",
     "dotenv": "17.2.3",
     "lodash": "4.17.21",
-    "playwright": "1.55.1",
+    "playwright": "1.56.1",
     "sauce-testrunner-utils": "3.3.0",
     "xml-js": "1.6.11"
   },
   "devDependencies": {
-    "@eslint/js": "^9.36.0",
+    "@eslint/js": "^9.39.0",
     "@tsconfig/node22": "^22.0.2",
     "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.20",
-    "@types/node": "^24.6.1",
+    "@types/node": "^24.9.2",
     "@types/shelljs": "^0.8.17",
-    "eslint": "^9.36.0",
+    "eslint": "^9.39.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jest": "^29.0.1",
     "eslint-plugin-prettier": "^5.5.4",
@@ -58,8 +58,8 @@
     "prettier": "^3.6.2",
     "pretty-quick": "^4.2.2",
     "release-it": "^19.0.5",
-    "ts-jest": "^29.4.4",
+    "ts-jest": "^29.4.5",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.45.0"
+    "typescript-eslint": "^8.46.2"
   }
 }
