@@ -9,7 +9,7 @@ sauce:
     build: "$BUILD_ID"
 rootDir: .
 playwright:
-  version: 1.44.0
+  version: 1.52.0
 suites:
   - name: "default"
     testMatch:
