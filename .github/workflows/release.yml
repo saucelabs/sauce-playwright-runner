@@ -180,7 +180,7 @@ jobs:
 
   release-macos-bundle:
     # macos-latest is arm only
-    runs-on: macos-15-intel
+    runs-on: macos-15
     needs: [create-release-draft]
     steps:
       - name: Find Matching Draft Tag

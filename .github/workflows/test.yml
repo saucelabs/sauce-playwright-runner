@@ -143,7 +143,7 @@ jobs:
 
   build-macos-bundle:
     # macos-latest is arm only
-    runs-on: macos-15-intel
+    runs-on: macos-15
     needs: [test]
     steps:
       - name: Checkout
@@ -191,7 +191,7 @@ jobs:
     strategy:
       max-parallel: 3
       matrix:
-        os: [Win10, Win11, macOS12, macOS13]
+        os: [Win10, Win11, macOS12, macOS13,macOS15]
         browser: [Chromium, Firefox, Webkit]
         exclude:
           - os: macOS12
@@ -228,7 +228,7 @@ jobs:
     strategy:
       max-parallel: 3
       matrix:
-        os: [Win10, Win11, macOS12, macOS13]
+        os: [Win10, Win11, macOS12, macOS13, macOS15]
         browser: [Chromium, Firefox, Webkit]
         exclude:
           - os: Win10
