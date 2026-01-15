@@ -17,6 +17,6 @@ const { test, expect } = require('@playwright/test');
 
 test('locale is being set from config', async ({ page }) => {
   await page.goto('https://duckduckgo.com/?q=saucelabs');
-  await expect(page.locator('text=모두')).toBeVisible();
-  await expect(page.locator('text=이미지')).toBeVisible();
+  await expect(page.locator('text="모두"')).toBeVisible();
+  await expect(page.locator('text="이미지"')).toBeVisible();
 });
