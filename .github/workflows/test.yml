@@ -143,7 +143,7 @@ jobs:
 
   build-macos-bundle:
     # macos-latest is arm only
-    runs-on: macos-13
+    runs-on: macos-15-intel
     needs: [test]
     steps:
       - name: Checkout
