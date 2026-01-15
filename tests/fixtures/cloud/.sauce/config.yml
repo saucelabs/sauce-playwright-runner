@@ -7,7 +7,7 @@ sauce:
     build: Github Pre-Release
   region: us-west-1
 playwright:
-  version: 1.57.0
+  version: 1.56.1
 
 npm:
   packages:
