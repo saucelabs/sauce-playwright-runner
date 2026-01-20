@@ -230,7 +230,18 @@ jobs:
 
       - name: Bundle Directory
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        run: bash ./scripts/bundle.macos.sh
+        run: bash ./scripts/bundle.sh
+
+      - name: Install WebKit for macOS
+        if: ${{ steps.prep.outputs.asset_id == '' }}
+        run: |
+          export PLAYWRIGHT_BROWSERS_PATH=$PWD/bundle/Cache/
+          export PLAYWRIGHT_SKIP_BROWSER_GC=1
+          PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac13 npx playwright install webkit
+
+      - name: Archive Bundle
+        if: ${{ steps.prep.outputs.asset_id == '' }}
+        run: zip --symlinks -r playwright-macos-amd64.zip bundle/
 
       - name: List Bundle Contents
         if: ${{ steps.prep.outputs.asset_id == '' }}
