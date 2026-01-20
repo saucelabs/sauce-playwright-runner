@@ -177,20 +177,41 @@ jobs:
         run: npm version --no-git-tag-version 1.0.0
 
       - name: Bundle Directory
-        run: bash ./scripts/bundle.sh
+        run: |
+          echo "[DEBUG-REMOVE] Starting bundle.sh"
+          bash ./scripts/bundle.sh
+          echo "[DEBUG-REMOVE] bundle.sh completed"
+          echo "[DEBUG-REMOVE] Bundle Cache contents:"
+          ls -la bundle/Cache/
 
       - name: Install WebKit for macOS
         run: |
+          echo "[DEBUG-REMOVE] Installing WebKit for macOS"
           export PLAYWRIGHT_BROWSERS_PATH=$PWD/bundle/Cache/
           export PLAYWRIGHT_SKIP_BROWSER_GC=1
+          echo "[DEBUG-REMOVE] PLAYWRIGHT_BROWSERS_PATH=$PLAYWRIGHT_BROWSERS_PATH"
           PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac13 npx playwright install webkit
+          echo "[DEBUG-REMOVE] WebKit installation completed"
+          echo "[DEBUG-REMOVE] Bundle Cache contents after WebKit install:"
+          ls -la bundle/Cache/
 
       - name: Archive Bundle
-        run: zip --symlinks -r playwright-macos-amd64.zip bundle/
+        run: |
+          echo "[DEBUG-REMOVE] Creating archive"
+          zip --symlinks -r playwright-macos-amd64.zip bundle/
+          echo "[DEBUG-REMOVE] Archive created:"
+          ls -la playwright-macos-amd64.zip
 
       - name: Upload to GCS
         run: |
+          echo "[DEBUG-REMOVE] Uploading to GCS"
+          echo "[DEBUG-REMOVE] File to upload:"
+          ls -la ./playwright-macos-amd64.zip
+          echo "[DEBUG-REMOVE] Destination: gs://${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip"
           gsutil cp ./playwright-macos-amd64.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
+          echo "[DEBUG-REMOVE] Upload completed"
+          echo "[DEBUG-REMOVE] Verifying file exists in GCS:"
+          gsutil ls -l gs://${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
 
   bundle-test:
     needs: [build-windows-bundle, build-macos-bundle]
