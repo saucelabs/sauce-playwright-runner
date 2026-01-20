@@ -143,7 +143,7 @@ jobs:
 
   build-macos-bundle:
     # macos-latest is arm only
-    runs-on: macos-15
+    runs-on: macos-15-intel
     needs: [test]
     steps:
       - name: Checkout
@@ -179,6 +179,13 @@ jobs:
       - name: Bundle Directory
         run: bash ./scripts/bundle.sh
 
+      - name: Install WebKit for macOS
+        run: |
+          export PLAYWRIGHT_BROWSERS_PATH=0
+          export PLAYWRIGHT_SKIP_BROWSER_GC=1
+          cd bundle
+          PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac13 npx playwright install webkit
+
       - name: Archive Bundle
         run: zip --symlinks -r playwright-macos-amd64.zip bundle/
 
@@ -191,7 +198,7 @@ jobs:
     strategy:
       max-parallel: 3
       matrix:
-        os: [Win10, Win11, macOS12, macOS13,macOS15]
+        os: [Win10, Win11, macOS12, macOS13]
         browser: [Chromium, Firefox, Webkit]
         exclude:
           - os: macOS12
@@ -228,7 +235,7 @@ jobs:
     strategy:
       max-parallel: 3
       matrix:
-        os: [Win10, Win11, macOS12, macOS13, macOS15]
+        os: [Win10, Win11, macOS12, macOS13]
         browser: [Chromium, Firefox, Webkit]
         exclude:
           - os: Win10
