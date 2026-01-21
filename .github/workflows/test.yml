@@ -128,7 +128,7 @@ jobs:
         run: npm version --no-git-tag-version 1.0.0
 
       - name: Bundle Directory
-        run: bash ./scripts/bundle.sh
+        run: bash ./scripts/bundle.windows.sh
 
       - name: Archive Bundle
         uses: azure/powershell@v2
@@ -177,16 +177,7 @@ jobs:
         run: npm version --no-git-tag-version 1.0.0
 
       - name: Bundle Directory
-        run: bash ./scripts/bundle.sh
-
-      - name: Install WebKit for macOS
-        run: |
-          export PLAYWRIGHT_BROWSERS_PATH=$PWD/bundle/Cache/
-          export PLAYWRIGHT_SKIP_BROWSER_GC=1
-          PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac13 npx playwright install webkit
-
-      - name: Archive Bundle
-        run: zip --symlinks -r playwright-macos-amd64.zip bundle/
+        run: bash ./scripts/bundle.macos.sh
 
       - name: Upload to GCS
         run: |
