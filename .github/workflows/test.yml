@@ -268,12 +268,12 @@ jobs:
         working-directory: ./tests/fixtures/cloud/www/
 
       - name: Start sauce-connect
-        uses: saucelabs/sauce-connect-action@v2
+        uses: saucelabs/sauce-connect-action@v3
         with:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
           tunnelName: github-playwright-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }}
-          scVersion: 4.9.2
+          region: us-west-1
 
       - name: Test on Sauce
         working-directory: ./tests/fixtures/cloud
