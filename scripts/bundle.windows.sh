@@ -23,3 +23,6 @@ popd
 # DLL issue. As a workaround, we decided to ship it within
 # the bundle to avoid modifiying the system image.
 cp -n ./libs/vcruntime140_1.dll ${PLAYWRIGHT_BROWSERS_PATH}/firefox-*/firefox/
+
+# Archive Bundle using PowerShell
+powershell.exe -Command "Compress-Archive -Path bundle/ -DestinationPath playwright-windows-amd64.zip -Force"

@@ -130,13 +130,6 @@ jobs:
       - name: Bundle Directory
         run: bash ./scripts/bundle.windows.sh
 
-      - name: Archive Bundle
-        uses: azure/powershell@v2
-        with:
-          inlineScript: |
-            Compress-Archive bundle/ playwright-windows-amd64.zip
-          azPSVersion: '3.1.0'
-
       - name: Upload to GCS
         run: |
           gsutil cp ./playwright-windows-amd64.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/playwright-windows-amd64-${{ github.run_id }}.zip

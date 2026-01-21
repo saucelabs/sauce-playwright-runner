@@ -163,14 +163,6 @@ jobs:
         if: ${{ steps.prep.outputs.asset_id == '' }}
         run: ls -R bundle/
 
-      - name: Archive Bundle
-        if: ${{ steps.prep.outputs.asset_id == '' }}
-        uses: azure/powershell@v2
-        with:
-          inlineScript: |
-            Compress-Archive bundle/ playwright-windows-amd64.zip
-          azPSVersion: '3.1.0'
-
       - name: Upload Release Asset
         if: ${{ steps.prep.outputs.asset_id == '' }}
         env:
