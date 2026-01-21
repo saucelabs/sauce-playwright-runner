@@ -157,19 +157,11 @@ jobs:
 
       - name: Bundle Directory
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        run: bash ./scripts/bundle.sh
+        run: bash ./scripts/bundle.windows.sh
 
       - name: List Bundle Contents
         if: ${{ steps.prep.outputs.asset_id == '' }}
         run: ls -R bundle/
-
-      - name: Archive Bundle
-        if: ${{ steps.prep.outputs.asset_id == '' }}
-        uses: azure/powershell@v2
-        with:
-          inlineScript: |
-            Compress-Archive bundle/ playwright-windows-amd64.zip
-          azPSVersion: '3.1.0'
 
       - name: Upload Release Asset
         if: ${{ steps.prep.outputs.asset_id == '' }}
@@ -180,7 +172,7 @@ jobs:
 
   release-macos-bundle:
     # macos-latest is arm only
-    runs-on: macos-13
+    runs-on: macos-15-intel
     needs: [create-release-draft]
     steps:
       - name: Find Matching Draft Tag
@@ -230,15 +222,11 @@ jobs:
 
       - name: Bundle Directory
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        run: bash ./scripts/bundle.sh
+        run: bash ./scripts/bundle.macos.sh
 
       - name: List Bundle Contents
         if: ${{ steps.prep.outputs.asset_id == '' }}
         run: ls -R bundle/
-
-      - name: Archive Bundle
-        if: ${{ steps.prep.outputs.asset_id == '' }}
-        run: zip --symlinks -r playwright-macos-amd64.zip bundle/
 
       - name: Upload Release Asset
         if: ${{ steps.prep.outputs.asset_id == '' }}

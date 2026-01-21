@@ -128,14 +128,7 @@ jobs:
         run: npm version --no-git-tag-version 1.0.0
 
       - name: Bundle Directory
-        run: bash ./scripts/bundle.sh
-
-      - name: Archive Bundle
-        uses: azure/powershell@v2
-        with:
-          inlineScript: |
-            Compress-Archive bundle/ playwright-windows-amd64.zip
-          azPSVersion: '3.1.0'
+        run: bash ./scripts/bundle.windows.sh
 
       - name: Upload to GCS
         run: |
@@ -143,7 +136,7 @@ jobs:
 
   build-macos-bundle:
     # macos-latest is arm only
-    runs-on: macos-13
+    runs-on: macos-15-intel
     needs: [test]
     steps:
       - name: Checkout
@@ -177,10 +170,7 @@ jobs:
         run: npm version --no-git-tag-version 1.0.0
 
       - name: Bundle Directory
-        run: bash ./scripts/bundle.sh
-
-      - name: Archive Bundle
-        run: zip --symlinks -r playwright-macos-amd64.zip bundle/
+        run: bash ./scripts/bundle.macos.sh
 
       - name: Upload to GCS
         run: |
@@ -262,12 +252,13 @@ jobs:
         working-directory: ./tests/fixtures/cloud/www/
 
       - name: Start sauce-connect
-        uses: saucelabs/sauce-connect-action@v2
+        uses: saucelabs/sauce-connect-action@v3
         with:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
           tunnelName: github-playwright-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }}
-          scVersion: 4.9.2
+          region: us-west-1
+          proxyLocalhost: allow
 
       - name: Test on Sauce
         working-directory: ./tests/fixtures/cloud
