@@ -239,13 +239,13 @@ jobs:
           export PLAYWRIGHT_SKIP_BROWSER_GC=1
           PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac13 npx playwright install webkit
 
-      - name: Archive Bundle
-        if: ${{ steps.prep.outputs.asset_id == '' }}
-        run: zip --symlinks -r playwright-macos-amd64.zip bundle/
-
       - name: List Bundle Contents
         if: ${{ steps.prep.outputs.asset_id == '' }}
         run: ls -R bundle/
+
+      - name: Archive Bundle
+        if: ${{ steps.prep.outputs.asset_id == '' }}
+        run: zip --symlinks -r playwright-macos-amd64.zip bundle/
 
       - name: Upload Release Asset
         if: ${{ steps.prep.outputs.asset_id == '' }}
