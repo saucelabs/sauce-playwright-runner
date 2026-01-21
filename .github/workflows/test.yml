@@ -274,6 +274,7 @@ jobs:
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
           tunnelName: github-playwright-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }}
           region: us-west-1
+          proxyLocalhost: allow
 
       - name: Test on Sauce
         working-directory: ./tests/fixtures/cloud
