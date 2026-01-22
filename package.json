@@ -35,7 +35,7 @@
     "@saucelabs/playwright-reporter": "1.6.0",
     "@saucelabs/testcomposer": "3.0.2",
     "dotenv": "17.2.3",
-    "lodash": "4.17.21",
+    "lodash": "4.17.23",
     "playwright": "1.57.0",
     "sauce-testrunner-utils": "3.3.0",
     "xml-js": "1.6.11"
