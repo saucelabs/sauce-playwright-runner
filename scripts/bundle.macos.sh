@@ -9,9 +9,9 @@ export PLAYWRIGHT_SKIP_BROWSER_GC=1
 
 pushd bundle/
 
-# Install all browsers with mac13 platform override
-PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac13 npx playwright install
-PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac13 npx playwright install-deps
+# Install all browsers with mac14 platform override
+PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac14 npx playwright install
+PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac14 npx playwright install-deps
 npx playwright --version
 
 popd
