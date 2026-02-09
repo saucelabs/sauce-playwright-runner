@@ -181,10 +181,12 @@ jobs:
     strategy:
       max-parallel: 3
       matrix:
-        os: [Win10, Win11, macOS12, macOS13]
+        os: [Win10, Win11, macOS12, macOS13, macOS14]
         browser: [Chromium, Firefox, Webkit]
         exclude:
           - os: macOS12
+            browser: Webkit
+          - os: macOS13
             browser: Webkit
       fail-fast: false
 
@@ -218,7 +220,7 @@ jobs:
     strategy:
       max-parallel: 3
       matrix:
-        os: [Win10, Win11, macOS12, macOS13]
+        os: [Win10, Win11, macOS12, macOS13, macOS14]
         browser: [Chromium, Firefox, Webkit]
         exclude:
           - os: Win10
@@ -226,6 +228,8 @@ jobs:
           - os: Win11
             browser: Webkit
           - os: macOS12
+            browser: Webkit
+          - os: macOS13
             browser: Webkit
       fail-fast: false
 
