@@ -101,3 +101,25 @@ suites:
       browserName: "webkit"
     testMatch:
       - "tests/no-sc/.*.test.js"
+
+  ## macOS14 tests
+  - name: "macOS14 - Chromium"
+    platformName: "macOS 14"
+    params:
+      browserName: "chromium"
+    testMatch:
+      - "tests/no-sc/.*.test.js"
+
+  - name: "macOS14 - Firefox"
+    platformName: "macOS 14"
+    params:
+      browserName: "firefox"
+    testMatch:
+      - "tests/no-sc/.*.test.js"
+
+  - name: "macOS14 - Webkit"
+    platformName: "macOS 14"
+    params:
+      browserName: "webkit"
+    testMatch:
+      - "tests/no-sc/.*.test.js"
