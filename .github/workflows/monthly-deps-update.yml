@@ -68,4 +68,4 @@ jobs:
           }" $SLACK_WEBHOOK_RUNNER_UPDATES
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_URL_2: ${{ secrets.SLACK_WEBHOOK_RUNNER_UPDATES }}
+          SLACK_WEBHOOK_RUNNER_UPDATES: ${{ secrets.SLACK_WEBHOOK_RUNNER_UPDATES }}
