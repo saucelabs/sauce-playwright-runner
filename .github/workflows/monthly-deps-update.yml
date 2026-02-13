@@ -60,8 +60,10 @@ jobs:
         run: |
           PR_TITLE="chore: Monthly npm dependency update: $FRAMEWORK_NAME"
           PR_URL="https://github.com/${{ github.repository }}/pulls"
-          curl -X POST -H 'Content-type: application/json' --data "{
-            \"text\": \"🚀 A new pull request for $FRAMEWORK_NAME runner has been created: *${PR_TITLE}*.\n<${PR_URL}|View Pull Requests>\"
-          }" $SLACK_WEBHOOK_URL
+          MESSAGE="🚀 A new pull request for $FRAMEWORK_NAME runner has been created: *${PR_TITLE}*.\n<${PR_URL}|View Pull Requests>"
+          for WEBHOOK_URL in $SLACK_WEBHOOK_URL $SLACK_WEBHOOK_RUNNER_UPDATES; do
+            curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"$MESSAGE\"}" "$WEBHOOK_URL"
+          done
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_RUNNER_UPDATES: ${{ secrets.SLACK_WEBHOOK_RUNNER_UPDATES }}
