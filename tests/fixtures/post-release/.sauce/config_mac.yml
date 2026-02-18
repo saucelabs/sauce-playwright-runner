@@ -19,7 +19,7 @@ suites:
       browserName: "chromium"
 
   - name: "Post Release Test (macOS) - webkit"
-    platformName: "macOS 14"
+    platformName: "macOS 13"
     testMatch: ['.*.js']
     params:
       browserName: "webkit"
