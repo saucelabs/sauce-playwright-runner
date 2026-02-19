@@ -107,6 +107,7 @@ suites:
   ## macOS14 tests
   - name: "macOS14 - Chromium"
     platformName: "macOS 14"
+    armRequired: true
     params:
       browserName: "chromium"
     testMatch:
@@ -114,6 +115,7 @@ suites:
 
   - name: "macOS14 - Firefox"
     platformName: "macOS 14"
+    armRequired: true
     params:
       browserName: "firefox"
     testMatch:
@@ -121,6 +123,7 @@ suites:
 
   - name: "macOS14 - Webkit"
     platformName: "macOS 14"
+    armRequired: true
     params:
       browserName: "webkit"
     testMatch:

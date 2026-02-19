@@ -20,6 +20,7 @@ suites:
 
   - name: "Post Release Test (macOS) - webkit"
     platformName: "macOS 14"
+    armRequired: true
     testMatch: ['.*.js']
     params:
       browserName: "webkit"
