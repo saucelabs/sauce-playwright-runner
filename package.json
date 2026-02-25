@@ -37,7 +37,7 @@
     "dotenv": "17.2.3",
     "lodash": "4.17.23",
     "playwright": "1.58.1",
-    "sauce-testrunner-utils": "3.3.0",
+    "sauce-testrunner-utils": "3.3.1",
     "xml-js": "1.6.11"
   },
   "devDependencies": {
