@@ -13,6 +13,10 @@ pushd bundle/
 PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac13 npx playwright install chromium chromium-headless-shell firefox
 PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac13 npx playwright install-deps chromium firefox
 
+# Install chromium for mac14 (ARM - for macOS 14+).
+# Both chrome-mac (x86) and chrome-mac-arm64 (ARM) directories will coexist under chromium-1208/.
+PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac14 npx playwright install chromium chromium-headless-shell
+
 # WebKit is not supported on mac13 or earlier in Playwright 1.58.1 (void 0 in registry).
 # Install webkit separately for mac14 (forward-compatible with mac15).
 # Both mac14 and mac15 share the same revision (2248) and directory (webkit-2248),
