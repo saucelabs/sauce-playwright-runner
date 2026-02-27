@@ -199,7 +199,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          saucectl-version: v0.200.0
+          saucectl-version: v0.201.0
           skip-run: true
 
       - name: Test on Sauce
@@ -248,7 +248,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          saucectl-version: v0.200.0
+          saucectl-version: v0.201.0
           skip-run: true
 
       - name: Run web-page
@@ -301,7 +301,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          saucectl-version: v0.200.0
+          saucectl-version: v0.201.0
           skip-run: true
 
       - name: Test on Sauce
