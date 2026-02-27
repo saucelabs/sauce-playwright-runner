@@ -9,24 +9,19 @@ export PLAYWRIGHT_SKIP_BROWSER_GC=1
 
 pushd bundle/
 
-# Install chromium and firefox with mac13 platform override
+# Install ARM64 browsers natively (build machine is macos-15 ARM).
+# This guarantees chrome-mac-arm64/, firefox-arm64/, etc. are created correctly.
+npx playwright install chromium chromium-headless-shell firefox webkit
+npx playwright install-deps chromium firefox webkit
+
+# Install x86 browsers for mac13 (macOS 12/13) compatibility.
+# PLAYWRIGHT_SKIP_BROWSER_GC=1 ensures the ARM64 browsers above aren't cleaned up.
 PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac13 npx playwright install chromium chromium-headless-shell firefox
 PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac13 npx playwright install-deps chromium firefox
-
-# Install chromium for mac14 (ARM - for macOS 14+).
-# Both chrome-mac (x86) and chrome-mac-arm64 (ARM) directories will coexist under chromium-1208/.
-PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac14 npx playwright install chromium chromium-headless-shell
-
-# WebKit is not supported on mac13 or earlier in Playwright 1.58.1 (void 0 in registry).
-# Install webkit separately for mac14 (forward-compatible with mac15).
-# Both mac14 and mac15 share the same revision (2248) and directory (webkit-2248),
-# so only one install is needed. Using mac14 for broadest compatibility.
-PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac14 npx playwright install webkit
-PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac14 npx playwright install-deps webkit
 
 npx playwright --version
 
 popd
 
-# Archive Bundle with symlinks
+# Archive Bundle with symlinks preserved (required for macOS .app bundles)
 zip --symlinks -r playwright-macos-amd64.zip bundle/
