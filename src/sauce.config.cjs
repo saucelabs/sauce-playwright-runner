@@ -82,6 +82,26 @@ if ('HTTP_PROXY' in process.env && process.env.HTTP_PROXY !== '') {
     proxy,
     ignoreHTTPSErrors: true,
   };
+
+  // Merge proxy settings into each project's contextOptions as well.
+  // Playwright resolves project config by merging project-level `use` over
+  // root-level `use`. If a project defines its own `use.contextOptions`
+  // (e.g. { reducedMotion: 'reduce' }), it completely replaces the
+  // root-level contextOptions — which would lose the SC tunnel proxy
+  // settings and cause requests to fail with ENOTFOUND.
+  // By merging proxy settings directly into each project's contextOptions,
+  // both the user's project-level options and the proxy coexist.
+  if (Array.isArray(userConfig.projects)) {
+    for (const project of userConfig.projects) {
+      if (project.use?.contextOptions) {
+        project.use.contextOptions = {
+          ...project.use.contextOptions,
+          proxy,
+          ignoreHTTPSErrors: true,
+        };
+      }
+    }
+  }
 }
 
 function arrMerger(objValue, srcValue) {
