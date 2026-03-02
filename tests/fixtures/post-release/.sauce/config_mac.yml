@@ -19,7 +19,8 @@ suites:
       browserName: "chromium"
 
   - name: "Post Release Test (macOS) - webkit"
-    platformName: "macOS 13"
+    platformName: "macOS 14"
+    armRequired: true
     testMatch: ['.*.js']
     params:
       browserName: "webkit"
@@ -29,6 +30,27 @@ suites:
     testMatch: ['.*.js']
     params:
       browserName: "firefox"
+
+  - name: "Post Release Test (macOS 15) - chromium"
+    platformName: "macOS 15"
+    armRequired: true
+    testMatch: ['.*.js']
+    params:
+      browserName: "chromium"
+
+  - name: "Post Release Test (macOS 15) - firefox"
+    platformName: "macOS 15"
+    armRequired: true
+    testMatch: ['.*.js']
+    params:
+      browserName: "firefox"
+
+  - name: "Post Release Test (macOS 15) - webkit"
+    platformName: "macOS 15"
+    armRequired: true
+    testMatch: ['.*.js']
+    params:
+      browserName: "webkit"
 
 npm:
   packages:

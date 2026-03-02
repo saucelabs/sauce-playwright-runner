@@ -135,8 +135,7 @@ jobs:
           gsutil cp ./playwright-windows-amd64.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/playwright-windows-amd64-${{ github.run_id }}.zip
 
   build-macos-bundle:
-    # macos-latest is arm only
-    runs-on: macos-15-intel
+    runs-on: macos-15
     needs: [test]
     steps:
       - name: Checkout
@@ -181,10 +180,12 @@ jobs:
     strategy:
       max-parallel: 3
       matrix:
-        os: [Win10, Win11, macOS12, macOS13]
+        os: [Win10, Win11, macOS12, macOS13, macOS14, macOS15]
         browser: [Chromium, Firefox, Webkit]
         exclude:
           - os: macOS12
+            browser: Webkit
+          - os: macOS13
             browser: Webkit
       fail-fast: false
 
@@ -198,6 +199,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
+          saucectl-version: v0.201.0
           skip-run: true
 
       - name: Test on Sauce
@@ -218,7 +220,7 @@ jobs:
     strategy:
       max-parallel: 3
       matrix:
-        os: [Win10, Win11, macOS12, macOS13]
+        os: [Win10, Win11, macOS12, macOS13, macOS14, macOS15]
         browser: [Chromium, Firefox, Webkit]
         exclude:
           - os: Win10
@@ -226,6 +228,8 @@ jobs:
           - os: Win11
             browser: Webkit
           - os: macOS12
+            browser: Webkit
+          - os: macOS13
             browser: Webkit
       fail-fast: false
 
@@ -244,6 +248,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
+          saucectl-version: v0.201.0
           skip-run: true
 
       - name: Run web-page
@@ -296,6 +301,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
+          saucectl-version: v0.201.0
           skip-run: true
 
       - name: Test on Sauce

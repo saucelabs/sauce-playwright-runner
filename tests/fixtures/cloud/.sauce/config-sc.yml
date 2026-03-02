@@ -103,3 +103,53 @@ suites:
       browserName: "webkit"
     testMatch:
       - "tests/.*.test.js"
+
+  ## macOS14 tests
+  - name: "macOS14 - Chromium"
+    platformName: "macOS 14"
+    armRequired: true
+    params:
+      browserName: "chromium"
+    testMatch:
+      - "tests/.*.test.js"
+
+  - name: "macOS14 - Firefox"
+    platformName: "macOS 14"
+    armRequired: true
+    params:
+      browserName: "firefox"
+    testMatch:
+      - "tests/.*.test.js"
+
+  - name: "macOS14 - Webkit"
+    platformName: "macOS 14"
+    armRequired: true
+    params:
+      browserName: "webkit"
+    testMatch:
+      - "tests/.*.test.js"
+
+  ## macOS15 tests
+  - name: "macOS15 - Chromium"
+    platformName: "macOS 15"
+    armRequired: true
+    params:
+      browserName: "chromium"
+    testMatch:
+      - "tests/.*.test.js"
+
+  - name: "macOS15 - Firefox"
+    platformName: "macOS 15"
+    armRequired: true
+    params:
+      browserName: "firefox"
+    testMatch:
+      - "tests/.*.test.js"
+
+  - name: "macOS15 - Webkit"
+    platformName: "macOS 15"
+    armRequired: true
+    params:
+      browserName: "webkit"
+    testMatch:
+      - "tests/.*.test.js"
