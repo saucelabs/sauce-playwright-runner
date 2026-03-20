@@ -30,7 +30,7 @@ jobs:
         run: |
           npm install -g npm-check-updates
           if ncu $FRAMEWORK_NAME | tee /tmp/framework-update.txt | grep -q "^\s*$FRAMEWORK_NAME"; then
-            ncu -u
+            ncu -u --reject @eslint/js,eslint
             npm install
             echo "framework_update=true" >> $GITHUB_OUTPUT
           else
