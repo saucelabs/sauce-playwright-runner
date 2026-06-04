@@ -34,6 +34,18 @@ npx playwright install chromium chromium-headless-shell webkit
 npx playwright install-deps chromium webkit
 unset PLAYWRIGHT_HOST_PLATFORM_OVERRIDE
 
+# --- Step 1b: Install macOS 15 ARM64 WebKit ---
+# WebKit ships a distinct binary per macOS major version: macOS 14 pins revision
+# 2251 (folder webkit_mac14-arm64_special-2251/) while macOS 15 uses revision 2272
+# (folder webkit-2272/). The mac14 build does NOT satisfy macOS 15, which looks for
+# webkit-2272/ and otherwise fails with "Executable doesn't exist". Because the two
+# folder names differ, both builds coexist in the cache after the merge.
+# (Chromium/Firefox arm64 share one binary across mac14/mac15, so they need no equivalent.)
+echo "--- Step 1b: Installing mac15-arm64 WebKit ---"
+export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac15-arm64
+npx playwright install webkit
+unset PLAYWRIGHT_HOST_PLATFORM_OVERRIDE
+
 # --- Step 2: Install x64 browsers into isolated directory ---
 echo "--- Step 2: Installing x64 browsers (mac13) ---"
 export PLAYWRIGHT_BROWSERS_PATH="$PWD/Cache-intel"
