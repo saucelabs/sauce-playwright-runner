@@ -1,0 +1,487 @@
+name: Dependency Update Flow (automated)
+on:
+    workflow_dispatch:
+        inputs:
+            update_level:
+                description: 'How far to update'
+                required: true
+                default: 'minor'
+                type: choice
+                options:
+                    - patch
+                    - minor
+                    - latest
+
+jobs:
+    update:
+
+        runs-on: ubuntu-latest
+        env:
+            HUSKY: 0
+            FRAMEWORK_NAME: playwright
+        permissions:
+            contents: write
+            pull-requests: write
+            issues: write
+
+        steps:
+
+            - name: Checkout code
+              uses: actions/checkout@v5
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v5
+              with:
+                node-version: '20'
+                cache: 'npm'
+
+            - name: Install dependencies (baseline)
+              run: |
+                set -o pipefail
+                npm ci 2>&1 | tee /tmp/install.log
+
+            - name: Update, build, and test with bisection-based self-healing
+              id: update
+              shell: bash
+              run: |
+                set -o pipefail
+                npm install -g npm-check-updates
+
+                TARGET="${{ inputs.update_level }}"
+                MAX_ATTEMPTS=20
+                BISECT_MAX_DEPTH=4                      # 0 disables bisection (old hammer)
+
+                cp package.json /tmp/pkg.orig
+                cp package-lock.json /tmp/lock.orig
+
+                # Sanity-check the baseline package.json — if this is malformed,
+                # nothing downstream can work.
+                if ! jq empty /tmp/pkg.orig 2>/dev/null; then
+                    echo "::error::Baseline package.json is not valid JSON — aborting"
+                    exit 1
+                fi
+
+                # ---------- Framework gate ----------
+                # Mirror the per-runner check: only do any work if the framework we
+                # care about ($FRAMEWORK_NAME) actually has a new version at this
+                # update level. If not, record a clean "skipped" result and stop —
+                # "Check for changes" will then see no diff and no PR is opened.
+                if ! ncu "$FRAMEWORK_NAME" --target "$TARGET" 2>/dev/null \
+                        | tee /tmp/framework-update.txt \
+                        | grep -qE "^[[:space:]]*$FRAMEWORK_NAME[[:space:]]"; then
+                    echo "::notice::No $FRAMEWORK_NAME update available at target '$TARGET' — skipping"
+                    {
+                        echo "attempts=0"
+                        echo "bisect_trials=0"
+                        echo "test_outcome=skipped"
+                        echo "rejected="
+                        echo "reject_details<<EOF"
+                        echo ""
+                        echo "EOF"
+                    } >> $GITHUB_OUTPUT
+                    exit 0
+                fi
+                echo "✅ $FRAMEWORK_NAME has an update available — running robust update"
+
+                # ---------- Probe: capture every available bump up front ----------
+                cp /tmp/pkg.orig /tmp/probe.json
+                PROBE=$(ncu --packageFile /tmp/probe.json --target "$TARGET" --jsonUpgraded 2>/dev/null || echo '{}')
+                if ! echo "$PROBE" | jq empty >/dev/null 2>&1; then
+                    PROBE='{}'
+                fi
+                echo "Probe found $(echo "$PROBE" | jq 'length') packages with available updates"
+
+                OUR_DEPS=$(jq -r '.dependencies, .devDependencies | keys[]' package.json | sort -u)
+                HAS_BUILD=$(npm pkg get scripts.build | grep -cv '^{}$' || true)
+                HAS_TEST=$(npm pkg get scripts.test  | grep -cv '^{}$' || true)
+
+                REJECT_LIST=""
+                TEST_OUTCOME="skipped"
+                LOOP_RESULT=""
+
+                # Bisection state lives on disk because helpers run inside $(...)
+                # subshells and can't update parent shell variables.
+                TRIAL_CACHE=/tmp/trial_cache
+                TRIAL_COUNTER=/tmp/trial_counter
+                : > "$TRIAL_CACHE"
+                echo 0 > "$TRIAL_COUNTER"
+
+                # ---------- Helpers ----------
+                make_reject_arg() {
+                    echo "$REJECT_LIST"
+                }
+
+                # Defensive: handles non-string version values, missing keys,
+                # overrides/resolutions blocks, and unusual entries (file:, git+,
+                # workspace:, etc.) by silently skipping anything that doesn't
+                # parse as a normal semver-style version string.
+                identify_major_bumps() {
+                    jq -r --slurpfile orig /tmp/pkg.orig '
+                        def safe_obj(x): if (x | type) == "object" then x else {} end;
+                        def major(v):
+                            if (v | type) != "string" then null
+                            else (v | sub("^[~^><= ]+";"") | split(".")[0])
+                            end;
+
+                        (safe_obj($orig[0].dependencies) + safe_obj($orig[0].devDependencies)) as $o |
+                        (safe_obj(.dependencies)         + safe_obj(.devDependencies))         as $n |
+                        [ $n | to_entries[]
+                          | select((.value | type) == "string")
+                          | select($o[.key] != null and ($o[.key] | type) == "string")
+                          | select(major(.value) != null and major($o[.key]) != null)
+                          | select(major(.value) != major($o[.key]))
+                          | .key
+                        ] | join(",")
+                    ' package.json
+                }
+
+                filter_new_rejections() {
+                    local input="$1"
+                    local result=""
+                    local pkg
+                    IFS=',' read -ra ARR <<< "$input"
+                    for pkg in "${ARR[@]}"; do
+                        [ -z "$pkg" ] && continue
+                        if ! echo ",$REJECT_LIST," | grep -q ",$pkg,"; then
+                            result="${result:+$result,}$pkg"
+                        fi
+                    done
+                    echo "$result"
+                }
+
+                # ---------- Bisection helpers ----------
+
+                # try_majors APPLY PHASE
+                # Restores baseline, applies ONLY the listed majors (holds back the rest
+                # of CURRENT_MAJORS as well as REJECT_LIST), then runs install + build
+                # (+ test if PHASE=test). Echoes "pass" or "fail". All diagnostics to
+                # stderr so the function is safe inside $(...).
+                try_majors() {
+                    local apply_majors="$1"
+                    local phase="$2"
+
+                    local n
+                    n=$(( $(cat "$TRIAL_COUNTER") + 1 ))
+                    echo "$n" > "$TRIAL_COUNTER"
+
+                    local key
+                    key=$(echo "$apply_majors" | tr ',' '\n' | grep -v '^$' | sort | paste -sd, -)
+                    key="${phase}|${key}"
+
+                    local cached
+                    cached=$(grep -F "${key}=" "$TRIAL_CACHE" 2>/dev/null | tail -n1 | cut -d= -f2-)
+                    if [ -n "$cached" ]; then
+                        echo "::group::Trial #$n (cached) phase=$phase apply=[$apply_majors] → $cached" >&2
+                        echo "::endgroup::" >&2
+                        echo "$cached"
+                        return
+                    fi
+
+                    echo "::group::Trial #$n phase=$phase apply=[$apply_majors]" >&2
+
+                    rm -rf node_modules
+                    cp /tmp/pkg.orig package.json
+                    cp /tmp/lock.orig package-lock.json
+
+                    local reject_for_trial="$REJECT_LIST"
+
+                    local m
+                    for m in $(echo "$CURRENT_MAJORS" | tr ',' '\n'); do
+                        [ -z "$m" ] && continue
+                        if ! echo ",${apply_majors}," | grep -q ",${m},"; then
+                            reject_for_trial="${reject_for_trial:+$reject_for_trial,}${m}"
+                        fi
+                    done
+
+                    if [ -n "$reject_for_trial" ]; then
+                        ncu -u --target "$TARGET" --reject "$reject_for_trial" >&2 || true
+                    else
+                        ncu -u --target "$TARGET" >&2 || true
+                    fi
+
+                    local result="pass"
+                    if ! npm install >/tmp/bisect.log 2>&1; then
+                        echo "Install failed in trial" >&2
+                        result="fail"
+                    elif [ "$HAS_BUILD" -gt 0 ] && ! npm run build >/tmp/bisect.log 2>&1; then
+                        echo "Build failed in trial" >&2
+                        result="fail"
+                    elif [ "$phase" = "test" ] && [ "$HAS_TEST" -gt 0 ] && ! npm test >/tmp/bisect.log 2>&1; then
+                        echo "Test failed in trial" >&2
+                        result="fail"
+                    fi
+
+                    echo "${key}=${result}" >> "$TRIAL_CACHE"
+                    echo "Result: $result" >&2
+                    echo "::endgroup::" >&2
+                    echo "$result"
+                }
+
+                # bisect_culprits CANDIDATES PHASE [DEPTH]
+                # Parallel divide-and-conquer fault localization.
+                bisect_culprits() {
+                    local candidates="$1"
+                    local phase="$2"
+                    local depth="${3:-0}"
+
+                    local count
+                    count=$(echo "$candidates" | tr ',' '\n' | grep -c .)
+
+                    if [ "$count" -le 1 ]; then
+                        echo "$candidates"
+                        return
+                    fi
+                    if [ "$depth" -ge "$BISECT_MAX_DEPTH" ]; then
+                        echo "::warning::Bisect depth cap at depth=$depth — rejecting remaining: $candidates" >&2
+                        echo "$candidates"
+                        return
+                    fi
+
+                    local half_a half_b
+                    half_a=$(echo "$candidates" | tr ',' '\n' | head -n $((count / 2)) | paste -sd, -)
+                    half_b=$(echo "$candidates" | tr ',' '\n' | tail -n $((count - count / 2)) | paste -sd, -)
+
+                    local result_a result_b
+                    result_a=$(try_majors "$half_a" "$phase")
+                    result_b=$(try_majors "$half_b" "$phase")
+
+                    if [ "$result_a" = "pass" ] && [ "$result_b" = "pass" ]; then
+                        echo "::warning::Both halves passed at depth=$depth — re-running once for flake check" >&2
+                        result_a=$(try_majors "$half_a" "$phase")
+                        result_b=$(try_majors "$half_b" "$phase")
+                        if [ "$result_a" = "pass" ] && [ "$result_b" = "pass" ]; then
+                            echo ""
+                            return
+                        fi
+                    fi
+
+                    local culprits_a="" culprits_b=""
+                    [ "$result_a" = "fail" ] && culprits_a=$(bisect_culprits "$half_a" "$phase" $((depth + 1)))
+                    [ "$result_b" = "fail" ] && culprits_b=$(bisect_culprits "$half_b" "$phase" $((depth + 1)))
+
+                    echo "${culprits_a},${culprits_b}" | tr ',' '\n' | grep -v '^$' | sort -u | paste -sd, -
+                }
+
+                # locate_and_confirm CANDIDATES PHASE
+                locate_and_confirm() {
+                    local candidates="$1"
+                    local phase="$2"
+
+                    if [ "$BISECT_MAX_DEPTH" -le 0 ]; then
+                        echo "$candidates"
+                        return
+                    fi
+
+                    local culprits
+                    culprits=$(bisect_culprits "$candidates" "$phase" 0)
+
+                    if [ -z "$culprits" ]; then
+                        echo "::warning::Bisection nominated no culprits — falling back to full set" >&2
+                        echo "$candidates"
+                        return
+                    fi
+
+                    local non_culprits
+                    non_culprits=$(echo "$candidates" | tr ',' '\n' | grep -v '^$' \
+                                   | grep -vxFf <(echo "$culprits" | tr ',' '\n' | grep -v '^$') \
+                                   | paste -sd, -)
+
+                    local verify
+                    verify=$(try_majors "$non_culprits" "$phase")
+
+                    if [ "$verify" = "fail" ]; then
+                        echo "::warning::Confirmation failed (likely interaction effects) — falling back to full set" >&2
+                        echo "$candidates"
+                        return
+                    fi
+
+                    echo "$culprits"
+                }
+
+                # ---------- Self-healing loop ----------
+                for attempt in $(seq 1 $MAX_ATTEMPTS); do
+                    echo ""
+                    echo "===== Attempt $attempt of $MAX_ATTEMPTS ====="
+
+                    rm -rf node_modules lib dist
+                    cp /tmp/pkg.orig package.json
+                    cp /tmp/lock.orig package-lock.json
+
+                    REJECT_ARG=$(make_reject_arg)
+                    if [ -n "$REJECT_ARG" ]; then
+                        echo "Rejecting: $REJECT_ARG"
+                        ncu -u --target "$TARGET" --reject "$REJECT_ARG"
+                    else
+                        ncu -u --target "$TARGET"
+                    fi
+
+                    # ----- Install -----
+                    npm install 2>&1 | tee /tmp/install.log
+                    INSTALL_EXIT=${PIPESTATUS[0]}
+
+                    if [ $INSTALL_EXIT -ne 0 ]; then
+                        if grep -qE "ETIMEDOUT|ECONNRESET|ENOTFOUND|EAI_AGAIN" /tmp/install.log; then
+                            echo "::warning::Network issue, retrying in 10s"
+                            sleep 10
+                            continue
+                        fi
+                        if ! grep -q "ERESOLVE" /tmp/install.log; then
+                            echo "::error::Non-ERESOLVE install failure"
+                            cat /tmp/install.log
+                            exit 1
+                        fi
+
+                        CANDIDATES=$( {
+                            grep -oP "Conflicting peer dependency: \K[@a-z0-9/-]+" /tmp/install.log
+                            grep -oP "peer \K[@a-z0-9/-]+(?=@)" /tmp/install.log
+                            grep -oP "Found: \K[@a-z0-9/-]+(?=@)" /tmp/install.log
+                        } | sort -u | tr '\n' ',' | sed 's/,$//')
+
+                        OWNED=""
+                        IFS=',' read -ra ARR <<< "$CANDIDATES"
+                        for pkg in "${ARR[@]}"; do
+                            [ -z "$pkg" ] && continue
+                            if echo "$OUR_DEPS" | grep -qx "$pkg"; then
+                                OWNED="${OWNED:+$OWNED,}$pkg"
+                            fi
+                        done
+                        NEW=$(filter_new_rejections "$OWNED")
+
+                        if [ -z "$NEW" ]; then
+                            echo "::error::ERESOLVE conflict with no actionable packages"
+                            cat /tmp/install.log
+                            exit 1
+                        fi
+                        REJECT_LIST="${REJECT_LIST:+$REJECT_LIST,}$NEW"
+                        echo "🔎 Reject (install conflict): $NEW"
+                        continue
+                    fi
+
+                    # ----- Build -----
+                    if [ "$HAS_BUILD" -gt 0 ]; then
+                        echo "Running build..."
+                        if npm run build 2>&1 | tee /tmp/build.log; then
+                            echo "✅ Build succeeded"
+                        else
+                            CURRENT_MAJORS=$(identify_major_bumps)
+                            if [ -z "$CURRENT_MAJORS" ]; then
+                                echo "::error::Build failed and no major bumps left to roll back"
+                                cat /tmp/build.log
+                                exit 1
+                            fi
+                            echo "🔬 Bisecting build culprits among: $CURRENT_MAJORS"
+                            CULPRITS=$(locate_and_confirm "$CURRENT_MAJORS" "build")
+                            NEW=$(filter_new_rejections "$CULPRITS")
+                            if [ -z "$NEW" ]; then
+                                echo "::error::Build failed and bisection returned nothing actionable"
+                                cat /tmp/build.log
+                                exit 1
+                            fi
+                            REJECT_LIST="${REJECT_LIST:+$REJECT_LIST,}$NEW"
+                            echo "🔎 Reject (build failure, bisected): $NEW"
+                            continue
+                        fi
+                    fi
+
+                    # ----- Test -----
+                    if [ "$HAS_TEST" -gt 0 ]; then
+                        echo "Running tests..."
+                        if npm test 2>&1 | tee /tmp/test.log; then
+                            echo "✅ Tests passed"
+                            TEST_OUTCOME="success"
+                        else
+                            CURRENT_MAJORS=$(identify_major_bumps)
+                            if [ -n "$CURRENT_MAJORS" ]; then
+                                echo "🔬 Bisecting test culprits among: $CURRENT_MAJORS"
+                                CULPRITS=$(locate_and_confirm "$CURRENT_MAJORS" "test")
+                                NEW=$(filter_new_rejections "$CULPRITS")
+                                if [ -n "$NEW" ]; then
+                                    REJECT_LIST="${REJECT_LIST:+$REJECT_LIST,}$NEW"
+                                    echo "🔎 Reject (test failure, bisected): $NEW"
+                                    continue
+                                fi
+                            fi
+                            echo "::warning::Tests still failing with no actionable rollbacks — shipping PR for human review"
+                            TEST_OUTCOME="failure"
+                        fi
+                    fi
+
+                    LOOP_RESULT="success"
+                    break
+                done
+
+                if [ "$LOOP_RESULT" != "success" ]; then
+                    echo "::error::Could not converge after $MAX_ATTEMPTS attempts"
+                    echo "Final reject list: $REJECT_LIST"
+                    exit 1
+                fi
+
+                BISECT_TRIALS=$(cat "$TRIAL_COUNTER")
+
+                # ---------- Held-back report (also defensive) ----------
+                REJECT_DETAILS=$(jq -r -n \
+                    --slurpfile orig /tmp/pkg.orig \
+                    --argjson probe "$PROBE" \
+                    --arg list "$REJECT_LIST" '
+                    def safe_obj(x): if (x | type) == "object" then x else {} end;
+
+                    (safe_obj($orig[0].dependencies) + safe_obj($orig[0].devDependencies)) as $old |
+                    ($list | split(",") | map(select(. != ""))) as $rejected |
+                    $rejected[] |
+                    select($probe[.] != null and $old[.] != null) |
+                    select(($old[.] | type) == "string" and ($probe[.] | type) == "string") |
+                    "- **\(.)**: `\($old[.])` → `\($probe[.])`"
+                ')
+
+                {
+                    echo "attempts=$attempt"
+                    echo "bisect_trials=$BISECT_TRIALS"
+                    echo "test_outcome=$TEST_OUTCOME"
+                    echo "rejected=$REJECT_LIST"
+                    echo "reject_details<<EOF"
+                    echo "$REJECT_DETAILS"
+                    echo "EOF"
+                } >> $GITHUB_OUTPUT
+
+            - name: Check for changes
+              id: changed
+              run: |
+                if git diff --quiet package.json package-lock.json; then
+                    echo "had_changes=false" >> $GITHUB_OUTPUT
+                    echo "::notice::No dependency updates were available this run"
+                else
+                    echo "had_changes=true" >> $GITHUB_OUTPUT
+                    echo "Changes detected — will create PR"
+                fi
+
+            - name: Create Pull Request
+              if: steps.changed.outputs.had_changes == 'true'
+              uses: peter-evans/create-pull-request@v7
+              with:
+                token: ${{ secrets.GITHUB_TOKEN }}
+                commit-message: "chore: ${{ env.FRAMEWORK_NAME }} dependency update (${{ inputs.update_level }})"
+                title: |
+                  ${{ steps.update.outputs.test_outcome == 'failure' && '⚠️ [TESTS FAILING] ' || '' }}chore: ${{ env.FRAMEWORK_NAME }} dependency update (${{ inputs.update_level }})
+                labels: |
+                  ${{ steps.update.outputs.test_outcome == 'failure' && 'dependencies,needs-review,tests-failing' || 'dependencies,automated' }}${{ inputs.update_level == 'latest' && ',major-update' || '' }}
+                body: |
+                    Automatic dependency update via self-healing workflow.
+
+                    ## Update Summary
+                    - **Framework focus:** `${{ env.FRAMEWORK_NAME }}`
+                    - **Update level:** `${{ inputs.update_level }}`
+                    - **Main-loop attempts:** ${{ steps.update.outputs.attempts }}
+                    - **Bisection trials:** ${{ steps.update.outputs.bisect_trials }}
+                    - **Test result:** ${{ steps.update.outputs.test_outcome }}
+
+                    ## Held back from this run
+
+                    ${{ steps.update.outputs.reject_details || '_All available updates applied cleanly — nothing held back._' }}
+
+                    ## Review Guidance
+                    ${{ steps.update.outputs.test_outcome == 'failure' && '⚠️ **Tests failed even after bisecting available major bumps.** This may be a real regression — investigate before merging.' || '✅ Tests passed.' }}
+                    ${{ steps.update.outputs.reject_details != '' && '⚠️ Held-back packages above need a coordinated manual update — read each migration guide before bumping.' || '' }}
+
+                    Every entry in "Held back" was discovered empirically by the bisection step in this run — no static exclusion list is consulted. Generated by run #${{ github.run_number }}.
+                branch: chore/deps-${{ env.FRAMEWORK_NAME }}-${{ inputs.update_level }}-${{ github.run_id }}
+                delete-branch: true
