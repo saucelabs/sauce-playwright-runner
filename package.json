@@ -4,6 +4,9 @@
   "description": "Sauce Labs Playwright Test Runner",
   "license": "MIT",
   "private": true,
+  "engines": {
+    "node": ">=24"
+  },
   "files": [
     "lib"
   ],
@@ -31,18 +34,18 @@
   },
   "homepage": "https://github.com/saucelabs/sauce-playwright-runner",
   "dependencies": {
-    "@playwright/test": "1.59.1",
+    "@playwright/test": "1.60.0",
     "@saucelabs/playwright-reporter": "1.6.0",
     "@saucelabs/testcomposer": "3.0.2",
     "dotenv": "17.4.2",
     "lodash": "4.18.1",
-    "playwright": "1.59.1",
+    "playwright": "1.60.0",
     "sauce-testrunner-utils": "3.3.1",
     "xml-js": "1.6.11"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
-    "@tsconfig/node22": "^22.0.5",
+    "@tsconfig/node24": "^24.0.4",
     "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.24",
     "@types/node": "^25.6.0",
