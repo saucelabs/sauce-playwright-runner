@@ -13,9 +13,9 @@ playwright:
   version: 1.57.0
 rootDir: ./
 suites:
-  - name: Cucumber - macOS12 - Chromium
+  - name: Cucumber - macOS13 - Chromium
     browserName: "chromium"
-    platformName: "macOS 12"
+    platformName: "macOS 13"
     options:
       paths:
         - "features/**/*.feature"
