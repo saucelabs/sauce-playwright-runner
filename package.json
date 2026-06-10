@@ -4,6 +4,9 @@
   "description": "Sauce Labs Playwright Test Runner",
   "license": "MIT",
   "private": true,
+  "engines": {
+    "node": ">=24"
+  },
   "files": [
     "lib"
   ],
