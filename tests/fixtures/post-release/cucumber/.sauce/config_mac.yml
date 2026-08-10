@@ -13,9 +13,10 @@ playwright:
   version: 1.57.0
 rootDir: ./
 suites:
+  # macOS 13, not 12: Chrome for Testing 151 (playwright 1.62) requires macOS 13.0.
   - name: My Cucumber Test
     browserName: "chromium"
-    platformName: "macOS 12"
+    platformName: "macOS 13"
     options:
       paths:
         - "features/**/*.feature"

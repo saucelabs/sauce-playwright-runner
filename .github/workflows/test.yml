@@ -187,6 +187,13 @@ jobs:
             browser: Webkit
           - os: macOS13
             browser: Webkit
+          # Chrome for Testing 151 (playwright 1.62) requires macOS 13.0
+          - os: macOS12
+            browser: Chromium
+          # playwright pins macOS 14 to the frozen webkit 2251 build, too old for
+          # the 1.62 library: "Unknown setting: PushAPIEnabled"
+          - os: macOS14
+            browser: Webkit
       fail-fast: false
 
     runs-on: ubuntu-latest
@@ -230,6 +237,13 @@ jobs:
           - os: macOS12
             browser: Webkit
           - os: macOS13
+            browser: Webkit
+          # Chrome for Testing 151 (playwright 1.62) requires macOS 13.0
+          - os: macOS12
+            browser: Chromium
+          # playwright pins macOS 14 to the frozen webkit 2251 build, too old for
+          # the 1.62 library: "Unknown setting: PushAPIEnabled"
+          - os: macOS14
             browser: Webkit
       fail-fast: false
 

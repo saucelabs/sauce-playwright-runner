@@ -47,24 +47,28 @@ npx playwright install webkit
 unset PLAYWRIGHT_HOST_PLATFORM_OVERRIDE
 
 # --- Step 2: Install x64 browsers into isolated directory ---
-echo "--- Step 2: Installing x64 browsers (mac13) ---"
+echo "--- Step 2: Installing x64 browsers (mac14 host -> mac-x64 builds) ---"
 export PLAYWRIGHT_BROWSERS_PATH="$PWD/Cache-intel"
-export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac13
+# Playwright 1.62 removed mac13 from its host platform table, so `mac13` resolves
+# to no download URL and the install aborts. mac14 resolves to the same mac-x64
+# artifacts mac13 used to receive.
+export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac14
 npx playwright install chromium chromium-headless-shell firefox
 npx playwright install-deps chromium firefox
 unset PLAYWRIGHT_HOST_PLATFORM_OVERRIDE
 
 # The x64 bundle serves the oldest platforms in the test matrix, currently
-# macOS 12. A browser whose LSMinimumSystemVersion climbs above that still
+# macOS 13. A browser whose LSMinimumSystemVersion climbs above that still
 # installs and bundles fine here, then fails to launch only on a real machine
 # running the oldest supported macOS — so the loss is invisible until it reaches
-# a customer. Playwright 1.62 is a live example: its Chrome for Testing build
-# moved from 149 (min macOS 12.0) to 151 (min macOS 13.0), which silently
-# breaks macOS 12 Chromium.
+# a customer. Playwright 1.62 is why the floor is 13.0 rather than 12.0: its
+# Chrome for Testing build moved from 149 (min macOS 12.0) to 151 (min macOS
+# 13.0), so macOS 12 Chromium was dropped from the matrix rather than shipped
+# broken.
 #
 # Fail the build instead, so a bump that drops a supported platform has to be
 # an explicit decision.
-OLDEST_SUPPORTED_MACOS=12.0
+OLDEST_SUPPORTED_MACOS=13.0
 for app_plist in $(find "$PWD/Cache-intel" -maxdepth 4 -name Info.plist -path '*.app/Contents/*'); do
   min_os=$(/usr/libexec/PlistBuddy -c "Print :LSMinimumSystemVersion" "$app_plist" 2>/dev/null || echo "")
   [ -z "$min_os" ] && continue
