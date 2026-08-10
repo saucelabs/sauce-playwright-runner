@@ -47,12 +47,35 @@ npx playwright install webkit
 unset PLAYWRIGHT_HOST_PLATFORM_OVERRIDE
 
 # --- Step 2: Install x64 browsers into isolated directory ---
-echo "--- Step 2: Installing x64 browsers (mac13) ---"
+# The host override is mac14, not mac13, even though this bundle serves macOS 13.
+# Playwright 1.62 removed mac13 from its host platform table, so `mac13` resolves
+# to no download URL at all and the install aborts with "Playwright does not
+# support chromium on mac13". It did NOT drop Intel: mac14 and mac15 both resolve
+# to the same mac-x64 artifacts mac13 used to get
+# (cdn.playwright.dev/builds/cft/<ver>/mac-x64/chrome-mac-x64.zip), and those
+# builds declare LSMinimumSystemVersion 13.0, so they still run on macOS 13.
+# The check below enforces that, because the day Chrome raises its minimum to 14
+# this override would otherwise ship a binary that only fails on a real macOS 13
+# machine, not here.
+echo "--- Step 2: Installing x64 browsers (mac14 host -> mac-x64 builds) ---"
 export PLAYWRIGHT_BROWSERS_PATH="$PWD/Cache-intel"
-export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac13
+export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=mac14
 npx playwright install chromium chromium-headless-shell firefox
 npx playwright install-deps chromium firefox
 unset PLAYWRIGHT_HOST_PLATFORM_OVERRIDE
+
+# Fail the build if an x64 browser no longer supports macOS 13.
+for app_plist in $(find "$PWD/Cache-intel" -maxdepth 4 -name Info.plist -path '*.app/Contents/*'); do
+  min_os=$(/usr/libexec/PlistBuddy -c "Print :LSMinimumSystemVersion" "$app_plist" 2>/dev/null || echo "")
+  [ -z "$min_os" ] && continue
+  if [ "$(printf '%s\n13.0\n' "$min_os" | sort -V | head -n1)" != "$min_os" ]; then
+    echo "ERROR: $app_plist requires macOS $min_os, but this bundle serves macOS 13." >&2
+    echo "       Playwright's mac-x64 build no longer covers macOS 13 — the platform" >&2
+    echo "       support decision can no longer be deferred by the host override." >&2
+    exit 1
+  fi
+  echo "OK: $(basename "$(dirname "$(dirname "$app_plist")")") supports macOS $min_os+"
+done
 
 # --- Step 3: Merge both caches into the final Cache/ directory ---
 echo "--- Step 3: Merging ARM64 and x64 browsers into final cache ---"
