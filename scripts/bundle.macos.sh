@@ -54,6 +54,30 @@ npx playwright install chromium chromium-headless-shell firefox
 npx playwright install-deps chromium firefox
 unset PLAYWRIGHT_HOST_PLATFORM_OVERRIDE
 
+# The x64 bundle serves the oldest platforms in the test matrix, currently
+# macOS 12. A browser whose LSMinimumSystemVersion climbs above that still
+# installs and bundles fine here, then fails to launch only on a real machine
+# running the oldest supported macOS — so the loss is invisible until it reaches
+# a customer. Playwright 1.62 is a live example: its Chrome for Testing build
+# moved from 149 (min macOS 12.0) to 151 (min macOS 13.0), which silently
+# breaks macOS 12 Chromium.
+#
+# Fail the build instead, so a bump that drops a supported platform has to be
+# an explicit decision.
+OLDEST_SUPPORTED_MACOS=12.0
+for app_plist in $(find "$PWD/Cache-intel" -maxdepth 4 -name Info.plist -path '*.app/Contents/*'); do
+  min_os=$(/usr/libexec/PlistBuddy -c "Print :LSMinimumSystemVersion" "$app_plist" 2>/dev/null || echo "")
+  [ -z "$min_os" ] && continue
+  if [ "$(printf '%s\n%s\n' "$min_os" "$OLDEST_SUPPORTED_MACOS" | sort -V | head -n1)" != "$min_os" ]; then
+    echo "ERROR: $app_plist requires macOS $min_os, but this bundle is expected to" >&2
+    echo "       run on macOS $OLDEST_SUPPORTED_MACOS and up." >&2
+    echo "       Either keep the previous browser version, or drop the platforms it no" >&2
+    echo "       longer supports from the test matrix and raise OLDEST_SUPPORTED_MACOS." >&2
+    exit 1
+  fi
+  echo "OK: $(basename "$(dirname "$(dirname "$app_plist")")") supports macOS $min_os+"
+done
+
 # --- Step 3: Merge both caches into the final Cache/ directory ---
 echo "--- Step 3: Merging ARM64 and x64 browsers into final cache ---"
 rm -rf "$FINAL_CACHE"
