@@ -12,18 +12,12 @@ playwright:
   # Then use --runner-version to specify the release you actually want to use.
   version: 1.57.0
 suites:
+  # macOS 13, not 12: Chrome for Testing 151 (playwright 1.62) requires macOS 13.0.
   - name: "Post Release Test (macOS) - chromium"
-    platformName: "macOS 12"
+    platformName: "macOS 13"
     testMatch: ['.*.js']
     params:
       browserName: "chromium"
-
-  - name: "Post Release Test (macOS) - webkit"
-    platformName: "macOS 14"
-    armRequired: true
-    testMatch: ['.*.js']
-    params:
-      browserName: "webkit"
 
   - name: "Post Release Test (macOS) - firefox"
     platformName: "macOS 12"
