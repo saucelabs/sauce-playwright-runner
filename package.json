@@ -44,25 +44,25 @@
     "xml-js": "1.6.11"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.2",
+    "@eslint/js": "^9.39.5",
     "@tsconfig/node24": "^24.0.4",
     "@types/jest": "^30.0.0",
-    "@types/lodash": "^4.17.24",
-    "@types/node": "^26.0.1",
+    "@types/lodash": "^4.17.25",
+    "@types/node": "^26.2.0",
     "@types/shelljs": "^0.10.0",
-    "eslint": "^9.39.2",
+    "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-jest": "^29.15.4",
+    "eslint-plugin-jest": "^29.16.0",
     "eslint-plugin-prettier": "^5.5.6",
     "husky": "^9.1.7",
     "jest": "^30.4.2",
     "jest-circus": "^30.4.2",
     "jest-cli": "^30.4.2",
-    "prettier": "^3.9.4",
+    "prettier": "^3.9.6",
     "pretty-quick": "^4.2.2",
     "release-it": "^20.2.1",
-    "ts-jest": "^29.4.11",
+    "ts-jest": "^29.4.12",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.62.1"
+    "typescript-eslint": "^8.66.0"
   }
 }
