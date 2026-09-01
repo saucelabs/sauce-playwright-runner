@@ -190,21 +190,31 @@ async function getCfg(
   return runCfg;
 }
 
-function zipArtifacts(runCfg: RunnerConfig | CucumberRunnerConfig) {
+export function zipArtifacts(runCfg: RunnerConfig | CucumberRunnerConfig) {
   if (!runCfg.artifacts || !runCfg.artifacts.retain) {
     return;
   }
   const archivesMap = runCfg.artifacts.retain;
-  Object.keys(archivesMap).forEach((source) => {
-    const dest = path.join(runCfg.assetsDir, archivesMap[source]);
-    try {
-      zip(path.dirname(runCfg.path), source, dest);
-    } catch (err) {
-      console.error(
-        `Zip file creation failed for destination: "${dest}", source: "${source}". Error: ${err}.`,
-      );
-    }
-  });
+  const workspace = path.dirname(runCfg.path);
+  // zip() resolves the relative source against the process cwd, not against
+  // the workspace argument. Pin the cwd to the project dir so retain works
+  // regardless of the directory the runner was launched from.
+  const origCwd = process.cwd();
+  process.chdir(workspace);
+  try {
+    Object.keys(archivesMap).forEach((source) => {
+      const dest = path.join(runCfg.assetsDir, archivesMap[source]);
+      try {
+        zip(workspace, source, dest);
+      } catch (err) {
+        console.error(
+          `Zip file creation failed for destination: "${dest}", source: "${source}". Error: ${err}.`,
+        );
+      }
+    });
+  } finally {
+    process.chdir(origCwd);
+  }
 }
 
 async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
@@ -217,7 +227,9 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   );
 
   if (runCfg.Kind === 'playwright-cucumberjs') {
-    return await runCucumber(nodeBin, runCfg);
+    const passed = await runCucumber(nodeBin, runCfg);
+    zipArtifacts(runCfg);
+    return passed;
   }
 
   const passed = await runPlaywright(nodeBin, runCfg);

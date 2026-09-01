@@ -179,7 +179,14 @@ export async function runCucumber(
     'cucumber-js',
   );
   const procArgs = buildArgs(runCfg, cucumberBin);
-  const proc = spawn(nodeBin, procArgs, { stdio: 'inherit', env: process.env });
+  // Run cucumber from the project directory so that relative output paths
+  // (e.g. Allure resultsDir, Playwright test-results) resolve against the
+  // customer's project, matching the plain playwright runner's behavior.
+  const proc = spawn(nodeBin, procArgs, {
+    stdio: 'inherit',
+    env: process.env,
+    cwd: runCfg.projectPath,
+  });
 
   // saucectl suite.timeout is in nanoseconds, convert to seconds
   const timeout = (runCfg.suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default
@@ -187,6 +194,8 @@ export async function runCucumber(
   const timeoutPromise = new Promise<boolean>((resolve) => {
     setTimeout(() => {
       console.error(`Job timed out after ${timeout} seconds`);
+      // Stop cucumber so artifact zipping doesn't archive files mid-write.
+      proc.kill();
       resolve(false);
     }, timeout * 1000);
   });
