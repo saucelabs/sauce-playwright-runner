@@ -456,7 +456,7 @@ jobs:
 
             - name: Create Pull Request
               if: steps.changed.outputs.had_changes == 'true'
-              uses: peter-evans/create-pull-request@v7
+              uses: peter-evans/create-pull-request@v8
               with:
                 token: ${{ secrets.GITHUB_TOKEN }}
                 commit-message: "chore: ${{ env.FRAMEWORK_NAME }} dependency update (${{ inputs.update_level }})"
