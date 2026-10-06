@@ -39,9 +39,18 @@ if [ "$ARCH" = "arm64" ]; then
 
   # Fail if any executable in the bundle is not arm64. A browser that silently
   # falls back to an x64 build would still install fine here, then need Rosetta
-  # on the VM. Only Mach-O files are checked; shell wrappers such as webkit's
-  # pw_run.sh are skipped.
-  non_arm64=$(find "$FINAL_CACHE" "$PWD/node" -type f -perm +111 -exec file {} + | grep 'Mach-O' | grep -v 'arm64' || true)
+  # on the VM. Only Mach-O files are checked: lipo rejects anything else, so
+  # shell wrappers such as webkit's pw_run.sh are skipped. Universal binaries
+  # pass as long as they contain an arm64 slice (webkit ships some dylibs, e.g.
+  # libswiftCompatibilitySpan.dylib, as x86_64 + arm64).
+  non_arm64=""
+  while IFS= read -r -d '' f; do
+    archs=$(lipo -archs "$f" 2>/dev/null) || continue
+    case " $archs " in
+      *" arm64 "*|*" arm64e "*) ;;
+      *) non_arm64+="$f ($archs)"$'\n' ;;
+    esac
+  done < <(find "$FINAL_CACHE" "$PWD/node" -type f -perm +111 -print0)
   if [ -n "$non_arm64" ]; then
     echo "ERROR: non-arm64 executables in the arm64 bundle:" >&2
     echo "$non_arm64" >&2
