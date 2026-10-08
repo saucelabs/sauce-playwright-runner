@@ -7,7 +7,7 @@ sauce:
     build: Github Pre-Release
   region: us-west-1
 playwright:
-  version: 1.57.0
+  version: 1.62.1
 
 npm:
   packages:
@@ -146,6 +146,31 @@ suites:
 
   - name: "macOS15 - Webkit"
     platformName: "macOS 15"
+    armRequired: true
+    params:
+      browserName: "webkit"
+    testMatch:
+      - "tests/no-sc/.*.test.js"
+
+  ## macOS26 tests (run against playwright-macos-arm64.zip)
+  - name: "macOS26 - Chromium"
+    platformName: "macOS 26"
+    armRequired: true
+    params:
+      browserName: "chromium"
+    testMatch:
+      - "tests/no-sc/.*.test.js"
+
+  - name: "macOS26 - Firefox"
+    platformName: "macOS 26"
+    armRequired: true
+    params:
+      browserName: "firefox"
+    testMatch:
+      - "tests/no-sc/.*.test.js"
+
+  - name: "macOS26 - Webkit"
+    platformName: "macOS 26"
     armRequired: true
     params:
       browserName: "webkit"

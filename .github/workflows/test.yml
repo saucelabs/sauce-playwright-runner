@@ -175,12 +175,53 @@ jobs:
         run: |
           gsutil cp ./playwright-macos-amd64.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
 
+  build-macos-arm64-bundle:
+    runs-on: macos-15
+    needs: [test]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Google Cloud Login
+        id: "auth"
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: '${{ secrets.GCS_RUNNER_SA_KEY }}'
+
+      - name: Install gcloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: ${{ secrets.GCS_RUNNER_PROJECT_ID }}
+        env:
+          CLOUDSDK_PYTHON: ${{env.pythonLocation}}/python
+
+      - name: Update Release Version
+        run: npm version --no-git-tag-version 1.0.0
+
+      - name: Bundle Directory
+        run: bash ./scripts/bundle.macos.sh arm64
+
+      - name: Upload to GCS
+        run: |
+          gsutil cp ./playwright-macos-arm64.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-arm64-${{ github.run_id }}.zip
+
   bundle-test:
-    needs: [build-windows-bundle, build-macos-bundle]
+    needs: [build-windows-bundle, build-macos-bundle, build-macos-arm64-bundle]
     strategy:
       max-parallel: 3
       matrix:
-        os: [Win10, Win11, macOS12, macOS13, macOS14, macOS15]
+        os: [Win10, Win11, macOS12, macOS13, macOS14, macOS15, macOS26]
         browser: [Chromium, Firefox, Webkit]
         exclude:
           - os: macOS12
@@ -216,6 +257,10 @@ jobs:
           if [[ ${{ matrix.os }} =~ ^macOS ]];then
             BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
           fi
+          # macOS 26+ runs the native arm64 bundle
+          if [[ ${{ matrix.os }} = macOS26 ]];then
+            BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-arm64-${{ github.run_id }}.zip
+          fi
 
           saucectl run \
             --runner-version "url: ${BUNDLE_URL}" \
@@ -223,11 +268,11 @@ jobs:
             --select-suite "${{ matrix.os }} - ${{ matrix.browser }}"
 
   bundle-test-with-sauce-connect:
-    needs: [build-windows-bundle, build-macos-bundle]
+    needs: [build-windows-bundle, build-macos-bundle, build-macos-arm64-bundle]
     strategy:
       max-parallel: 3
       matrix:
-        os: [Win10, Win11, macOS12, macOS13, macOS14, macOS15]
+        os: [Win10, Win11, macOS12, macOS13, macOS14, macOS15, macOS26]
         browser: [Chromium, Firefox, Webkit]
         exclude:
           - os: Win10
@@ -285,6 +330,10 @@ jobs:
           BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-windows-amd64-${{ github.run_id }}.zip
           if [[ ${{ matrix.os }} =~ ^macOS ]];then
             BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-amd64-${{ github.run_id }}.zip
+          fi
+          # macOS 26+ runs the native arm64 bundle
+          if [[ ${{ matrix.os }} = macOS26 ]];then
+            BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/playwright-macos-arm64-${{ github.run_id }}.zip
           fi
 
           saucectl run \

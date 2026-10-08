@@ -234,9 +234,73 @@ jobs:
         run: |
           gh release upload ${{ steps.prep.outputs.version }} playwright-macos-amd64.zip
 
+  release-macos-arm64-bundle:
+    runs-on: macos-15
+    needs: [create-release-draft]
+    steps:
+      - name: Find Matching Draft Tag
+        # Fetches the `asset_id` of the uploaded bundle. A non-empty `asset_id` signals a successful upload, preventing duplicate uploads in retry attempts.
+        id: prep
+        run: |
+          VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.draft == true) | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
+          RELEASE_ID=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.draft == true) | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .id")
+
+          if [ "${VERSION}" = "" ];then
+              echo "No draft version found"
+              exit 1
+          fi
+
+          ASSET_ID=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .assets | .[] | select(.name == \"playwright-macos-arm64.zip\") | .id | select(. != null)")
+
+
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "release_id=${RELEASE_ID}" >> $GITHUB_OUTPUT
+          echo "asset_id=${ASSET_ID}" >> $GITHUB_OUTPUT
+
+      - run: echo "${{ steps.prep.outputs.release_id }} - ${{ steps.prep.outputs.version }} - ${{ steps.prep.outputs.asset_id }}"
+
+      - name: Checkout
+        uses: actions/checkout@v5
+        if: ${{ steps.prep.outputs.asset_id == '' }}
+        with:
+          ref: ${{ steps.prep.outputs.version }}
+
+      - name: Setup Node
+        if: ${{ steps.prep.outputs.asset_id == '' }}
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Update Release Version
+        if: ${{ steps.prep.outputs.asset_id == '' }}
+        run: |
+          npm version --no-git-tag-version ${{  steps.prep.outputs.version }}
+
+      - name: Bundle Directory
+        if: ${{ steps.prep.outputs.asset_id == '' }}
+        run: bash ./scripts/bundle.macos.sh arm64
+
+      - name: List Bundle Contents
+        if: ${{ steps.prep.outputs.asset_id == '' }}
+        run: ls -R bundle/
+
+      - name: Upload Release Asset
+        if: ${{ steps.prep.outputs.asset_id == '' }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload ${{ steps.prep.outputs.version }} playwright-macos-arm64.zip
+
   publish-release:
     runs-on: ubuntu-latest
-    needs: [release-windows-bundle, release-macos-bundle]
+    needs: [release-windows-bundle, release-macos-bundle, release-macos-arm64-bundle]
     steps:
       - name: Find Matching Draft Tag
         id: prep
@@ -325,6 +389,40 @@ jobs:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
         run: |
           saucectl run --runner-version "url: https://github.com/saucelabs/sauce-playwright-runner/releases/download/${{ steps.parse_version.outputs.version }}/playwright-macos-amd64.zip" --config ./.sauce/config_mac.yml
+
+  post-release-macos-arm64-tests:
+    runs-on: ubuntu-latest
+    needs: publish-release
+    env:
+      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+      SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup saucectl
+        uses: saucelabs/saucectl-run-action@v4
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          saucectl-version: v0.201.0
+          skip-run: true
+
+      - name: Parse Release Version
+        id: parse_version
+        run: |
+          VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
+
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Cloud Tests (MacOS arm64)
+        working-directory: ./tests/fixtures/post-release
+        env:
+          BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
+        run: |
+          saucectl run --runner-version "url: https://github.com/saucelabs/sauce-playwright-runner/releases/download/${{ steps.parse_version.outputs.version }}/playwright-macos-arm64.zip" --config ./.sauce/config_mac_arm64.yml
 
   post-release-windows-cucumber-tests:
     runs-on: ubuntu-latest

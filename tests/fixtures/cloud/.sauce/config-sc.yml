@@ -9,7 +9,7 @@ sauce:
   tunnel:
     name: github-playwright-sc-check-tunnel
 playwright:
-  version: 1.57.0
+  version: 1.62.1
 
 npm:
   packages:
@@ -148,6 +148,31 @@ suites:
 
   - name: "macOS15 - Webkit"
     platformName: "macOS 15"
+    armRequired: true
+    params:
+      browserName: "webkit"
+    testMatch:
+      - "tests/.*.test.js"
+
+  ## macOS26 tests (run against playwright-macos-arm64.zip)
+  - name: "macOS26 - Chromium"
+    platformName: "macOS 26"
+    armRequired: true
+    params:
+      browserName: "chromium"
+    testMatch:
+      - "tests/.*.test.js"
+
+  - name: "macOS26 - Firefox"
+    platformName: "macOS 26"
+    armRequired: true
+    params:
+      browserName: "firefox"
+    testMatch:
+      - "tests/.*.test.js"
+
+  - name: "macOS26 - Webkit"
+    platformName: "macOS 26"
     armRequired: true
     params:
       browserName: "webkit"
