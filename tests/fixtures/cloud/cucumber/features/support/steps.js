@@ -4,7 +4,10 @@ const { expect } = require('@playwright/test');
 const prettySeconds = require('pretty-seconds');
 const { setTimeout } = require('node:timers');
 
-Before(async function () {
+// Cucumber's default 5s step timeout is too tight for a cold, headed browser
+// launch with video recording on the Sauce macOS 13 VMs: with Playwright 1.63
+// (Chromium 153) this hook intermittently took longer and failed the suite.
+Before({ timeout: 30 * 1000 }, async function () {
   const opts = {
     headless: false,
     recordVideo: {
